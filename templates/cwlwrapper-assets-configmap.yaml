@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "ades.fullname" . }}-cwlwrapper-configmap
+  name: {{ template "zoo-project-dru.fullname" . }}-cwlwrapper-configmap
 data:
   maincwl: {{ .Files.Get "files/cwlwrapper-assets/maincwl.yaml" | quote }}
   maincwlmetrics: {{ .Files.Get "files/cwlwrapper-assets/maincwlmetrics.yaml" | quote }}

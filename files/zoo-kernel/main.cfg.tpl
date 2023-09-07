@@ -11,14 +11,14 @@ cacheDir = /tmp/
 templatesPath = /var/www/
 
 [identification]
-title = ADES Development Server
-abstract = Development version of ADES OGC API - Processes.
+title = The ZOO-Project with DRU support for CWL deployment through OGC API - Processes - Part 2: Deploy, Replace, Undeploy
+abstract = Developement version of the ZOO-Project with support for:<br><ul><li>OGC API - Processes: Part1: Core standard</li><li>OGC API - Processes - Part 2: Deploy, Replace, Undeploy draft</li></ul><br> See <a target="_blank" href="http://www.zoo-project.org">http://zoo-project.org</a> for more informations. <br/>You can access the current <a href="https://docs.ogc.org/DRAFTS/20-044.html" target="_blank">OGC API - Processes - Part 2: Deploy, Replace, Undeploy draft specification</a>.
 fees = None
 accessConstraints = none
 keywords = WPS,GIS,buffer
 
 [provider]
-providerName=ADES
+providerName=ZOO-Project
 providerSite=http://www.zoo-project.org
 individualName=Gerald FENOY
 positionName=Developer

@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "ades.fullname" . }}-zoofpm
+  name: {{ template "zoo-project-dru.fullname" . }}-zoofpm
   labels:
     {{- if .Chart.AppVersion }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     {{- end }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/name: {{ include "ades.name" . }}-zoofpm
+    app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
     app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
 spec:
   {{- if not .Values.zoofpm.autoscaling.enabled }}
@@ -15,7 +15,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "ades.name" . }}-zoofpm
+      app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
       app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
   strategy:
     type: Recreate
@@ -26,10 +26,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        app.kubernetes.io/name: {{ include "ades.name" . }}-zoofpm
+        app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
         app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
     spec:
-      serviceAccountName: {{ include "ades.fullname" . }}-processing-manager
+      serviceAccountName: {{ include "zoo-project-dru.fullname" . }}-processing-manager
       initContainers:
         - name: init-wait-for-dependencies-zoofpm
           image: docker.io/wshihadeh/wait_for:latest
@@ -55,7 +55,7 @@ spec:
               value: "{{ .Values.workflow.calrissianImage }}"
             {{- if .Values.useKubeProxy }}
             - name: HTTP_PROXY
-              value: "http://{{ include "ades.fullname" . }}-kubeproxy:8001"
+              value: "http://{{ include "zoo-project-dru.fullname" . }}-kubeproxy:8001"
             {{- else }}
             - name: KUBECONFIG
               value: /var/etc/ades/kubeconfig
@@ -99,21 +99,6 @@ spec:
               mountPath: /startup.sh
               subPath: startUp.sh
             - name: ades-config
-              mountPath: /usr/lib/cgi-bin/deploy_util.py
-              subPath: deployutil_py
-            - name: ades-config
-              mountPath: /usr/lib/cgi-bin/DeployProcess.zcfg
-              subPath: deployprocess_zcfg
-            - name: ades-config
-              mountPath: /usr/lib/cgi-bin/DeployProcess.py
-              subPath: deployprocess_py
-            - name: ades-config
-              mountPath: /usr/lib/cgi-bin/UndeployProcess.zcfg
-              subPath: undeployprocess_zcfg
-            - name: ades-config
-              mountPath: /usr/lib/cgi-bin/UndeployProcess.py
-              subPath: undeployprocess_py
-            - name: ades-config
               mountPath: /tmp/cookiecutter_config.yaml
               subPath: cookiecutter_config
             - name: cwlwrapper-config
@@ -138,13 +123,13 @@ spec:
       volumes:
         - name: ades-config
           configMap:
-            name: {{ template "ades.fullname" . }}-configmap
+            name: {{ template "zoo-project-dru.fullname" . }}-configmap
         - name: cwlwrapper-config
           configMap:
-            name: {{ template "ades.fullname" . }}-cwlwrapper-configmap
+            name: {{ template "zoo-project-dru.fullname" . }}-cwlwrapper-configmap
         - name: startupsh
           configMap:
-            name: {{ template "ades.fullname" . }}-startup-configmap
+            name: {{ template "zoo-project-dru.fullname" . }}-startup-configmap
             defaultMode: 0744
 
         - name: ades-processing-services
@@ -153,7 +138,7 @@ spec:
             {{- if .Values.persistence.existingProcessingServicesClaim }}
             claimName: {{ .Values.persistence.existingProcessingServicesClaim }}
             {{- else }}
-            claimName: {{ template "ades.fullname" . }}-processing-services
+            claimName: {{ template "zoo-project-dru.fullname" . }}-processing-services
             {{- end -}}
           {{- else }}
           emptyDir: { }

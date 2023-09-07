@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "ades.fullname" . }}-zookernel
+  name: {{ template "zoo-project-dru.fullname" . }}-zookernel
   labels:
-    {{- include "ades.labels" . | nindent 4 }}
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "ades.selectorLabels" . | nindent 6 }}
+      {{- include "zoo-project-dru.selectorLabels" . | nindent 6 }}
   strategy:
     type: Recreate
   template:
@@ -18,7 +18,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "ades.selectorLabels" . | nindent 8 }}
+        {{- include "zoo-project-dru.selectorLabels" . | nindent 8 }}
     spec:
       initContainers:
         - name: init-wait-for-dependencies-zookernel
@@ -32,7 +32,7 @@ spec:
       containers:
         - env:
             - name: ZOO_REDIS_HOST
-              value: {{ template "ades.fullname" . }}-redis-master
+              value: {{ template "zoo-project-dru.fullname" . }}-redis-master
           name: zookernel
           image: "{{ .Values.zookernel.image.repository }}:{{ .Values.zookernel.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.zookernel.image.pullPolicy }}
@@ -60,21 +60,6 @@ spec:
               mountPath: /var/www/html/.htaccess
               subPath: htaccess
             - name: ades-config
-              mountPath: /usr/lib/cgi-bin/deploy_util.py
-              subPath: deployutil_py
-            - name: ades-config
-              mountPath: /usr/lib/cgi-bin/DeployProcess.zcfg
-              subPath: deployprocess_zcfg
-            - name: ades-config
-              mountPath: /usr/lib/cgi-bin/DeployProcess.py
-              subPath: deployprocess_py
-            - name: ades-config
-              mountPath: /usr/lib/cgi-bin/UndeployProcess.zcfg
-              subPath: undeployprocess_zcfg
-            - name: ades-config
-              mountPath: /usr/lib/cgi-bin/UndeployProcess.py
-              subPath: undeployprocess_py
-            - name: ades-config
               mountPath: /tmp/cookiecutter_config.yaml
               subPath: cookiecutter_config
             - name: ades-processing-services
@@ -84,14 +69,14 @@ spec:
       volumes:
         - name: ades-config
           configMap:
-            name: {{ template "ades.fullname" . }}-configmap
+            name: {{ template "zoo-project-dru.fullname" . }}-configmap
         - name: ades-processing-services
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
             {{- if .Values.persistence.existingProcessingServicesClaim }}
             claimName: {{ .Values.persistence.existingProcessingServicesClaim }}
             {{- else }}
-            claimName: {{ template "ades.fullname" . }}-processing-services
+            claimName: {{ template "zoo-project-dru.fullname" . }}-processing-services
             {{- end -}}
           {{- else }}
           emptyDir: { }

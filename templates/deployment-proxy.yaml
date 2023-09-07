@@ -2,13 +2,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ades.fullname" . }}-kubeproxy
+  name: {{ include "zoo-project-dru.fullname" . }}-kubeproxy
   labels:
-    app.kubernetes.io/name: {{ include "ades.name" . }}-kubeproxy
+    app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-kubeproxy
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "ades.name" . }}-kubeproxy
+      app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-kubeproxy
   template:
     metadata:
     {{- with .Values.podAnnotations }}
@@ -16,17 +16,17 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       labels:
-        app.kubernetes.io/name: {{ include "ades.name" . }}-kubeproxy
+        app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-kubeproxy
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ades.fullname" . }}-processing-manager
+      serviceAccountName: {{ include "zoo-project-dru.fullname" . }}-processing-manager
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ include "ades.fullname" . }}-kubeproxy
+        - name: {{ include "zoo-project-dru.fullname" . }}-kubeproxy
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: eoepca/kubectl-proxy:latest
