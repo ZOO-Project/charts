@@ -40,16 +40,19 @@ service:
 
 ingress:
   enabled: false
+  className: ""
   annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: ades3.develop.eoepca.org
+    - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
-  tls:
-    - secretName: ades-tls
-      hosts:
-        - ades3.develop.eoepca.org
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -78,12 +81,7 @@ affinity: {}
 
 
 redis:
-  master:
-    persistence:
-      storageClass: standard
   replica:
-    persistence:
-      storageClass: standard
     replicaCount: 1
 
 
@@ -103,8 +101,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: dru
+    tag: dru-82d7905513b446bcf96916d7904988d68f762eaa
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -114,14 +111,18 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: dru
+    tag: dru-82d7905513b446bcf96916d7904988d68f762eaa
 
 
 workflow:
   storageClass: standard
+  defaultVolumeSize: 10190
+  defaultMaxRam: 1024
+  defaultMaxCores: 2
+  calrissianImage: "terradue/calrissian:0.12.0"
+
   inputs:
-    APP: zoo-project-dru
+    APP: ades
     AWS_REGION: fr-par
     AWS_ACCESS_KEY_ID: my_access_key
     AWS_SECRET_ACCESS_KEY: my_secret_access_key
@@ -132,8 +133,6 @@ workflow:
 postgresql:
   enabled: true
   primary:
-    persistence:
-      storageClass: standard
     initdb:
       scriptsConfigMap: "postgresql-primary-init-scripts"
 
@@ -150,8 +149,6 @@ global:
 
 # rabbitmq
 rabbitmq:
-  persistence:
-    storageClass: standard
   auth:
     username: RABBITMQ_USERNAME
     password: CHANGEME
