@@ -1,0 +1,31 @@
+name: Publish the ZOO-Project-DRU HELM charts
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  documentation-build-and-deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Build dependencies and create HELM package 
+      run: |
+        cd zoo-project-dru;
+	helm dependency build ;
+	helm package . ;
+	mv zoo-project-dru*tgz charts ;
+	helm repo index charts
+    - name: Deploy
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        repository-name: ZOO-Project/charts
+        branch: gh-pages
+        folder: charts
+        ssh-key: ${{ secrets.DEPLOY_KEY }}
