@@ -1,0 +1,9 @@
+workflow:
+  storageClass: standard
+  inputs:
+    APP: zoo-project-dru
+    AWS_REGION: RegionOne
+    AWS_ACCESS_KEY_ID: minio
+    AWS_SECRET_ACCESS_KEY: minio123
+    AWS_SERVICE_URL: http://my-minio-fs.minio.svc.cluster.local:9000
+    ADES_STAGEOUT_OUTPUT: 3://processingresults
