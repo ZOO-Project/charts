@@ -18,15 +18,17 @@ jobs:
     - name: Build dependencies and create HELM package 
       run: |
         cd zoo-project-dru;
+        helm repo add bitnami https://charts.bitnami.com/bitnami ;
         helm dependency build ;
         helm package . ;
         mv zoo-project-dru*tgz charts ;
-        helm repo index charts
+        helm repo index charts ;
+        cp ../index.html charts ;
 
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         repository-name: ZOO-Project/charts
         branch: gh-pages
-        folder: charts
+        folder: zoo-project-dru/charts
         ssh-key: ${{ secrets.DEPLOY_KEY }}
