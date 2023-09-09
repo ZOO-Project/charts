@@ -1,4 +1,7 @@
 # charts
+![example workflow](https://github.com/ZOO-Project/charts/actions/workflows/publish-charts.yml/badge.svg)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/zoo-project)](https://artifacthub.io/packages/search?repo=zoo-project)
+
 Helm charts for ZOO-Project including OGC API - Processes: Part 2: Deploy, Replace, Undeploy draft specification with CWL conformance class
 
 ## How to use
