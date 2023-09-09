@@ -18,10 +18,11 @@ jobs:
     - name: Build dependencies and create HELM package 
       run: |
         cd zoo-project-dru;
-	helm dependency build ;
-	helm package . ;
-	mv zoo-project-dru*tgz charts ;
-	helm repo index charts
+        helm dependency build ;
+        helm package . ;
+        mv zoo-project-dru*tgz charts ;
+        helm repo index charts
+
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@v4
       with:
