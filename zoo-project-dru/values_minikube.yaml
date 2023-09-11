@@ -23,3 +23,6 @@ minio:
     size: 2Gi
     accessMode: ReadWriteOnce
   defaultBuckets: "processingresults"
+  mode: distributed
+  statefulset:
+     replicaCount: 4
