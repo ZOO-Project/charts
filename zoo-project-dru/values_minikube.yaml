@@ -2,11 +2,11 @@ workflow:
   storageClass: standard
   inputs:
     APP: zoo-project-dru
-    AWS_REGION: RegionOne
-    AWS_ACCESS_KEY_ID: minio-admin
-    AWS_SECRET_ACCESS_KEY: minio-secret-password
-    AWS_SERVICE_URL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
-    ADES_STAGEOUT_OUTPUT: 3://processingresults
+    STAGEOUT_AWS_REGION: RegionOne
+    STAGEOUT_AWS_ACCESS_KEY_ID: minio-admin
+    STAGEOUT_AWS_SECRET_ACCESS_KEY: minio-secret-password
+    STAGEOUT_AWS_SERVICE_URL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
+    STAGEOUT_OUTPUT: 3://processingresults
 
 minio:
   # minio chart value parameters description can be found here:
