@@ -172,3 +172,6 @@ persistence:
 
 cookiecutter:
   templateUrl: https://github.com/EOEPCA/proc-service-template.git
+
+minio:
+  enabled: false
