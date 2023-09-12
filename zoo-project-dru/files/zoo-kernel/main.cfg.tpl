@@ -4,10 +4,10 @@ version = 1.0.0
 serverAddress = http://127.0.0.1
 language = en-US
 lang = fr-FR,en-CA,en-US
-tmpPath=/tmp/
+tmpPath={{ .Values.persistence.tmpPath }}
 tmpUrl = http://localhost/temp/
 dataPath = /usr/com/zoo-project
-cacheDir = /tmp/
+cacheDir ={{ .Values.persistence.tmpPath }}
 templatesPath = /var/www/
 
 [identification]
@@ -60,8 +60,8 @@ attributes=Authorization,Cookie,User-Agent
 hosts=*
 
 [cookiecutter]
-configurationFile=/tmp/cookiecutter_config.yaml
-templatesPath=/tmp/cookiecutter-templates
+configurationFile={{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
+templatesPath={{ .Values.persistence.tmpPath }}/cookiecutter-templates
 templateUrl={{ .Values.cookiecutter.templateUrl }}
 
 
@@ -69,6 +69,7 @@ templateUrl={{ .Values.cookiecutter.templateUrl }}
 path= {{ .Values.persistence.servicesNamespacePath }}
 deploy_service_provider=DeployProcess
 undeploy_service_provider=UndeployProcess
+required_files=securityOut.zcfg,security_service.py,DeployProcess.zcfg,DeployProcess.py,UndeployProcess.zcfg,UndeployProcess.py,deploy_util.py
 
 [headers]
 X-Powered-By=ZOO-Project

@@ -171,9 +171,16 @@ persistence:
   storageClass: standard
   userDataAccessMode: ReadWriteOnce
   userDataSize: 10Gi
+
   procServicesAccessMode: ReadWriteOnce
+  procServicesStorageClass: standard
   procServicesSize: 5Gi
   servicesNamespacePath: /opt/zooservices_user
+
+  tmpAccessMode: ReadWriteMany
+  tmpStorageClass: standard
+  tmpSize: 2Gi
+  tmpPath: /tmp/zTmp
 
 cookiecutter:
   templateUrl: https://github.com/EOEPCA/proc-service-template.git
