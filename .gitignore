@@ -1,0 +1,5 @@
+zoo-project-dru/Chart.lock
+zoo-project-dru/charts/minio-12.8.4.tgz
+zoo-project-dru/charts/postgresql-12.1.9.tgz
+zoo-project-dru/charts/rabbitmq-11.5.0.tgz
+zoo-project-dru/charts/redis-17.6.0.tgz
