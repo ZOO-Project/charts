@@ -38,3 +38,7 @@ dependencies:
     version: "17.6.0"
     repository: https://charts.bitnami.com/bitnami
 
+  - name: minio
+    version: 12.8.4
+    repository: https://charts.bitnami.com/bitnami
+    condition: minio.enabled
