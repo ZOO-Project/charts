@@ -1,2 +1,2 @@
-replay_dir: "/tmp/cookiecutter-templates/"
-cookiecutters_dir: "/tmp/cookiecutter-templates/"
+replay_dir: "{{ .Values.persistence.tmpPath }}/cookiecutter-templates/"
+cookiecutters_dir: "{{ .Values.persistence.tmpPath }}/cookiecutter-templates/"

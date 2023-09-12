@@ -60,16 +60,20 @@ spec:
               mountPath: /var/www/html/.htaccess
               subPath: htaccess
             - name: ades-config
-              mountPath: /tmp/cookiecutter_config.yaml
+              mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
               subPath: cookiecutter_config
             - name: ades-processing-services
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
-
+            - name: tmp-folder
+              mountPath: {{ .Values.persistence.tmpPath }}
       restartPolicy: Always
       volumes:
         - name: ades-config
           configMap:
             name: {{ template "zoo-project-dru.fullname" . }}-configmap
+        - name: tmp-folder
+          persistentVolumeClaim:
+            claimName: {{ template "zoo-project-dru.fullname" . }}-tmp-folder
         - name: ades-processing-services
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
