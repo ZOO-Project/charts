@@ -101,7 +101,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-7e09b62af60721f021d69609920bfd3a5f21889d
+    tag: dru-faca7d013b036a8503fb750ec9da6113d54371fb
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -111,7 +111,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-7e09b62af60721f021d69609920bfd3a5f21889d
+    tag: dru-faca7d013b036a8503fb750ec9da6113d54371fb
 
 
 workflow:
