@@ -13,7 +13,7 @@ entries:
       licenses: Apache-2.0
     apiVersion: v2
     appVersion: 2023.9.7
-    created: "2023-09-12T17:13:59.104578517Z"
+    created: "2023-09-13T07:56:25.999247664Z"
     dependencies:
     - name: common
       repository: oci://registry-1.docker.io/bitnamicharts
@@ -46,7 +46,7 @@ entries:
       category: Database
     apiVersion: v2
     appVersion: 15.1.0
-    created: "2023-09-12T17:13:59.109686111Z"
+    created: "2023-09-13T07:56:26.004675469Z"
     dependencies:
     - name: common
       repository: https://charts.bitnami.com/bitnami
@@ -82,7 +82,7 @@ entries:
       licenses: Apache-2.0
     apiVersion: v2
     appVersion: 3.11.6
-    created: "2023-09-12T17:13:59.1147068Z"
+    created: "2023-09-13T07:56:26.010238787Z"
     dependencies:
     - name: common
       repository: https://charts.bitnami.com/bitnami
@@ -115,7 +115,7 @@ entries:
       licenses: Apache-2.0
     apiVersion: v2
     appVersion: 7.0.8
-    created: "2023-09-12T17:13:59.120888256Z"
+    created: "2023-09-13T07:56:26.016742592Z"
     dependencies:
     - name: common
       repository: https://charts.bitnami.com/bitnami
@@ -144,7 +144,7 @@ entries:
   zoo-project-dru:
   - apiVersion: v2
     appVersion: 0.0.2
-    created: "2023-09-12T17:13:59.143863477Z"
+    created: "2023-09-13T07:56:26.04110536Z"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -162,10 +162,10 @@ entries:
       repository: https://charts.bitnami.com/bitnami
       version: 12.8.4
     description: A Helm chart for Kubernetes
-    digest: 80ee5fd8130a47dd4174f83f835974304c155d6fafe63418d7268ba13c3a4fc2
+    digest: c318244123cf4b0ebddca0b5e38fc2635d981f0cf3be092df71a5eda30db8864
     name: zoo-project-dru
     type: application
     urls:
     - zoo-project-dru-0.0.2.tgz
     version: 0.0.2
-generated: "2023-09-12T17:13:59.101169321Z"
+generated: "2023-09-13T07:56:25.99232382Z"
