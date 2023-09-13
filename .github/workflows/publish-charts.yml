@@ -18,6 +18,8 @@ jobs:
     - name: Build dependencies and create HELM package 
       run: |
         cd zoo-project-dru;
+	git clone -b gh-pages https://github.com/ZOO-Project/charts.git charts1;
+	cp charts1/*.tgz charts/;
         helm repo add bitnami https://charts.bitnami.com/bitnami ;
         helm dependency build ;
         helm package . ;
