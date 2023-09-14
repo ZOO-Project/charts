@@ -23,3 +23,7 @@ minio:
     size: 2Gi
     accessMode: ReadWriteOnce
   defaultBuckets: "processingresults"
+  
+cookiecutter:
+  templateUrl: https://github.com/EOEPCA/proc-service-template.git
+  templateBranch: zoo-project-dru
