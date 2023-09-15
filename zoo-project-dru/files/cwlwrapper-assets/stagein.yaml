@@ -1,42 +1,42 @@
 cwlVersion: v1.0
-baseCommand: Stars
 doc: "Run Stars for staging input data"
 class: CommandLineTool
 hints:
   DockerRequirement:
-    dockerPull: terradue/stars:1.6.2
+    dockerPull: terradue/stars:1.0.0-beta.11
+  "cwltool:Secrets":
+    secrets:
+    - STAGEIN_AWS_SERVICEURL
+    - STAGEIN_AWS_ACCESS_KEY_ID
+    - STAGEIN_AWS_SECRET_ACCESS_KEY
 id: stars
-arguments:
-- copy
-- -v
-- -rel
-- -r
-- '4'
-- valueFrom: ${ if (inputs.input.split("#").length == 2)
-              { return ["-af", inputs.input.split("#")[1]]; }
-             else {return '--empty'}
-           }
-- -o
-- ./
-- valueFrom: ${ return inputs.input.split("#")[0]; }
 inputs:
   STAGEIN_AWS_SERVICEURL:
-    type: string?
-  STAGEIN_AWS_REGION:
     type: string?
   STAGEIN_AWS_ACCESS_KEY_ID:
     type: string?
   STAGEIN_AWS_SECRET_ACCESS_KEY:
     type: string?
 outputs: {}
+baseCommand: ['/bin/bash', 'stagein.sh']
 requirements:
+  InitialWorkDirRequirement:
+    listing:
+    - entryname: stagein.sh
+      entry: |-
+        #!/bin/bash
+        export AWS__ServiceURL=$(inputs.STAGEIN_AWS_SERVICEURL)
+        export AWS_ACCESS_KEY_ID=$(inputs.STAGEIN_AWS_ACCESS_KEY_ID)
+        export AWS_SECRET_ACCESS_KEY=$(inputs.STAGEIN_AWS_SECRET_ACCESS_KEY)
+        url=$1
+        if curl --output /dev/null --silent --head --fail "$url"; then
+          echo "URL: $url"
+        else
+          echo "URL does not exist: $url"
+          exit 1
+        fi
+        Stars copy -v -rel -r 4 -o ./ --harvest $url
   EnvVarRequirement:
     envDef:
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-      AWS__ServiceURL: $(inputs.STAGEIN_AWS_SERVICEURL)
-      AWS__Region: $(inputs.STAGEIN_AWS_REGION)
-      AWS__AuthenticationRegion: $(inputs.STAGEIN_AWS_REGION)
-      AWS_ACCESS_KEY_ID: $(inputs.STAGEIN_AWS_ACCESS_KEY_ID)
-      AWS_SECRET_ACCESS_KEY: $(inputs.STAGEIN_AWS_SECRET_ACCESS_KEY)
   ResourceRequirement: {}
-  InlineJavascriptRequirement: {}

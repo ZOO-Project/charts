@@ -62,6 +62,9 @@ spec:
             - name: ades-config
               mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
               subPath: cookiecutter_config
+            - name: ades-config
+              mountPath: /assets/wfinputs.yaml
+              subPath: wfinputs
             - name: ades-processing-services
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
             - name: tmp-folder
