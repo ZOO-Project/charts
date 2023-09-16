@@ -18,11 +18,11 @@ This chart bootstraps a [ZOO-Project](http://zoo-project.org) deployment on a cl
 
 ## Installing the Chart
 
-To install the chart with the release name `my-release`:
+To install the chart with the release name `my-zoo-project-dru`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install zoo-project-dru
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 ````
 
 ## Parameters
