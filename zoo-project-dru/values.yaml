@@ -132,6 +132,9 @@ workflow:
     STAGEOUT_AWS_SECRET_ACCESS_KEY: minio-secret-password
     STAGEOUT_AWS_SERVICE_URL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
     STAGEOUT_OUTPUT: 3://processingresults
+  
+  pod:
+    env: {}
 
 
 

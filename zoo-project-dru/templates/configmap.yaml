@@ -13,3 +13,4 @@ data:
   htaccess: {{ tpl (.Files.Get .Values.zoo.kernel.htaccess) . | quote }}
   cookiecutter_config: {{ tpl (.Files.Get .Values.zoo.services.cookiecutter_config) . | quote }}
   wfinputs: {{ toYaml .Values.workflow.inputs | quote }}
+  pod_env_vars: {{ toYaml .Values.workflow.pod.env | quote }}
