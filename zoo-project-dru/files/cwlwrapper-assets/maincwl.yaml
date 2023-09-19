@@ -5,7 +5,11 @@ doc: Main stage manager
 id: main
 label: macro-cwl
 inputs: {}
-outputs: {}
+outputs: 
+    StacCatalogUri:
+        outputSource:
+          - node_stage_out/StacCatalogUri
+        type: string
 hints:
     "cwltool:Secrets":
         secrets: []

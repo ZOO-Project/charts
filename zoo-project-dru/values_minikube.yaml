@@ -6,7 +6,7 @@ workflow:
     STAGEOUT_AWS_ACCESS_KEY_ID: minio-admin
     STAGEOUT_AWS_SECRET_ACCESS_KEY: minio-secret-password
     STAGEOUT_AWS_SERVICEURL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
-    STAGEOUT_OUTPUT: 3://processingresults
+    STAGEOUT_OUTPUT: s3://processingresults
 
 minio:
   # minio chart value parameters description can be found here:
