@@ -12,4 +12,5 @@ data:
   oas: {{ tpl (.Files.Get .Values.zoo.kernel.oas) . | quote }}
   htaccess: {{ tpl (.Files.Get .Values.zoo.kernel.htaccess) . | quote }}
   cookiecutter_config: {{ tpl (.Files.Get .Values.zoo.services.cookiecutter_config) . | quote }}
-  wfinputs.yaml: {{ toYaml .Values.workflow.inputs | quote }}
+  wfinputs: {{ toYaml .Values.workflow.inputs | quote }}
+  pod_env_vars: {{ toYaml .Values.workflow.pod.env | quote }}

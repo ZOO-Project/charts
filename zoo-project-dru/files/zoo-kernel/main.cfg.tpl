@@ -63,6 +63,7 @@ hosts=*
 configurationFile={{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
 templatesPath={{ .Values.persistence.tmpPath }}/cookiecutter-templates
 templateUrl={{ .Values.cookiecutter.templateUrl }}
+templateBranch={{ .Values.cookiecutter.templateBranch }}
 
 
 [servicesNamespace]
