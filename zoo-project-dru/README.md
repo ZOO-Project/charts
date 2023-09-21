@@ -79,23 +79,26 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 
 ### Workflow
 
-| Name                                           | Description                        | Value                                                                 |
-|:-----------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| workflow.storageClass                          | The storage class used             | standard                                                              |
-| workflow.defaultVolumeSize                     | The default volume size allocated  | 10190                                                                 |
-| workflow.defaultMaxRam                         | The default max ram allocated      | 1024                                                                  |
-| workflow.defaultMaxCores                       | The default max cores allocated    | 2                                                                     |
-| workflow.calrissianImage                       | The calrissian image version       | "terradue/calrissian:0.12.0"                                          |
-| workflow.inputs.APP                            | The application name               | zoo-project-dru                                                       |
-| workflow.inputs.STAGEIN_AWS_REGION             | The stagein AWS region             | RegionOne                                                             |
-| workflow.inputs.STAGEIN_AWS_ACCESS_KEY_ID      | The stagein AWS access key id      | minio-admin                                                           |
-| workflow.inputs.STAGEIN_AWS_SECRET_ACCESS_KEY  | The stagein AWS secret access key  | minio-secret-password                                                 |
-| workflow.inputs.STAGEIN_AWS_SERVICE_URL        | The stagein AWS service url        | http://zoo-project-dru-minio.zp.svc.cluster.local:9000                |
-| workflow.inputs.STAGEOUT_AWS_REGION            | The stageout AWS region            | RegionOne                                                             |
-| workflow.inputs.STAGEOUT_AWS_ACCESS_KEY_ID     | The stageout AWS access key id     | minio-admin                                                           |
-| workflow.inputs.STAGEOUT_AWS_SECRET_ACCESS_KEY | The stageout AWS secret access key | minio-secret-password                                                 |
-| workflow.inputs.STAGEOUT_AWS_SERVICE_URL       | The stageout AWS secret access key | [minio-admin](http://zoo-project-dru-minio.zp.svc.cluster.local:9000) |
-| workflow.inputs.STAGEOUT_OUTPUT                | The location where to store output | s3://processingresults                                                |
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| workflow.storageClass                                    | The storage class used             | standard                                                              |
+| workflow.defaultVolumeSize                               | The default volume size allocated  | 10190                                                                 |
+| workflow.defaultMaxRam                                   | The default max ram allocated      | 1024                                                                  |
+| workflow.defaultMaxCores                                 | The default max cores allocated    | 2                                                                     |
+| workflow.calrissianImage                                 | The calrissian image version       | "terradue/calrissian:0.12.0"                                          |
+| workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | []                                          |
+| workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label       | {}                                          |
+| workflow.env                                             | Environmental variables for the processing pods       | {}                                          |
+| workflow.additionalInputs.APP                            | The application name               | zoo-project-dru                                                       |
+| workflow.additionalInputs.STAGEIN_AWS_REGION             | The stagein AWS region             | RegionOne                                                             |
+| workflow.additionalInputs.STAGEIN_AWS_ACCESS_KEY_ID      | The stagein AWS access key id      | minio-admin                                                           |
+| workflow.additionalInputs.STAGEIN_AWS_SECRET_ACCESS_KEY  | The stagein AWS secret access key  | minio-secret-password                                                 |
+| workflow.additionalInputs.STAGEIN_AWS_SERVICE_URL        | The stagein AWS service url        | http://zoo-project-dru-minio.zp.svc.cluster.local:9000                |
+| workflow.additionalInputs.STAGEOUT_AWS_REGION            | The stageout AWS region            | RegionOne                                                             |
+| workflow.additionalInputs.STAGEOUT_AWS_ACCESS_KEY_ID     | The stageout AWS access key id     | minio-admin                                                           |
+| workflow.additionalInputs.STAGEOUT_AWS_SECRET_ACCESS_KEY | The stageout AWS secret access key | minio-secret-password                                                 |
+| workflow.additionalInputs.STAGEOUT_AWS_SERVICE_URL       | The stageout AWS secret access key | [minio-admin](http://zoo-project-dru-minio.zp.svc.cluster.local:9000) |
+| workflow.additionalInputs.STAGEOUT_OUTPUT                | The location where to store output | s3://processingresults                                                |
 
 
 

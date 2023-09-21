@@ -1,4 +1,4 @@
-# Default values for ades.
+# Default values for zoo-project-dru.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -120,23 +120,21 @@ workflow:
   defaultMaxRam: 1024
   defaultMaxCores: 2
   calrissianImage: "terradue/calrissian:0.12.0"
+  imagePullSecrets: []  
+  nodeSelector: {}
+  env: {}
 
-  inputs:
+  additionalInputs:
     APP: zoo-project-dru
     STAGEIN_AWS_REGION: RegionOne
     STAGEIN_AWS_ACCESS_KEY_ID: minio-admin
     STAGEIN_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEIN_AWS_SERVICE_URL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
+    STAGEIN_AWS_SERVICEURL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
     STAGEOUT_AWS_REGION: RegionOne
     STAGEOUT_AWS_ACCESS_KEY_ID: minio-admin
     STAGEOUT_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEOUT_AWS_SERVICE_URL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
-    STAGEOUT_OUTPUT: 3://processingresults
-  
-  pod:
-    env: {}
-
-
+    STAGEOUT_AWS_SERVICEURL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
+    STAGEOUT_OUTPUT: s3://processingresults
 
 postgresql:
   enabled: true
