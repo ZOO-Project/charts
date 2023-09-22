@@ -29,6 +29,10 @@ spec:
         app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
         app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "zoo-project-dru.fullname" . }}-processing-manager
       initContainers:
         - name: init-wait-for-dependencies-zoofpm
@@ -101,12 +105,20 @@ spec:
             - name: ades-config
               mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
               subPath: cookiecutter_config
+
             - name: ades-config
-              mountPath: /assets/wfinputs.yaml
-              subPath: wfinputs
+              mountPath: /assets/additional_inputs.yaml
+              subPath: additional_inputs
             - name: ades-config
               mountPath: /assets/pod_env_vars.yaml
               subPath: pod_env_vars
+            - name: ades-config
+              mountPath: /assets/pod_nodeselectors.yaml
+              subPath: pod_nodeselectors
+            - name: ades-config
+              mountPath: /assets/pod_imagePullSecrets.yaml
+              subPath: pod_imagePullSecrets
+
             - name: cwlwrapper-config
               mountPath: /assets/maincwl.yaml
               subPath: maincwl
