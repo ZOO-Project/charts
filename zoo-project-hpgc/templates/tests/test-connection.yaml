@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "zoo-project-hpgc.fullname" . }}-test-connection"
+  labels:
+    {{- include "zoo-project-hpgc.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "zoo-project-hpgc.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never

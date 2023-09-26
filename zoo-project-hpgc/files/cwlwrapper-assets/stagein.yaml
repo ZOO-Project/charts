@@ -1,0 +1,42 @@
+cwlVersion: v1.0
+doc: "Run Stars for staging input data"
+class: CommandLineTool
+hints:
+  DockerRequirement:
+    dockerPull: terradue/stars:1.0.0-beta.11
+  "cwltool:Secrets":
+    secrets:
+    - STAGEIN_AWS_SERVICEURL
+    - STAGEIN_AWS_ACCESS_KEY_ID
+    - STAGEIN_AWS_SECRET_ACCESS_KEY
+id: stars
+inputs:
+  STAGEIN_AWS_SERVICEURL:
+    type: string?
+  STAGEIN_AWS_ACCESS_KEY_ID:
+    type: string?
+  STAGEIN_AWS_SECRET_ACCESS_KEY:
+    type: string?
+outputs: {}
+baseCommand: ['/bin/bash', 'stagein.sh']
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+    - entryname: stagein.sh
+      entry: |-
+        #!/bin/bash
+        export AWS__ServiceURL=$(inputs.STAGEIN_AWS_SERVICEURL)
+        export AWS_ACCESS_KEY_ID=$(inputs.STAGEIN_AWS_ACCESS_KEY_ID)
+        export AWS_SECRET_ACCESS_KEY=$(inputs.STAGEIN_AWS_SECRET_ACCESS_KEY)
+        url=$1
+        if curl --output /dev/null --silent --head --fail "$url"; then
+          echo "URL: $url"
+        else
+          echo "URL does not exist: $url"
+          exit 1
+        fi
+        Stars copy -v -rel -r 4 -o ./ --harvest $url
+  EnvVarRequirement:
+    envDef:
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  ResourceRequirement: {}

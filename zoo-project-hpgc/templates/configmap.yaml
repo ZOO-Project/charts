@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "zoo-project-hpgc.fullname" . }}-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  maincfg: {{ tpl (.Files.Get .Values.zoo.kernel.maincfgtpl) . | quote }}
+  oas: {{ tpl (.Files.Get .Values.zoo.kernel.oas) . | quote }}
+  htaccess: {{ tpl (.Files.Get .Values.zoo.kernel.htaccess) . | quote }}
+  cookiecutter_config: {{ tpl (.Files.Get .Values.zoo.services.cookiecutter_config) . | quote }}
+  additional_inputs: {{ toYaml .Values.workflow.additionalInputs | quote }}
+  pod_env_vars: {{ toYaml .Values.workflow.env | quote }}
+  pod_nodeselectors: {{ toYaml .Values.workflow.nodeSelector | quote }}
+  pod_imagePullSecrets: {{  toYaml .Values.workflow.imagePullSecrets | quote }}
