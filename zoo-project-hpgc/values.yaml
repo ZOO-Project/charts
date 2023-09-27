@@ -101,7 +101,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: hpgc-c1881ce8d23119cc8575b3471471ad0530c230fb
+    tag: hpgc-a294fc6333c065c904fd6578f5f9d50f8bba4c97
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -111,7 +111,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: hpgc-c1881ce8d23119cc8575b3471471ad0530c230fb
+    tag: hpgc-a294fc6333c065c904fd6578f5f9d50f8bba4c97
 
 
 workflow:
