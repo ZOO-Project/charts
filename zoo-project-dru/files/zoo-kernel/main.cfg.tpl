@@ -5,7 +5,13 @@ serverAddress = http://127.0.0.1
 language = en-US
 lang = fr-FR,en-CA,en-US
 tmpPath={{ .Values.persistence.tmpPath }}
+{{- if .Values.ingress.enabled }}
+{{- with (first .Values.ingress.hosts) }}
+tmpUrl = http://{{ .host }}/temp/
+{{- end }}
+{{- else }}
 tmpUrl = http://localhost/temp/
+{{- end }}
 dataPath = /usr/com/zoo-project
 cacheDir ={{ .Values.persistence.tmpPath }}
 templatesPath = /var/www/
