@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "zoo-project-workshop.fullname" . }}-zookernel
+  labels:
+    {{- include "zoo-project-workshop.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zoo-project-workshop.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "zoo-project-workshop.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-wait-for-dependencies-zookernel
+          image: docker.io/wshihadeh/wait_for:latest
+          imagePullPolicy: IfNotPresent
+          command: [ "/docker-entrypoint.sh" ]
+          args: [ "wait_for", "rabbitmq:{{ .Release.Name }}-rabbitmq" ]
+          env:
+            - name: ZOO_RABBITMQ_HOST
+              value: {{ .Release.Name }}-rabbitmq
+      containers:
+        - env:
+            - name: ZOO_REDIS_HOST
+              value: {{ template "zoo-project-workshop.fullname" . }}-redis-master
+          name: zookernel
+          image: "{{ .Values.zookernel.image.repository }}:{{ .Values.zookernel.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.zookernel.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources: {}
+          volumeMounts:
+            - name: ades-config
+              mountPath: /usr/lib/cgi-bin/main.cfg
+              subPath: maincfg
+            - name: ades-config
+              mountPath: /usr/lib/cgi-bin/oas.cfg
+              subPath: oas
+            - name: ades-config
+              mountPath: /var/www/html/.htaccess
+              subPath: htaccess
+            - name: ades-config
+              mountPath: /var/www/html/examples/app-package.cwl
+              subPath: workshop_app_package_cwl
+            - name: ades-config
+              mountPath: /var/www/html/examples/waterbodies/job_order1.json
+              subPath: workshop_job_order
+            - name: ades-config
+              mountPath: /var/www/html/examples/waterbodies/job_order2.json
+              subPath: workshop_job_order1
+            - name: ades-config
+              mountPath: /var/www/header.md
+              subPath: workshop_header
+            - name: ades-config
+              mountPath: /var/www/deploy.md
+              subPath: workshop_deploy_doc
+            - name: ades-config
+              mountPath: /var/www/execute.md
+              subPath: workshop_execute_doc
+            - name: ades-config
+              mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
+              subPath: cookiecutter_config
+
+            - name: ades-config
+              mountPath: /assets/additional_inputs.yaml
+              subPath: additional_inputs
+            - name: ades-config
+              mountPath: /assets/pod_env_vars.yaml
+              subPath: pod_env_vars
+            - name: ades-config
+              mountPath: /assets/pod_nodeselectors.yaml
+              subPath: pod_nodeselectors
+            - name: ades-config
+              mountPath: /assets/pod_imagePullSecrets.yaml
+              subPath: pod_imagePullSecrets
+
+            - name: ades-processing-services
+              mountPath: {{ .Values.persistence.servicesNamespacePath }}
+            - name: tmp-folder
+              mountPath: {{ .Values.persistence.tmpPath }}
+      restartPolicy: Always
+      volumes:
+        - name: ades-config
+          configMap:
+            name: {{ template "zoo-project-workshop.fullname" . }}-configmap
+        - name: tmp-folder
+          persistentVolumeClaim:
+            claimName: {{ template "zoo-project-workshop.fullname" . }}-tmp-folder
+        - name: ades-processing-services
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            {{- if .Values.persistence.existingProcessingServicesClaim }}
+            claimName: {{ .Values.persistence.existingProcessingServicesClaim }}
+            {{- else }}
+            claimName: {{ template "zoo-project-workshop.fullname" . }}-processing-services
+            {{- end -}}
+          {{- else }}
+          emptyDir: { }
+          {{- end }}
+status: {}
