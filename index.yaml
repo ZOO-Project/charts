@@ -187,6 +187,32 @@ entries:
   zoo-project-workshop:
   - apiVersion: v2
     appVersion: 0.0.7
+    created: "2023-10-27T09:31:16.423627999Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.1.9
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.5.0
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 17.6.0
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.8.4
+    description: A Helm chart for Kubernetes
+    digest: 883fbf668ecd2f48dc1def4488b9c5b716b18cf2bf6b169daf118ab21544e25e
+    name: zoo-project-workshop
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.2/zoo-project-workshop-0.0.2.tgz
+    version: 0.0.2
+  - apiVersion: v2
+    appVersion: 0.0.7
     created: "2023-10-25T08:39:43.249798553Z"
     dependencies:
     - condition: postgresql.enabled
@@ -211,4 +237,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2023-10-25T08:39:43.249855053Z"
+generated: "2023-10-27T09:31:16.423648399Z"
