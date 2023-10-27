@@ -1,0 +1,6 @@
+{
+  "executionUnit": {
+    "href": "https://raw.githubusercontent.com/Terradue/ogc-eo-application-package-hands-on/master/water-bodies/app-package.cwl",
+    "type": "application/cwl"
+  }
+}

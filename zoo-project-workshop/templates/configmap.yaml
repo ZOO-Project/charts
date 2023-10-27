@@ -12,7 +12,9 @@ data:
   oas: {{ tpl (.Files.Get .Values.zoo.kernel.oas) . | quote }}
   htaccess: {{ tpl (.Files.Get .Values.zoo.kernel.htaccess) . | quote }}
   workshop_header: {{ tpl (.Files.Get .Values.zoo.workshop.header) . | quote }}
+  workshop_processes_list_doc: {{ tpl (.Files.Get .Values.zoo.workshop.processes_list) . | quote }}
   workshop_deploy_doc: {{ tpl (.Files.Get .Values.zoo.workshop.deploy) . | quote }}
+  workshop_processes_description_doc: {{ tpl (.Files.Get .Values.zoo.workshop.processes_description) . | quote }}
   workshop_execute_doc: {{ tpl (.Files.Get .Values.zoo.workshop.execute) . | quote }}
   workshop_app_package_cwl: {{ tpl (.Files.Get .Values.zoo.workshop.app_package_cwl) . | quote }}
   workshop_job_order: {{ tpl (.Files.Get .Values.zoo.workshop.job_order) . | quote }}

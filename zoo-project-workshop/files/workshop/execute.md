@@ -1,6 +1,25 @@
-#### Execute the process
+#### Execute the water_bodies process
 
-You can preview below informations about the dataset used as input for the waterbodies deployed.
+Execute the water_bodies process.
+
+Using this endpoint, we can execute the *water_bodies* process. It
+will lead to the creation of a job. It is the entity that identifies
+your process execution.
+
+Once we send the request, the server should generate a job identifier
+and return the `201` status code with an associated `Location` header
+containing the URL to the job status, the document in the response
+body corresponds to the process summary we got when using the process
+list endpoint previously.
+
+Using the generated job identifier (`{JobId}`) we can gain control of
+the process execution. We can follow its progress using the next step
+endpoint (`/jobs/{jobId}`). We can fetch the result
+(`/jobs/{jobId}/results`} at the end of the execution. We can dismiss
+a process run (`/jobs/{jobId}`) at any moment.
+
+We will use the STAC item below to execute the *water_bodies*
+process.
 
 <table>
 <thead>
@@ -29,3 +48,7 @@ You can preview below informations about the dataset used as input for the water
 </tr>
 </tbody>
 </table>
+
+For more information, see <a rel="noopener noreferrer" target="_blank"
+href="https://docs.ogc.org/is/18-062r2/18-062r2.html#sc_create_job">Section
+7.11</a>.

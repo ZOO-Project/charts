@@ -63,6 +63,7 @@ spec:
             - name: ades-config
               mountPath: /var/www/html/.htaccess
               subPath: htaccess
+
             - name: ades-config
               mountPath: /var/www/html/examples/app-package.cwl
               subPath: workshop_app_package_cwl
@@ -72,15 +73,23 @@ spec:
             - name: ades-config
               mountPath: /var/www/html/examples/waterbodies/job_order2.json
               subPath: workshop_job_order1
+
             - name: ades-config
               mountPath: /var/www/header.md
               subPath: workshop_header
             - name: ades-config
+              mountPath: /var/www/processes-list.md
+              subPath: workshop_processes_list_doc
+            - name: ades-config
               mountPath: /var/www/deploy.md
               subPath: workshop_deploy_doc
             - name: ades-config
+              mountPath: /var/www/process-description.md
+              subPath: workshop_processes_description_doc
+            - name: ades-config
               mountPath: /var/www/execute.md
               subPath: workshop_execute_doc
+
             - name: ades-config
               mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
               subPath: cookiecutter_config
