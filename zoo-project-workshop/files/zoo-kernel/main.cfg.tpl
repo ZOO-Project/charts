@@ -94,4 +94,4 @@ routingkey=zoo
 queue=zoo_service_queue
 
 [server]
-async_worker=20
+async_worker=70

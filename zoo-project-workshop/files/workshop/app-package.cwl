@@ -1,12 +1,12 @@
 cwlVersion: v1.0
 $namespaces:
   s: https://schema.org/
-s:softwareVersion: 1.3.2
+s:softwareVersion: 1.4.1
 schemas:
   - http://schema.org/version/9.0/schemaorg-current-http.rdf
 $graph:
   - class: Workflow
-    id: water_bodies
+    id: water-bodies
     label: Water bodies detection based on NDWI and otsu threshold
     doc: Water bodies detection based on NDWI and otsu threshold
     requirements:
@@ -24,8 +24,8 @@ $graph:
         default: "EPSG:4326"
       stac_items:
         label: Sentinel-2 STAC items
-        doc: list of staged Sentinel-2 COG STAC items
-        type: Directory[]
+        doc: list of Sentinel-2 COG STAC items
+        type: string[]
       bands:
         label: bands used for the NDWI
         doc: bands used for the NDWI
@@ -34,7 +34,7 @@ $graph:
     outputs:
       - id: stac
         outputSource:
-          - node_stac/stac
+          - node_stac/stac_catalog
         type: Directory
     steps:
       node_water_bodies:
@@ -55,7 +55,7 @@ $graph:
           rasters:
             source: node_water_bodies/detected_water_body
         out:
-          - stac
+          - stac_catalog
   - class: Workflow
     id: detect_water_body
     label: Water body detection based on NDWI and otsu threshold
@@ -74,8 +74,8 @@ $graph:
         doc: bands used for the NDWI
         type: string[]
       item:
-        doc: staged STAC item
-        type: Directory
+        doc: STAC item
+        type: string
     outputs:
       - id: detected_water_body
         outputSource:
@@ -113,20 +113,19 @@ $graph:
       InlineJavascriptRequirement: {}
       EnvVarRequirement:
         envDef:
-          PATH: /srv/conda/envs/env_crop/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-          PYTHONPATH: /workspaces/ogc-eo-application-package-hands-on/water-bodies/command-line-tools/crop:/home/jovyan/ogc-eo-application-package-hands-on/water-bodies/command-line-tools/crop:/home/jovyan/water-bodies/command-line-tools/crop:/workspaces/vscode-binder/command-line-tools/crop
-          PROJ_LIB: /srv/conda/envs/env_crop/share/proj/
+          PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          PYTHONPATH: /app
       ResourceRequirement:
-        coresMax: 2
-        ramMax: 2028
+        coresMax: 1
+        ramMax: 512
     hints:
       DockerRequirement:
-        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/crop:1.3.2
+        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/crop:1.4.1
     baseCommand: ["python", "-m", "app"]
     arguments: []
     inputs:
       item:
-        type: Directory
+        type: string
         inputBinding:
           prefix: --input-item
       aoi:
@@ -152,15 +151,14 @@ $graph:
       InlineJavascriptRequirement: {}
       EnvVarRequirement:
         envDef:
-          PATH: /srv/conda/envs/env_norm_diff/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-          PYTHONPATH: /workspaces/ogc-eo-application-package-hands-on/water-bodies/command-line-tools/norm_diff:/home/jovyan/ogc-eo-application-package-hands-on/water-bodies/command-line-tools/norm_diff:/workspaces/vscode-binder/command-line-tools/norm_diff
-          PROJ_LIB: /srv/conda/envs/env_norm_diff/share/proj/
+          PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          PYTHONPATH: /app
       ResourceRequirement:
-        coresMax: 2
-        ramMax: 2028
+        coresMax: 1
+        ramMax: 512
     hints:
       DockerRequirement:
-        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/norm_diff:1.3.2
+        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/norm_diff:1.4.1
     baseCommand: ["python", "-m", "app"]
     arguments: []
     inputs:
@@ -179,15 +177,14 @@ $graph:
       InlineJavascriptRequirement: {}
       EnvVarRequirement:
         envDef:
-          PATH: /srv/conda/envs/env_otsu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-          PYTHONPATH: /workspaces/ogc-eo-application-package-hands-on/water-bodies/command-line-tools/otsu:/home/jovyan/ogc-eo-application-package-hands-on/water-bodies/command-line-tools/otsu:/workspaces/vscode-binder/command-line-tools/otsu
-          PROJ_LIB: /srv/conda/envs/env_otsu/share/proj/
+          PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          PYTHONPATH: /app
       ResourceRequirement:
-        coresMax: 2
-        ramMax: 2028
+        coresMax: 1
+        ramMax: 512
     hints:
       DockerRequirement:
-        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/otsu:1.3.2
+        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/otsu:1.4.1
     baseCommand: ["python", "-m", "app"]
     arguments: []
     inputs:
@@ -206,22 +203,21 @@ $graph:
       InlineJavascriptRequirement: {}
       EnvVarRequirement:
         envDef:
-          PATH: /srv/conda/envs/env_stac/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-          PYTHONPATH: /workspaces/ogc-eo-application-package-hands-on/water-bodies/command-line-tools/stac:/home/jovyan/ogc-eo-application-package-hands-on/water-bodies/command-line-tools/stac:/workspaces/vscode-binder/command-line-tools/stac
-          PROJ_LIB: /srv/conda/envs/env_stac/lib/python3.9/site-packages/rasterio/proj_data
+          PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+          PYTHONPATH: /app
       ResourceRequirement:
-        coresMax: 2
-        ramMax: 2028
+        coresMax: 1
+        ramMax: 512
     hints:
       DockerRequirement:
-        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/stac:1.3.2
+        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/stac:1.4.1
     baseCommand: ["python", "-m", "app"]
     arguments: []
     inputs:
       item:
         type:
           type: array
-          items: Directory
+          items: string
           inputBinding:
             prefix: --input-item
       rasters:
@@ -231,7 +227,7 @@ $graph:
           inputBinding:
             prefix: --water-body
     outputs:
-      stac:
+      stac_catalog:
         outputBinding:
           glob: .
         type: Directory

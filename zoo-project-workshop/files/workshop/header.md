@@ -1,61 +1,65 @@
 # Processing Application Deploy, Execution and Results Exploitation
 
-## Introduction
-
 <img
 src="https://avatars.githubusercontent.com/u/44975239?s=200&amp;v=4"
 width="100" height="100" alt="@EOEPCA" style="float:
 left;margin-right: 25px;margin-left: 25px;">
 
-This server has been specifically made available for the BiDS
-conference workshop held on November 5th 2023.
+## Introduction
 
-The Server Implementation exposing the current OpenAPI is the
-ZOO-Project. It is a <a
-href="https://www.ogc.org/resources/product-details/?pid=1767">reference
-implementation</a> of the <a
-href="https://docs.ogc.org/is/18-062r2/18-062r2.html">OGC API -
-Processes - Part 1: Core standard</a>. This standard defines how a
-client can communicate with a server implementation to execute
-processes.
+This OpenAPI is part of the Workshop that will demonstrate the **EOEPCA Application Deployment and Execution Service** (**ADES**) building block. The **ADES** was originally developed upon the <a href="http://zoo-project.org">ZOO-Project</a> and is now part of it under the **ZOO-Project-DRU** code name.
 
-In addition to this adopted standard, we present the support of the
-<a href="https://docs.ogc.org/DRAFTS/20-044.html"OGC API - Processes -
-Part 2: Deploy, Replace, Undeploy draft specification</a>. This draft
-specification defines how a client can communicate with a server
-implementation to manage the processes using transactional
-capabilities.
+The ZOO-Project is an Open Source project created in 2008 and announced in 2009 in Sydney, Australia, FOSS4G. It is a generic processing platform you can use between your existing software and libraries to ease interaction with them through communication standards defined by the <a href="https://www.ogc.org">Open Geospatial Consortium (OGC)</a> for FAIR (Findable, Accessible, Interoperable, Reproducible) processing. 
 
-This OpenAPI has been organized in a way that we can follow the steps
-listed below:
+The first version implemented and still supported in the ZOO-Project is the OGC <a href="https://www.ogc.org/standard/wps/">Web Processing Service (WPS)</a> 1.0.0 standard published in 2007. As time passed and technologies evolved, the OGC adopted other processing-oriented standards (such as WPS 2.0.0), and now there is the <a href="https://docs.ogc.org/is/18-062r2/18-062r2.html">OGC API - Processes - Part 1: Core standard</a>. This standard is the version we will showcase during the Workshop. 
 
-* List available processes
-* Deploy the water_bodies Application Package
-* Details about the water_bodies process
-* Execute the water_bodies process
-* Get job status information
-* Accessing the result
+Using any OGC API, a client application should be able to list, from the `/conformance` endpoint, the conformance classes supported by the server instance it is interacting with. 
 
-Optionnaly, interrested users can follow the other steps if time
-permits.
-* Jobs management
-* Processes management
+The conformance classes, defined in the <a href="https://docs.ogc.org/is/19-072/19-072.html">OGC API - Common - Part 1: Core</a>, and shared amongst OGC APIs are the following:
+* <a href="https://docs.ogc.org/is/19-072/19-072.html#_8749f7f5-747a-4760-b566-4c06916622f4">core</a>
+* <a href="https://docs.ogc.org/is/19-072/19-072.html#_50ec22a6-6d42-449a-b16e-b3f8b2f0c568">landing-page</a>
+* <a href="https://docs.ogc.org/is/19-072/19-072.html#_ab6e3c2d-d2dc-4f01-a7d4-8b52133289a0">oas30</a>
+* <a href="https://docs.ogc.org/is/19-072/19-072.html#_cc409eaa-913f-4fce-be16-7b4659a1bddc">html</a>
+* <a href="https://docs.ogc.org/is/19-072/19-072.html#_4426a778-fd8b-4f21-8cf1-370658aac1a7">json</a>
 
-## Authentification
+The OGC API - Common - Part 1: Core standard can expose an OpenAPI on a given endpoint (it can be any path depending on the server implementation; it is `/api` here and corresponds to the link with `"rel": "service-desc"` from the landing page) if the server instance supports the corresponding conformance class (oas30) defined in both the OGC API - Common - Part 1: Core and OGC API - Processes - Part 1: Core standards. It is the source for producing through <a href="https://swagger.io/tools/swagger-ui/">Swagger-UI</a> the user interface we will interact with for this step-by-step exercise.
 
-To be able to use this API, it is required to authenticate using an
-OpenID Connect Provider. For the purpose of this workshop, we will use
-a basic Keycloack instance. 
+The OGC API - Processes - Part 1: Core standard includes the following conformance classes:
+* <a href="https://docs.ogc.org/is/18-062r2/18-062r2.html#toc61">core</a>
+* <a href="https://docs.ogc.org/is/18-062r2/18-062r2.html#toc62">ogc-process-description</a>
+* <a href="https://docs.ogc.org/is/18-062r2/18-062r2.html#toc66">job-list</a>
+* <a href="https://docs.ogc.org/is/18-062r2/18-062r2.html#toc67">callback</a>
+* <a href="https://docs.ogc.org/is/18-062r2/18-062r2.html#toc68">dismiss</a>
 
-To authenticate, please press on the button below, then a window
-appear. There, use the following **client_id**:
+The OGC API - Processes - Part 1: Core standard defines how a server implementation provides access to executable processes through a Web API and the capability to invoke them from a client application. The server implementation should provide an endpoint to access the processes list, get a detailed description (ogc-process-description), execute a process by providing inputs and outputs, follow execution status (job-list), inform another service about the current status of a job (callback), cancel a job run or remove its results (dismiss).
+
+If the OGC API - Processes - Part 1: Core defines a standard way to list processes, execute them, and get control of their execution, it does not define how to deploy, replace, or undeploy processes. For this transactional purpose, we will rely on the <a href="https://docs.ogc.org/DRAFTS/20-044.html">OGC API - Processes - Part 2: Deploy, Replace, Undeploy draft specification</a>, which the ZOO-Project-DRU supports. It defines three additional conformance classes to the initial OGC API - Processes - Part 1: Core standard and determines how a client application can interact with a server instance to deploy, replace, or undeploy a process from the processes available from the server instance. The first conformance class (deploy-replace-undeploy) defines the three operations, and the two other conformance classes (ogcapppkg and cwl) are related to the encoding that the server instance supports for the operations.
+
+This server instance has been specifically made available for the <a href="https://www.bigdatafromspace2023.org">BiDS</a>
+conference Workshop held on November 5th, 2023. It utilizes the upcoming 2.0 version of the ZOO-Project, packaged as a zoo-project-workshop helm chart publicly available here.
+
+We will use the Swagger-UI to interact with the API with the help of examples associated with essential steps. Each endpoint should have a description and self-explanatory purpose.
+
+We aim to explore the API by beginning from the landing page and displaying the conformances that the server instance supports. After that, we will introduce an endpoint that allows us to list, deploy, and obtain detailed information about a process. Lastly, we will execute the previously deployed process, monitor its progress, and access the result.
+
+Authentication is necessary to access specific endpoints. Please refer to the next section and follow instructions when required.
+
+## Authentication
+
+To use parts of this API, authentication with an OpenID Connect Provider is required. For this Workshop, we will use a Keycloak instance. Endpoints that require authentication are marked with an open lock icon on the right.
+
+To authenticate, please press the button
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="unlocked" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15.8 8H14V5.6C14 2.703 12.665 1 10 1 7.334 1 6 2.703 6 5.6V6h2v-.801C8 3.754 8.797 3 10 3c1.203 0 2 .754 2 2.199V8H4c-.553 0-1 .646-1 1.199V17c0 .549.428 1.139.951 1.307l1.197.387C5.672 18.861 6.55 19 7.1 19h5.8c.549 0 1.428-.139 1.951-.307l1.196-.387c.524-.167.953-.757.953-1.306V9.199C17 8.646 16.352 8 15.8 8z"></path></svg>
+, then a window appears, as shown below. 
+
+<center><img src="https://raw.githubusercontent.com/ZOO-Project/charts/main/zoo-project-workshop/files/workshop/authorizations.png" width="50%" /><br>*Window to set client_id and authenticate*</center>
+
+From there, use the following **client_id**:
 `EOEPCA-Secured-Client` in the section **OpenIDAuth
-(OAuth2,implicit)** from the available authorizations.
+(OAuth2,implicit)** from the available authorizations. The login interface shown below allows us to authenticate.
 
-You can use your login and the password provided earlier in this
-workshop to authenticate.
+<center><img src="https://raw.githubusercontent.com/ZOO-Project/charts/main/zoo-project-workshop/files/workshop/keycloack_login.png" width="50%" /><br>*Window to set client_id and authenticate*</center>
 
+We can authenticate by entering the login and password, then clicking "Sign in". After that, we will be redirected to Swagger-UI, where we can close the window. Earlier, you pressed the lock button. Now, the button should look closed <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="locked" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15.8 8H14V5.6C14 2.703 12.665 1 10 1 7.334 1 6 2.703 6 5.6V8H4c-.553 0-1 .646-1 1.199V17c0 .549.428 1.139.951 1.307l1.197.387C5.672 18.861 6.55 19 7.1 19h5.8c.549 0 1.428-.139 1.951-.307l1.196-.387c.524-.167.953-.757.953-1.306V9.199C17 8.646 16.352 8 15.8 8zM12 8H8V5.199C8 3.754 8.797 3 10 3c1.203 0 2 .754 2 2.199V8z"></path></svg>.
 
-
-
-
+Once authenticated, we can use the endpoint or any other secured endpoint. In other cases, we should get an exception response with a 403 status code.

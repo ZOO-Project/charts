@@ -65,14 +65,20 @@ spec:
               subPath: htaccess
 
             - name: ades-config
-              mountPath: /var/www/html/examples/app-package.cwl
+              mountPath: /var/www/html/examples/post_processes/app-package.cwl
               subPath: workshop_app_package_cwl
             - name: ades-config
-              mountPath: /var/www/html/examples/waterbodies/job_order1.json
+              mountPath: /var/www/html/examples/post_processes/app-package.json
+              subPath: workshop_app_package_json
+            - name: ades-config
+              mountPath: /var/www/html/examples/water-bodies/job_order1.json
               subPath: workshop_job_order
             - name: ades-config
-              mountPath: /var/www/html/examples/waterbodies/job_order2.json
+              mountPath: /var/www/html/examples/water-bodies/job_order2.json
               subPath: workshop_job_order1
+            - name: ades-config
+              mountPath: /var/www/html/swagger-ui/oapip/index.html
+              subPath: workshop_index_html
 
             - name: ades-config
               mountPath: /var/www/header.md
@@ -89,6 +95,9 @@ spec:
             - name: ades-config
               mountPath: /var/www/execute.md
               subPath: workshop_execute_doc
+            - name: ades-config
+              mountPath: /var/www/job-status.md
+              subPath: workshop_job_status
 
             - name: ades-config
               mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
