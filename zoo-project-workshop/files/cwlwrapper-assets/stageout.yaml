@@ -119,14 +119,22 @@ requirements:
                       bucket,
                       s3_path,
                   )
+                  asset.href = f"s3://{bucket}/{s3_path}"
+                  item.add_asset(key, asset)
+
+          cat.normalize_hrefs(f"s3://{bucket}/{subfolder}")
+
+          for item in cat.get_items():
               # upload item to S3
               print(f"upload {item.id} to s3://{bucket}/{subfolder}", file=sys.stderr)
               pystac.write_file(item, item.get_self_href())
 
-          cat.normalize_hrefs(f"s3://{bucket}/{subfolder}")
 
           # upload catalog to S3
           print(f"upload catalog.json to s3://{bucket}/{subfolder}", file=sys.stderr)
+          for index, link in enumerate(cat.links):
+              if link.rel == "root":
+              	 cat.links.pop(index) 
           pystac.write_file(cat, cat.get_self_href())
 
           print(f"s3://{bucket}/{subfolder}/catalog.json", file=sys.stdout)

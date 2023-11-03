@@ -1,0 +1,30 @@
+[s3_download]
+ Title = Access a s3 bucket storing results
+ Abstract = Access a s3 bucket storing results
+ processVersion = 2
+ storeSupported = true
+ statusSupported = true
+ serviceProvider = s3utils
+ serviceType = Python
+ <DataInputs>
+  [s3_ref]
+   Title = The s3 tif file to download
+   Abstract = The s3 tif file to download
+   minOccurs = 1
+   maxOccurs = 1
+   <LiteralData>
+    <Default>
+     dataType=string
+    </Default>
+   </LiteralData>
+ </DataInputs>
+ <DataOutputs>
+  [result]
+   Title = The downloaded file
+   Abstract = The downloaded file
+   <ComplexData>
+    <Default>
+     mimeType = image/tiff
+    </Default>
+   </ComplexData>
+ </DataOutputs>

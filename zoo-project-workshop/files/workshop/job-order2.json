@@ -1,0 +1,10 @@
+{
+  "inputs": {
+    "s3_ref": "s3://processingresults/DIR/catalog.json"
+  },
+  "outputs": {
+    "result": {
+      "transmissionMode": "value"
+    }
+ }
+}

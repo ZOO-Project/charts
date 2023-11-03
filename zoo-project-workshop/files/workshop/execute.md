@@ -6,8 +6,6 @@ your process execution.
 
 After we send the request to the server, it should create a unique identifier for the job called `jobID`. The server should then return a status code of 201 along with a `Location` header that contains the URL to the job status. The information received in the response body should match the process summary that we previously obtained by using the process list endpoint.
 
-After sending a request to the server, the server should generate a unique identifier for the task created, called `jobID`. The server should respond with a 201 status code indicating the job is available. The response should also contain a `Location` header that includes the URL to the job status. Additionally, the response body should provide information about the status of the job.
-
 With the help of the unique job identifier `{jobID}`, we can take control of the execution process. To keep track of its progress, we can use the endpoint `/jobs/{jobID}`. Once the execution process is complete, we can retrieve the outcome by accessing `/jobs/{jobId}/results`. If needed, we can terminate the job run at any point by using the endpoint `/jobs/{jobId}`.
 
 We will use the STAC item below to execute the *water-bodies*

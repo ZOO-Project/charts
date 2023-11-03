@@ -1,0 +1,31 @@
+[s3_read]
+ Title = Access a json file from a s3 bucket storing results
+ Abstract = Access a json file from a s3 bucket storing results
+ processVersion = 2
+ storeSupported = true
+ statusSupported = true
+ serviceProvider = s3utils
+ serviceType = Python
+ <DataInputs>
+  [s3_ref]
+   Title = The s3 json file to read
+   Abstract = The s3 json file to read
+   minOccurs = 1
+   maxOccurs = 1
+   <LiteralData>
+    <Default>
+     dataType=string
+    </Default>
+   </LiteralData>
+ </DataInputs>
+ <DataOutputs>
+  [result]
+   Title = The stac catalog content
+   Abstract = The stac catalog content
+   <ComplexData>
+    <Default>
+     mimeType = application/json
+     encoding = utf-8
+    </Default>
+   </ComplexData>
+ </DataOutputs>

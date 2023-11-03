@@ -17,10 +17,19 @@ data:
   workshop_processes_description_doc: {{ tpl (.Files.Get .Values.zoo.workshop.processes_description) . | quote }}
   workshop_execute_doc: {{ tpl (.Files.Get .Values.zoo.workshop.execute) . | quote }}
   workshop_job_status: {{ tpl (.Files.Get .Values.zoo.workshop.job_status) . | quote }}
+  workshop_job_results: {{ tpl (.Files.Get .Values.zoo.workshop.job_results) . | quote }}
+  workshop_s3_read_doc: {{ tpl (.Files.Get .Values.zoo.workshop.s3_read) . | quote }}
+  workshop_s3_download_doc: {{ tpl (.Files.Get .Values.zoo.workshop.s3_download) . | quote }}
   workshop_app_package_json: {{ tpl (.Files.Get .Values.zoo.workshop.app_package_json) . | quote }}
   workshop_app_package_cwl: {{ tpl (.Files.Get .Values.zoo.workshop.app_package_cwl) . | quote }}
   workshop_job_order: {{ tpl (.Files.Get .Values.zoo.workshop.job_order) . | quote }}
   workshop_job_order1: {{ tpl (.Files.Get .Values.zoo.workshop.job_order1) . | quote }}
+  workshop_job_order_s3_read: {{ tpl (.Files.Get .Values.zoo.workshop.job_order_s3_read) . | quote }}
+  workshop_job_order_s3_download: {{ tpl (.Files.Get .Values.zoo.workshop.job_order_s3_download) . | quote }}
+  workshop_s3service_py: {{ tpl (.Files.Get .Values.zoo.workshop.s3service_py) . | quote }}
+  workshop_s3service_zcfg1: {{ tpl (.Files.Get .Values.zoo.workshop.s3service_zcfg1) . | quote }}
+  workshop_s3service_zcfg2: {{ tpl (.Files.Get .Values.zoo.workshop.s3service_zcfg2) . | quote }}
+  workshop_s3cfg: {{ tpl (.Files.Get .Values.zoo.workshop.s3cfg) . | quote }}
   workshop_index_html: {{ tpl (.Files.Get .Values.zoo.workshop.index) . | quote }}
   cookiecutter_config: {{ tpl (.Files.Get .Values.zoo.services.cookiecutter_config) . | quote }}
   additional_inputs: {{ toYaml .Values.workflow.additionalInputs | quote }}

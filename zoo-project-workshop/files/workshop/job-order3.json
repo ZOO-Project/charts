@@ -1,0 +1,10 @@
+{
+  "inputs": {
+    "s3_ref": "s3://processingresults/DIR/DIR/otsu.tif"
+  },
+  "outputs": {
+    "result": {
+      "transmissionMode": "reference"
+    }
+ }
+}

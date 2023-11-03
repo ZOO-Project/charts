@@ -77,8 +77,28 @@ spec:
               mountPath: /var/www/html/examples/water-bodies/job_order2.json
               subPath: workshop_job_order1
             - name: ades-config
+              mountPath: /var/www/html/examples/s3_read/job_order.json
+              subPath: workshop_job_order_s3_read
+            - name: ades-config
+              mountPath: /var/www/html/examples/s3_download/job_order.json
+              subPath: workshop_job_order_s3_download
+            - name: ades-config
               mountPath: /var/www/html/swagger-ui/oapip/index.html
               subPath: workshop_index_html
+
+            - name: ades-config
+              mountPath: /usr/lib/cgi-bin/s3utils.py
+              subPath: workshop_s3service_py
+            - name: ades-config
+              mountPath: /usr/lib/cgi-bin/s3_read.zcfg
+              subPath: workshop_s3service_zcfg1
+            - name: ades-config
+              mountPath: /usr/lib/cgi-bin/s3_download.zcfg
+              subPath: workshop_s3service_zcfg2
+
+            - name: ades-config
+              mountPath: /var/www/.s3cfg
+              subPath: workshop_s3cfg
 
             - name: ades-config
               mountPath: /var/www/header.md
@@ -98,6 +118,15 @@ spec:
             - name: ades-config
               mountPath: /var/www/job-status.md
               subPath: workshop_job_status
+            - name: ades-config
+              mountPath: /var/www/job-results.md
+              subPath: workshop_job_results
+            - name: ades-config
+              mountPath: /var/www/s3_read.md
+              subPath: workshop_s3_read_doc
+            - name: ades-config
+              mountPath: /var/www/s3_download.md
+              subPath: workshop_s3_download_doc
 
             - name: ades-config
               mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
