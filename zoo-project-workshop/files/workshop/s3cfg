@@ -4,9 +4,6 @@ host_bucket = http://zoo-project-workshop-minio.zp.svc.cluster.local:9000
 use_https = False
 
 # Setup access keys
-#access_key =  minioadmin
-#secret_key = minioadmin
-
 access_key =  minio-admin
 secret_key = minio-secret-password
 

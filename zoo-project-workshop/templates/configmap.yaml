@@ -30,6 +30,7 @@ data:
   workshop_s3service_zcfg1: {{ tpl (.Files.Get .Values.zoo.workshop.s3service_zcfg1) . | quote }}
   workshop_s3service_zcfg2: {{ tpl (.Files.Get .Values.zoo.workshop.s3service_zcfg2) . | quote }}
   workshop_s3cfg: {{ tpl (.Files.Get .Values.zoo.workshop.s3cfg) . | quote }}
+  workshop_security_service: {{ tpl (.Files.Get .Values.zoo.workshop.security_service) . | quote }}
   workshop_index_html: {{ tpl (.Files.Get .Values.zoo.workshop.index) . | quote }}
   cookiecutter_config: {{ tpl (.Files.Get .Values.zoo.services.cookiecutter_config) . | quote }}
   additional_inputs: {{ toYaml .Values.workflow.additionalInputs | quote }}

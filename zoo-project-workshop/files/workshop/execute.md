@@ -42,7 +42,7 @@ As mentioned earlier, to proceed with the following steps, you need to copy and 
 
 Here is a screenshot demonstrating where to locate the `jobID` within the server response.
 
-<center><img src="https://raw.githubusercontent.com/ZOO-Project/charts/main/zoo-project-workshop/files/workshop/copy-jobId.png" />*Illustrating where to find the jobID*</center>
+<center><img src="https://raw.githubusercontent.com/ZOO-Project/charts/main/img/copy-jobId.png" />*Illustrating where to find the jobID*</center>
 
 After receiving the response, we can proceed to the following endpoint to check the job status.
 

@@ -109,6 +109,7 @@ zoo:
     s3service_py: "files/workshop/s3utils.py"
     s3service_zcfg1: "files/workshop/s3_read.zcfg"
     s3service_zcfg2: "files/workshop/s3_download.zcfg"
+    security_service: "files/workshop/security_service.py"
   kernel:
     maincfgtpl: "files/zoo-kernel/main.cfg.tpl"
     oas: "files/zoo-kernel/oas.cfg"
@@ -122,9 +123,10 @@ zoo:
 
 zoofpm:
   image:
+
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-56ed2268a35170165ec9158ec12e295688a30046
+    tag: dru-6bc484cab9ae7ca650e4591c1cda19f70142c686
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -134,7 +136,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-56ed2268a35170165ec9158ec12e295688a30046
+    tag: dru-6bc484cab9ae7ca650e4591c1cda19f70142c686
 
 
 workflow:

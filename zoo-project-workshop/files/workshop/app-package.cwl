@@ -6,7 +6,7 @@ schemas:
   - http://schema.org/version/9.0/schemaorg-current-http.rdf
 $graph:
   - class: Workflow
-    id: water-bodies
+    id: water_bodies
     label: Water bodies detection based on NDWI and otsu threshold
     doc: Water bodies detection based on NDWI and otsu threshold
     requirements:
@@ -120,7 +120,7 @@ $graph:
         ramMax: 512
     hints:
       DockerRequirement:
-        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/crop:1.4.1
+        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/crop:1.5.0
     baseCommand: ["python", "-m", "app"]
     arguments: []
     inputs:
@@ -158,7 +158,7 @@ $graph:
         ramMax: 512
     hints:
       DockerRequirement:
-        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/norm_diff:1.4.1
+        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/norm_diff:1.5.0
     baseCommand: ["python", "-m", "app"]
     arguments: []
     inputs:
@@ -184,7 +184,7 @@ $graph:
         ramMax: 512
     hints:
       DockerRequirement:
-        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/otsu:1.4.1
+        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/otsu:1.5.0
     baseCommand: ["python", "-m", "app"]
     arguments: []
     inputs:
@@ -210,7 +210,7 @@ $graph:
         ramMax: 512
     hints:
       DockerRequirement:
-        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/stac:1.4.1
+        dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/stac:1.5.0
     baseCommand: ["python", "-m", "app"]
     arguments: []
     inputs:

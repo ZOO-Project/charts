@@ -78,11 +78,12 @@ path= {{ .Values.persistence.servicesNamespacePath }}
 deploy_service_provider=DeployProcess
 undeploy_service_provider=UndeployProcess
 has_jwt_service=true
+sections_list=additional_parameters,pod_env_vars,pod_node_selector
 required_files=
 arequired_files=securityOut.zcfg,security_service.py,DeployProcess.zcfg,DeployProcess.py,UndeployProcess.zcfg,UndeployProcess.py,deploy_util.py
 
 [headers]
-X-Powered-By=ZOO-Project
+X-Powered-By=ZOO-Project-DRU
 
 [rabbitmq]
 host={{ .Release.Name }}-rabbitmq

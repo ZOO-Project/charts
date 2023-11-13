@@ -95,6 +95,9 @@ spec:
             - name: ades-config
               mountPath: /usr/lib/cgi-bin/s3_download.zcfg
               subPath: workshop_s3service_zcfg2
+            - name: ades-config
+              mountPath: /usr/lib/cgi-bin/security_service.py
+              subPath: workshop_security_service
 
             - name: ades-config
               mountPath: /var/www/.s3cfg

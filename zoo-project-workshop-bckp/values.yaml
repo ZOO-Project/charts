@@ -1,4 +1,4 @@
-# Default values for zoo-project-hpgc.
+# Default values for zoo-project-workshop.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -86,6 +86,18 @@ redis:
 
 
 zoo:
+  workshop:
+    header: "files/workshop/header.md"
+    processes_list: "files/workshop/processes-list.md"
+    deploy: "files/workshop/deploy.md"
+    replace: "files/workshop/replace.md"
+    undeploy: "files/workshop/undeploy.md"
+    execute: "files/workshop/execute.md"
+    job_status: "files/workshop/job-status.md"
+    job_result: "files/workshop/job-result.md"
+    app_package_cwl: "files/workshop/app-package.cwl"
+    job_order: "files/workshop/job-order.json"
+    job_order1: "files/workshop/job-order1.json"
   kernel:
     maincfgtpl: "files/zoo-kernel/main.cfg.tpl"
     oas: "files/zoo-kernel/oas.cfg"
@@ -101,7 +113,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: hpgc-6bc484cab9ae7ca650e4591c1cda19f70142c686
+    tag: dru-4245b316bb19e9bba51624e16e96e760611acd8b
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -111,7 +123,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: hpgc-6bc484cab9ae7ca650e4591c1cda19f70142c686
+    tag: dru-4245b316bb19e9bba51624e16e96e760611acd8b
 
 
 workflow:
@@ -125,15 +137,15 @@ workflow:
   env: {}
 
   additionalInputs:
-    APP: zoo-project-hpgc
+    APP: zoo-project-workshop
     STAGEIN_AWS_REGION: RegionOne
     STAGEIN_AWS_ACCESS_KEY_ID: minio-admin
     STAGEIN_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEIN_AWS_SERVICEURL: http://zoo-project-hpgc-minio.zp.svc.cluster.local:9000
+    STAGEIN_AWS_SERVICEURL: http://zoo-project-workshop-minio.zp.svc.cluster.local:9000
     STAGEOUT_AWS_REGION: RegionOne
     STAGEOUT_AWS_ACCESS_KEY_ID: minio-admin
     STAGEOUT_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEOUT_AWS_SERVICEURL: http://zoo-project-hpgc-minio.zp.svc.cluster.local:9000
+    STAGEOUT_AWS_SERVICEURL: http://zoo-project-workshop-minio.zp.svc.cluster.local:9000
     STAGEOUT_OUTPUT: s3://processingresults
 
 postgresql:
