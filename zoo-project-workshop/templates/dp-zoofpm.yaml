@@ -67,7 +67,7 @@ spec:
               value: "/assets/main.yaml"
             {{- if .Values.useKubeProxy }}
             - name: HTTP_PROXY
-              value: "http://{{ .Release.Name }}-kubeproxy.zoo.svc.cluster.local:8001"
+              value: "http://{{ .Release.Name }}-kubeproxy.{{ .Release.Namespace }}.svc.cluster.local:8001"
             {{- else }}
             - name: KUBECONFIG
               value: /var/etc/ades/kubeconfig
