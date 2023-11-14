@@ -1,6 +1,7 @@
 #!/bin/bash
 # Author: Gérald Fenoy
 # Copyright GeoLabs 2021
+set -x
 echo "hello"
 mkdir -p /tmp/zTmp/statusInfos
 cp /var/www/html/data/* /usr/com/zoo-project

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "zoo-project-dru.fullname" . }}-zookernel
+  name: {{ .Release.Name }}-zookernel
   labels:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
 spec:

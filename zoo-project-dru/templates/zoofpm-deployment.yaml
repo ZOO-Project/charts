@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "zoo-project-dru.fullname" . }}-zoofpm
+  name: {{ .Release.Name }}-zoofpm
   labels:
     {{- if .Chart.AppVersion }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
@@ -120,20 +120,17 @@ spec:
               subPath: pod_imagePullSecrets
 
             - name: cwlwrapper-config
-              mountPath: /assets/maincwl.yaml
-              subPath: maincwl
-            - name: cwlwrapper-config
-              mountPath: /assets/maincwlmetrics.yaml
-              subPath: maincwlmetrics
+              mountPath: /assets/main.yaml
+              subPath: main.yaml
             - name: cwlwrapper-config
               mountPath: /assets/rules.yaml
-              subPath: rules
+              subPath: rules.yaml
             - name: cwlwrapper-config
               mountPath: /assets/stagein.yaml
-              subPath: stagein
+              subPath: stagein.yaml
             - name: cwlwrapper-config
               mountPath: /assets/stageout.yaml
-              subPath: stageout
+              subPath: stageout.yaml
             - name: ades-processing-services
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
             - name: tmp-folder
@@ -145,7 +142,7 @@ spec:
             name: {{ template "zoo-project-dru.fullname" . }}-configmap
         - name: cwlwrapper-config
           configMap:
-            name: {{ template "zoo-project-dru.fullname" . }}-cwlwrapper-configmap
+            name: {{ .Release.Name }}-cwlwrapper
         - name: startupsh
           configMap:
             name: {{ template "zoo-project-dru.fullname" . }}-startup-configmap

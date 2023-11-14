@@ -2,7 +2,7 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "zoo-project-workshop.fullname" . }}
+  name: {{ .Release.Name }}-hpa
   labels:
     {{- include "zoo-project-workshop.labels" . | nindent 4 }}
 spec:

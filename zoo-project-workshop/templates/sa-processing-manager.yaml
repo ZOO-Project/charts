@@ -1,6 +1,6 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "zoo-project-workshop.fullname" . }}-processing-manager
+  name: {{ .Release.Name }}-processing-manager
   labels:
     {{- include "zoo-project-workshop.labels" . | nindent 4 }}

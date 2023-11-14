@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ template "zoo-project-workshop.fullname" . }}-processing-services
+  name: {{ .Release.Name }}-processing-services
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "zoo-project-workshop.fullname" . }}
+    app: {{ .Release.Name }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}

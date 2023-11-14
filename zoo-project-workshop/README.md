@@ -104,3 +104,11 @@ helm install my-zoo-project-workshop zoo-project/zoo-project-workshop --version 
 
 
 
+
+
+
+
+helm upgrade --install zoo-project-workshop ./zoo-project-workshop -f zoo-project-workshop/values_minikube.yaml -n zoo --create-namespace
+
+cd /data/work/zoo/charts/zoo-project-workshop
+helm upgrade --install my-zoo-project . -f values_minikube.yaml -n zoo --create-namespace 
