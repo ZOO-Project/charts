@@ -13,10 +13,14 @@ spec:
     type: Recreate
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+      {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
+        checksum/cm-cwlwrapper-assets: {{ include (print .Template.BasePath "/cm-cwlwrapper-assets.yaml") . | sha256sum }}
+        checksum/cm-zoo-deploy-service-config: {{ include (print .Template.BasePath "/cm-zoo-deploy-service-config.yaml") . | sha256sum }}
+        checksum/cm-zoo-project-config: {{ include (print .Template.BasePath "/cm-zoo-project-config.yaml") . | sha256sum }}
+        checksum/cm-openapi-config: {{ include (print .Template.BasePath "/cm-openapi-config.yaml") . | sha256sum }}
       labels:
         {{- include "zoo-project-workshop.selectorLabels" . | nindent 8 }}
     spec:
