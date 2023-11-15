@@ -54,7 +54,7 @@ def securityIn(conf, inputs, outputs):
         print("securityIn!", file=sys.stderr)
     workspaceApi(conf, inputs, outputs)
     conf["pod_env_vars"] = {"A": "1", "B": "2"}
-    #conf["pod_node_selector"] = {"C": "3"}
+    conf["pod_node_selector"] = {} #{"C": "3"}
     try:
         if (
             "has_jwt_service" in conf["servicesNamespace"]
