@@ -183,3 +183,21 @@ cookiecutter:
 
 minio:
   enabled: false
+
+
+iam: 
+  enabled: true
+  openIdConnectUrl: https://testbed19.geolabs.fr:8099/realms/EOEPCA_WORKSHOP/.well-known/openid-configuration
+  type: openIdConnect
+  name: OpenIDAuth
+  realm: Secured section
+
+filter_in:
+  enabled: true
+  path: /usr/lib/cgi-bin
+  service: securityIn
+
+filter_out:
+  enabled: true
+  path: /usr/lib/cgi-bin
+  service: securityOut

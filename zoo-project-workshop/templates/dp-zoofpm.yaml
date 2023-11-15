@@ -105,9 +105,11 @@ spec:
             - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/main.cfg
               subPath: main.cfg
+            
             - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/oas.cfg
               subPath: oas.cfg
+            
             - name: zoo-project-config
               mountPath: /var/www/html/.htaccess
               subPath: htaccess
@@ -120,33 +122,25 @@ spec:
               mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
               subPath: cookiecutter_config.yaml
 
-            # - name: ades-config
-            #   mountPath: /assets/additional_inputs.yaml
-            #   subPath: additional_inputs
-            # - name: ades-config
-            #   mountPath: /assets/pod_env_vars.yaml
-            #   subPath: pod_env_vars
-            # - name: ades-config
-            #   mountPath: /assets/pod_nodeselectors.yaml
-            #   subPath: pod_nodeselectors
-            # - name: ades-config
-            #   mountPath: /assets/pod_imagePullSecrets.yaml
-            #   subPath: pod_imagePullSecrets
-
             - name: cwlwrapper-config
               mountPath: /assets/main.yaml
               subPath: main.yaml
+
             - name: cwlwrapper-config
               mountPath: /assets/rules.yaml
               subPath: rules.yaml
+
             - name: cwlwrapper-config
               mountPath: /assets/stagein.yaml
               subPath: stagein.yaml
+
             - name: cwlwrapper-config
               mountPath: /assets/stageout.yaml
               subPath: stageout.yaml
+
             - name: ades-processing-services
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
+
             - name: tmp-folder
               mountPath: {{ .Values.persistence.tmpPath }}
       restartPolicy: Always
