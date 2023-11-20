@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-workshop`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-workshop zoo-project/zoo-project-workshop --version 0.0.3
+helm install my-zoo-project-workshop zoo-project/zoo-project-workshop --version 0.0.6
 ````
 
 ## Parameters
@@ -89,26 +89,4 @@ helm install my-zoo-project-workshop zoo-project/zoo-project-workshop --version 
 | workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | []                                          |
 | workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label       | {}                                          |
 | workflow.env                                             | Environmental variables for the processing pods       | {}                                          |
-| workflow.additionalInputs.APP                            | The application name               | zoo-project-workshop                                                       |
-| workflow.additionalInputs.STAGEIN_AWS_REGION             | The stagein AWS region             | RegionOne                                                             |
-| workflow.additionalInputs.STAGEIN_AWS_ACCESS_KEY_ID      | The stagein AWS access key id      | minio-admin                                                           |
-| workflow.additionalInputs.STAGEIN_AWS_SECRET_ACCESS_KEY  | The stagein AWS secret access key  | minio-secret-password                                                 |
-| workflow.additionalInputs.STAGEIN_AWS_SERVICE_URL        | The stagein AWS service url        | http://zoo-project-workshop-minio.zp.svc.cluster.local:9000                |
-| workflow.additionalInputs.STAGEOUT_AWS_REGION            | The stageout AWS region            | RegionOne                                                             |
-| workflow.additionalInputs.STAGEOUT_AWS_ACCESS_KEY_ID     | The stageout AWS access key id     | minio-admin                                                           |
-| workflow.additionalInputs.STAGEOUT_AWS_SECRET_ACCESS_KEY | The stageout AWS secret access key | minio-secret-password                                                 |
-| workflow.additionalInputs.STAGEOUT_AWS_SERVICE_URL       | The stageout AWS secret access key | [minio-admin](http://zoo-project-workshop-minio.zp.svc.cluster.local:9000) |
-| workflow.additionalInputs.STAGEOUT_OUTPUT                | The location where to store output | s3://processingresults                                                |
 
-
-
-
-
-
-
-
-
-helm upgrade --install zoo-project-workshop ./zoo-project-workshop -f zoo-project-workshop/values_minikube.yaml -n zoo --create-namespace
-
-cd /data/work/zoo/charts/zoo-project-workshop
-helm upgrade --install my-zoo-project . -f values_minikube.yaml -n zoo --create-namespace 

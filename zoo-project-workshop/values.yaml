@@ -96,7 +96,7 @@ zoofpm:
 
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-78313247610c6dd7c42ab66144f30e981e635154
+    tag: dru-7de51b06d7756e5af0d13fb5213ab52da27e0e4d
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -106,7 +106,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-78313247610c6dd7c42ab66144f30e981e635154
+    tag: dru-7de51b06d7756e5af0d13fb5213ab52da27e0e4d
 
 
 workflow:
@@ -118,18 +118,6 @@ workflow:
   imagePullSecrets: []
   nodeSelector: {}
   env: {}
-
-  additionalInputs:
-    APP: zoo-project-workshop
-    STAGEIN_AWS_REGION: RegionOne
-    STAGEIN_AWS_ACCESS_KEY_ID: minio-admin
-    STAGEIN_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEIN_AWS_SERVICEURL: http://zoo-project-workshop-minio.zp.svc.cluster.local:9000
-    STAGEOUT_AWS_REGION: RegionOne
-    STAGEOUT_AWS_ACCESS_KEY_ID: minio-admin
-    STAGEOUT_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEOUT_AWS_SERVICEURL: http://zoo-project-workshop-minio.zp.svc.cluster.local:9000
-    STAGEOUT_OUTPUT: s3://processingresults
 
 postgresql:
   enabled: true
@@ -183,7 +171,6 @@ cookiecutter:
 
 minio:
   enabled: false
-
 
 iam: 
   enabled: true

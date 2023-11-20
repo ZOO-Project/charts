@@ -26,5 +26,9 @@
     <Default>
      mimeType = image/tiff
     </Default>
+    <Supported>
+     mimeType = image/png
+     useMApserver = true
+    </Supported>
    </ComplexData>
  </DataOutputs>

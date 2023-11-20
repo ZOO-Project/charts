@@ -1,6 +1,6 @@
 # Setup endpoint
-host_base = http://zoo-project-workshop-minio.zp.svc.cluster.local:9000
-host_bucket = http://zoo-project-workshop-minio.zp.svc.cluster.local:9000
+host_base = http://s3-service.zoo.svc.cluster.local:9000
+host_bucket = http://s3-service.zoo.svc.cluster.local:9000
 use_https = False
 
 # Setup access keys

@@ -84,6 +84,30 @@ spec:
             - name: zoo-example-config
               mountPath: /var/www/html/examples/water-bodies/job-order1.json
               subPath: job-order1.json
+            - name: zoo-example-config
+              mountPath: /usr/lib/cgi-bin/s3_read.zcfg
+              subPath: s3_read.zcfg
+            - name: zoo-example-config
+              mountPath: /usr/lib/cgi-bin/s3_download.zcfg
+              subPath: s3_download.zcfg
+            - name: zoo-example-config
+              mountPath: /usr/lib/cgi-bin/s3utils.py
+              subPath: s3utils.py
+            - name: zoo-example-config
+              mountPath: /var/www/.s3cfg
+              subPath: s3cfg
+            - name: zoo-example-config
+              mountPath: /var/www/html/examples/s3_read/job-order1.json
+              subPath: job-order2.json
+            - name: zoo-example-config
+              mountPath: /var/www/html/examples/s3_download/job-order1.json
+              subPath: job-order3.json
+            - name: zoo-example-config
+              mountPath: /var/www/s3_read.md
+              subPath: s3_read.md
+            - name: zoo-example-config
+              mountPath: /var/www/s3_download.md
+              subPath: s3_download.md
             - name: openapi-config
               mountPath: /var/www/header.md
               subPath: header.md
