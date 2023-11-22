@@ -47,6 +47,10 @@ spec:
           env:
             - name: ZOO_RABBITMQ_HOST
               value: {{ .Release.Name }}-rabbitmq
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - env:
             - name: ZOO_RABBITMQ_HOST
