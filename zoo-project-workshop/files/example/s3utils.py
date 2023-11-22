@@ -17,11 +17,9 @@ def s3_read(conf,inputs,outputs):
     source=inputs["s3_ref"]["value"]
     parsed = urlparse(inputs["s3_ref"]["value"])
     if parsed.scheme == "s3":
-        with open('/assets/additional_inputs.yaml', 'r') as file:
-                s3_settings = yaml.safe_load(file)
-        for i in s3_settings.keys():
-            os.environ[i]=s3_settings[i]
-
+        for i in conf["additional_parameters"].keys():
+            os.environ[i]=conf["additional_parameters"][i]
+        
         session = botocore.session.Session()
         s3_client = session.create_client(
             service_name="s3",

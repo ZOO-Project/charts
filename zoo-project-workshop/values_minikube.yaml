@@ -1,13 +1,3 @@
-workflow:
-  storageClass: standard
-  inputs:
-    APP: zoo-project-workshop
-    STAGEOUT_AWS_REGION: RegionOne
-    STAGEOUT_AWS_ACCESS_KEY_ID: minio-admin
-    STAGEOUT_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEOUT_AWS_SERVICEURL: http://s3-service.zp.svc.cluster.local:9000
-    STAGEOUT_OUTPUT: s3://processingresults
-
 useKubeProxy: true
 
 
