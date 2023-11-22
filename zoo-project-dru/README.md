@@ -27,6 +27,23 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 
 ## Parameters
 
+### Persistence
+
+| Name                                       | Description                                              | Value                    |
+|:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
+| persistence.enabled            | The persistence is enabled | true                      |
+| persistence.storageClass            | The storage class | standard                      |
+| persistence.userDataAccessMode            | The access mode | ReadWriteOnce                      |
+| persistence.userDataSize            | The size allocated | 10Gi                      |
+| persistence.procServicesAccessMode            | The access mode | ReadWriteOnce                      |
+| persistence.procServicesStorageClass            | The storage class | standard                      |
+| persistence.procServicesSize            | The size allocated | 5Gi                      |
+| persistence.servicesNamespacePath            | The services namespace path (directory where user namespaces are created) | /opt/zooservices_user                      |
+| persistence.tmpAccessMode            | The access mode | ReadWriteMany                      |
+| persistence.tmpStorageClass            | The storage class | standard                      |
+| persistence.tmpSize            | The size allocated | 2Gi                      |
+| persistence.tmpPath            | The temporary diratory path | /tmp/zTmp                      |
+
 ### Global parameters
 
 | Name                                       | Description                                              | Value                    |
@@ -60,6 +77,7 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 |:--------------|:-----------------------------------------------------|:------|
 | minio.enabled | Is MinIO used for storage in place of AWS            | false |
 
+
 ### CookieCutter
 
 | Name                     | Description                                          | Value                                               |
@@ -70,12 +88,42 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 
 | Name                             | Description                                                        | Value                                                |
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
-| zoo.kernel.maincfgtpl            | The main.cfg file to use as configuration for the ZOO-Project      | "files/zoo-kernel/main.cfg.tpl"                      |
-| zoo.kernel.oas                   | The oas.cfg file to use as OpenAPI definitions for the ZOO-Project | "files/zoo-kernel/oas.cfg"                           |
-| zoo.kernel.htaccess              | The htaccess file to store in Apache root folder                   | "files/zoo-kernel/htaccess"                          |
-| zoo.openapi.startupsh            | The `startUp.sh` script to start the ZOO-FPM                       | "files/openapi/server/startUp.sh"                    |
-| zoo.rabbitmq.rabbitmq            | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
-| zoo.services.cookiecutter_config | The `cookiecutter_config.yaml` file to uses                        | "files/zoo-services/assets/cookiecutter_config.yaml" |
+| zoo.rabbitmq.definitions         | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
+
+
+### Cookie cutter
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| cookiecutter.templateUrl         | The git repository from where to fetch the cookiecutter    | https://github.com/EOEPCA/proc-service-template.git                    |
+| cookiecutter.templateBranch         | The branch to fetch the cookiecutter (optional)    | undefined                    |
+
+
+### Identity and Access Management
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| iam.enabled | The Identity and Access Management (IAM)                        | true |
+| iam.openIdConnectUrl | The OpenIDConnect configuration URL                    | https://testbed19.geolabs.fr:8099/realms/ZOO_DEMO/.well-known/openid-configuration |
+| iam.type | The IAM type                        | openIdConnect |
+| iam.name | The IAM name                        | OpenIDAuth |
+| iam.realm | The realm associated with the IAM                        | Secured section |
+
+### filter_in process
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| filter_in.enabled | The filter_in process is enabled                        | true |
+| filter_in.path | The filter_in process path                        | /usr/lib/cgi-bin |
+| filter_in.service | The filter_in process name                         | securityIn |
+
+### filter_out process
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| filter_out.enabled | The filter_out process is enabled                        | true |
+| filter_out.path | The filter_out process path                        | /usr/lib/cgi-bin |
+| filter_out.service | The filter_out process name                         | securityOut |
 
 ### Workflow
 
