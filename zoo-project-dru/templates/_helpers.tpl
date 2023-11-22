@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+
+{{- define "zoo-project-dru.release_name" -}}
+{{- default .Release.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+

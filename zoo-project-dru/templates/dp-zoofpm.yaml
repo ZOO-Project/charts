@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     {{- end }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
+    app.kubernetes.io/name: {{ .Release.Name }}-zoofpm
     app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
 spec:
   {{- if not .Values.zoofpm.autoscaling.enabled }}
@@ -21,10 +21,14 @@ spec:
     type: Recreate
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+      {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
+        checksum/cm-cwlwrapper-assets: {{ include (print .Template.BasePath "/cm-cwlwrapper-assets.yaml") . | sha256sum }}
+        checksum/cm-zoo-deploy-service-config: {{ include (print .Template.BasePath "/cm-zoo-deploy-service-config.yaml") . | sha256sum }}
+        checksum/cm-zoo-project-config: {{ include (print .Template.BasePath "/cm-zoo-project-config.yaml") . | sha256sum }}
+        checksum/cm-openapi-config: {{ include (print .Template.BasePath "/cm-openapi-config.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
         app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
@@ -33,7 +37,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "zoo-project-dru.fullname" . }}-processing-manager
+      serviceAccountName: {{ .Release.Name }}-processing-manager
       initContainers:
         - name: init-wait-for-dependencies-zoofpm
           image: docker.io/wshihadeh/wait_for:latest
@@ -43,6 +47,10 @@ spec:
           env:
             - name: ZOO_RABBITMQ_HOST
               value: {{ .Release.Name }}-rabbitmq
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - env:
             - name: ZOO_RABBITMQ_HOST
@@ -57,9 +65,17 @@ spec:
               value: "{{ .Values.workflow.defaultMaxCores }}"
             - name: CALRISSIAN_IMAGE
               value: "{{ .Values.workflow.calrissianImage }}"
+            - name: WRAPPER_STAGE_IN
+              value: "/assets/stagein.yaml"
+            - name: WRAPPER_STAGE_OUT
+              value: "/assets/stageout.yaml"
+            - name: WRAPPER_RULES
+              value: "/assets/rules.yaml"
+            - name: WRAPPER_MAIN
+              value: "/assets/main.yaml"
             {{- if .Values.useKubeProxy }}
             - name: HTTP_PROXY
-              value: "http://{{ include "zoo-project-dru.fullname" . }}-kubeproxy:8001"
+              value: "http://{{ .Release.Name }}-kubeproxy.{{ .Release.Namespace }}.svc.cluster.local:8001"
             {{- else }}
             - name: KUBECONFIG
               value: /var/etc/ades/kubeconfig
@@ -90,66 +106,67 @@ spec:
           command: ["/startup.sh"]
           resources: {}
           volumeMounts:
-            - name: ades-config
+            - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/main.cfg
-              subPath: maincfg
-            - name: ades-config
+              subPath: main.cfg
+            
+            - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/oas.cfg
-              subPath: oas
-            - name: ades-config
-              mountPath: /var/www/html/.htaccess
-              subPath: htaccess
-            - name: startupsh
-              mountPath: /startup.sh
-              subPath: startUp.sh
-            - name: ades-config
-              mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
-              subPath: cookiecutter_config
+              subPath: oas.cfg
 
-            - name: ades-config
-              mountPath: /assets/additional_inputs.yaml
-              subPath: additional_inputs
-            - name: ades-config
-              mountPath: /assets/pod_env_vars.yaml
-              subPath: pod_env_vars
-            - name: ades-config
-              mountPath: /assets/pod_nodeselectors.yaml
-              subPath: pod_nodeselectors
-            - name: ades-config
-              mountPath: /assets/pod_imagePullSecrets.yaml
-              subPath: pod_imagePullSecrets
+            - name: startup-script
+              mountPath: /startup.sh
+              subPath: start-up.sh
+
+            - name: zoo-deploy-service-config
+              mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
+              subPath: cookiecutter_config.yaml
 
             - name: cwlwrapper-config
               mountPath: /assets/main.yaml
               subPath: main.yaml
+
             - name: cwlwrapper-config
               mountPath: /assets/rules.yaml
               subPath: rules.yaml
+
             - name: cwlwrapper-config
               mountPath: /assets/stagein.yaml
               subPath: stagein.yaml
+
             - name: cwlwrapper-config
               mountPath: /assets/stageout.yaml
               subPath: stageout.yaml
+
             - name: ades-processing-services
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
+
             - name: tmp-folder
               mountPath: {{ .Values.persistence.tmpPath }}
       restartPolicy: Always
       volumes:
-        - name: ades-config
+        - name: zoo-kernel-config
           configMap:
-            name: {{ template "zoo-project-dru.fullname" . }}-configmap
+            name: {{ .Release.Name }}-zoo-kernel-config
+        - name: openapi-config
+          configMap:
+            name: {{ .Release.Name }}-openapi-config
+        - name: zoo-deploy-service-config
+          configMap:
+            name: {{ .Release.Name }}-zoo-deploy-service-config
         - name: cwlwrapper-config
           configMap:
-            name: {{ .Release.Name }}-cwlwrapper
-        - name: startupsh
+            name: {{ .Release.Name }}-cwlwrapper-config
+        - name: startup-script
           configMap:
-            name: {{ template "zoo-project-dru.fullname" . }}-startup-configmap
+            name: {{ .Release.Name }}-startup-configmap
             defaultMode: 0744
+        - name: zoo-project-config
+          configMap:
+            name: {{ .Release.Name }}-zoo-project-config
         - name: tmp-folder
           persistentVolumeClaim:
-            claimName: {{ template "zoo-project-dru.fullname" . }}-tmp-folder
+            claimName: {{ .Release.Name }}-tmp-folder
 
         - name: ades-processing-services
         {{- if .Values.persistence.enabled }}
@@ -157,7 +174,7 @@ spec:
             {{- if .Values.persistence.existingProcessingServicesClaim }}
             claimName: {{ .Values.persistence.existingProcessingServicesClaim }}
             {{- else }}
-            claimName: {{ template "zoo-project-dru.fullname" . }}-processing-services
+            claimName: {{ .Release.Name }}-processing-services
             {{- end -}}
           {{- else }}
           emptyDir: { }

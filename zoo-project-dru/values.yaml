@@ -24,15 +24,15 @@ clusterAdminRoleName: cluster-admin
 podAnnotations: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
 
 service:
   type: ClusterIP
@@ -42,29 +42,29 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  - host: chart-example.local
+    paths:
+    - path: /
+      pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
 
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
 
 autoscaling:
   enabled: false
@@ -86,22 +86,17 @@ redis:
 
 
 zoo:
-  kernel:
-    maincfgtpl: "files/zoo-kernel/main.cfg.tpl"
-    oas: "files/zoo-kernel/oas.cfg"
-    htaccess: "files/zoo-kernel/htaccess"
-  openapi:
-    startupsh: "files/openapi/server/startUp.sh"
   rabbitmq:
     definitions: "files/rabbitmq/definitions.json"
-  services:
-    cookiecutter_config: "files/zoo-services/assets/cookiecutter_config.yaml"
+    # services:
+    #  cookiecutter_config: "files/zoo-services/assets/cookiecutter_config.yaml"
 
 zoofpm:
   image:
+
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-6bc484cab9ae7ca650e4591c1cda19f70142c686
+    tag: dru-7de51b06d7756e5af0d13fb5213ab52da27e0e4d
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -111,7 +106,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-6bc484cab9ae7ca650e4591c1cda19f70142c686
+    tag: dru-7de51b06d7756e5af0d13fb5213ab52da27e0e4d
 
 
 workflow:
@@ -120,21 +115,9 @@ workflow:
   defaultMaxRam: 1024
   defaultMaxCores: 2
   calrissianImage: "terradue/calrissian:0.12.0"
-  imagePullSecrets: []  
+  imagePullSecrets: []
   nodeSelector: {}
   env: {}
-
-  additionalInputs:
-    APP: zoo-project-dru
-    STAGEIN_AWS_REGION: RegionOne
-    STAGEIN_AWS_ACCESS_KEY_ID: minio-admin
-    STAGEIN_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEIN_AWS_SERVICEURL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
-    STAGEOUT_AWS_REGION: RegionOne
-    STAGEOUT_AWS_ACCESS_KEY_ID: minio-admin
-    STAGEOUT_AWS_SECRET_ACCESS_KEY: minio-secret-password
-    STAGEOUT_AWS_SERVICEURL: http://zoo-project-dru-minio.zp.svc.cluster.local:9000
-    STAGEOUT_OUTPUT: s3://processingresults
 
 postgresql:
   enabled: true
@@ -188,3 +171,20 @@ cookiecutter:
 
 minio:
   enabled: false
+
+iam: 
+  enabled: true
+  openIdConnectUrl: https://testbed19.geolabs.fr:8099/realms/ZOO_DEMO/.well-known/openid-configuration
+  type: openIdConnect
+  name: OpenIDAuth
+  realm: Secured section
+
+filter_in:
+  enabled: true
+  path: /usr/lib/cgi-bin
+  service: securityIn
+
+filter_out:
+  enabled: true
+  path: /usr/lib/cgi-bin
+  service: securityOut

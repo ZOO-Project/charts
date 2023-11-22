@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "zoo-project-dru.fullname" . }}
+  name: {{ .Release.Name }}-service
   labels:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
 spec:
