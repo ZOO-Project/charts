@@ -2,6 +2,32 @@ apiVersion: v1
 entries:
   zoo-project-dru:
   - apiVersion: v2
+    appVersion: 0.1.0
+    created: "2023-11-22T17:45:35.373835317Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.1.9
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.5.0
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 17.6.0
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.8.4
+    description: A Helm chart for Kubernetes
+    digest: a1e41963cd064dc46a765cb15f70e0932298e75ad3dd4fbaeaf3d717a1567374
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.1.2/zoo-project-dru-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.0.9
     created: "2023-11-13T17:57:42.330834335Z"
     dependencies:
@@ -264,6 +290,32 @@ entries:
     version: 0.0.1
   zoo-project-workshop:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2023-11-22T17:45:35.592239637Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.1.9
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.5.0
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 17.6.0
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.8.4
+    description: A Helm chart for Kubernetes
+    digest: 5b3041dfcd5dc25e26a1e505871b724b5de78b5849451f48645df4647719523f
+    name: zoo-project-workshop
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.6/zoo-project-workshop-0.0.6.tgz
+    version: 0.0.6
+  - apiVersion: v2
     appVersion: 0.0.9
     created: "2023-11-13T17:57:42.71029702Z"
     dependencies:
@@ -393,4 +445,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2023-11-13T17:57:42.710356592Z"
+generated: "2023-11-22T17:45:35.592301692Z"
