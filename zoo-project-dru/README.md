@@ -83,20 +83,13 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 | Name                     | Description                                          | Value                                               |
 |:-------------------------|:-----------------------------------------------------|:----------------------------------------------------|
 | cookiecutter.templateUrl | Where to download the cookiecutter from              | https://github.com/EOEPCA/proc-service-template.git |
+| cookiecutter.templateBranch         | The branch to fetch the cookiecutter (optional)    | undefined                    |
 
 ### ZOO-Project
 
 | Name                             | Description                                                        | Value                                                |
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
 | zoo.rabbitmq.definitions         | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
-
-
-### Cookie cutter
-
-| Name                             | Description                                                        | Value                                                |
-|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
-| cookiecutter.templateUrl         | The git repository from where to fetch the cookiecutter    | https://github.com/EOEPCA/proc-service-template.git                    |
-| cookiecutter.templateBranch         | The branch to fetch the cookiecutter (optional)    | undefined                    |
 
 
 ### Identity and Access Management

@@ -79,21 +79,12 @@ tolerations: []
 
 affinity: {}
 
-
-redis:
-  replica:
-    replicaCount: 1
-
-
 zoo:
   rabbitmq:
     definitions: "files/rabbitmq/definitions.json"
-    # services:
-    #  cookiecutter_config: "files/zoo-services/assets/cookiecutter_config.yaml"
 
 zoofpm:
   image:
-
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
     tag: dru-7de51b06d7756e5af0d13fb5213ab52da27e0e4d
