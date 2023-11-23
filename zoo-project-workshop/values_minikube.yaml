@@ -1,26 +1,24 @@
 useKubeProxy: true
 
+zoo-project-dru:
 
-minio:
-  # minio chart value parameters description can be found here:
-  # https://github.com/bitnami/charts/tree/main/bitnami/minio
-  enabled: true
-  auth:
-    rootUser: minio-admin
-    rootPassword: minio-secret-password
-    # to access the dashboard from browser run the following port-forward command:
-    # kubectl port-forward svc/zoo-project-workshop-minio 9001:9001 -n zp
-  persistence:
+  minio:
+    # minio chart value parameters description can be found here:
+    # https://github.com/bitnami/charts/tree/main/bitnami/minio
     enabled: true
-    storageClass: standard
-    size: 2Gi
-    accessMode: ReadWriteOnce
-  defaultBuckets: "processingresults"
-  fullnameOverride: "s3-service"
+    auth:
+      rootUser: minio-admin
+      rootPassword: minio-secret-password
+      # to access the dashboard from browser run the following port-forward command:
+      # kubectl port-forward svc/zoo-project-dru-minio 9001:9001 -n zp
+    persistence:
+      enabled: true
+      storageClass: standard
+      size: 2Gi
+      accessMode: ReadWriteOnce
+    defaultBuckets: "processingresults"
+    fullnameOverride: "s3-service"
 
-cookiecutter:
-  templateUrl: https://github.com/EOEPCA/proc-service-template.git
-  templateBranch: zoo-project-dru-http-in
-
-iam:
-  enabled: false
+  cookiecutter:
+    templateUrl: https://github.com/EOEPCA/proc-service-template.git
+    templateBranch: zoo-project-dru-http-in

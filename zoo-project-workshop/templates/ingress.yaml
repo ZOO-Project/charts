@@ -1,4 +1,3 @@
-{{- $dot := . }}
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "zoo-project-workshop.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
@@ -16,7 +15,7 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ $fullName }}
   labels:
     {{- include "zoo-project-workshop.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
@@ -50,11 +49,11 @@ spec:
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ $dot.Release.Name }}-service
+                name: {{ $fullName }}
                 port:
                   number: {{ $svcPort }}
               {{- else }}
-              serviceName: {{ $dot.Release.Name }}
+              serviceName: {{ $fullName }}
               servicePort: {{ $svcPort }}
               {{- end }}
           {{- end }}

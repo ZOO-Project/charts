@@ -1,4 +1,4 @@
-x\{{/*
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "zoo-project-workshop.name" -}}
@@ -60,10 +60,3 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
-
-
-
-{{- define "zoo-project-workshop.release_name" -}}
-{{- default .Release.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
-{{- end }}
-

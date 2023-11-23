@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Release.Name }}-zoo-deploy-service-config
-data:
-{{ (tpl (.Files.Glob "files/zoo-deploy-service/*").AsConfig . ) | indent 4 }}

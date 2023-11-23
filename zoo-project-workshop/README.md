@@ -1,4 +1,4 @@
-# ZOO-Project with DRU and CWL support package
+# EOEPCA BiDS 2023 workshop 
 
 > The **ZOO-Project** is an open source processing platform, released under MIT/X11 Licence.
 
@@ -8,7 +8,7 @@ Trademarks: This software listing is packaged by the ZOO-Project developper team
 
 ## Introduction
 
-This chart bootstraps a [ZOO-Project](http://zoo-project.org) deployment on a cluster using the [Helm](https://helm.sh/) package manager.
+This chart bootstraps a [ZOO-Project](http://zoo-project.org) deployment dedicated to the EOEPCA workshop held in BiDS 2023 conference on a cluster using the [Helm](https://helm.sh/) package manager.
 
 ## Prerequisites
 
@@ -18,75 +18,13 @@ This chart bootstraps a [ZOO-Project](http://zoo-project.org) deployment on a cl
 
 ## Installing the Chart
 
-To install the chart with the release name `my-zoo-project-workshop`:
+To install the chart with the release name `my-zoo-project`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-workshop zoo-project/zoo-project-workshop --version 0.0.6
+helm install my-zoo-project zoo-project/zoo-project-workshop --version 0.0.7 -n zoo --create-namespace
 ````
 
 ## Parameters
 
-### Global parameters
-
-| Name                                       | Description                                              | Value                    |
-|:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
-| global.postgresql.auth.username            | User that will be used to connect to postgresql database | zoo                      |
-| global.postgresql.auth.password            | Password for the user                                    | zoo                      |
-| global.postgresql.auth.database            | Database name                                            | zoo                      |
-| global.postgresql.service.ports.postgresql | PostgreSQL port                                          | "5432"                   |
-
-### PostgreSQL
-
-| Name                                       | Description                                              | Value                    |
-|:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
-| postgresql.enabled                         | Is database used to store process execution status       | true                     |
-| postgresql.primary.initdb.scriptsConfigMap | The init script config map                               | true                     |
-
-
-### RabbitMQ
-
-| Name                                       | Description                                              | Value                                        |
-|:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
-| rabbitmq.auth.username                     | User that will be used to connect to RabbitMQ            | RABBITMQ_USERNAME                            |
-| rabbitmq.auth.password                     | Password for the user                                    | CHANGEME                                     |
-| rabbitmq.loadDefinition.enabled            | Enable loading a RabbitMQ definitions file to configure RabbitMQ                               | true                                         |
-| rabbitmq.loadDefinition.existingSecret     | Existing secret with the load definitions file                              | load-definition                              |
-| rabbitmq.extraConfiguration                | Configuration file content: extra configuration to be appended to RabbitMQ configuration                              | load_definitions = /app/load_definition.json |
-
-### MinIO
-
-| Name          | Description                                          | Value |
-|:--------------|:-----------------------------------------------------|:------|
-| minio.enabled | Is MinIO used for storage in place of AWS            | false |
-
-### CookieCutter
-
-| Name                     | Description                                          | Value                                               |
-|:-------------------------|:-----------------------------------------------------|:----------------------------------------------------|
-| cookiecutter.templateUrl | Where to download the cookiecutter from              | https://github.com/EOEPCA/proc-service-template.git |
-
-### ZOO-Project
-
-| Name                             | Description                                                        | Value                                                |
-|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
-| zoo.kernel.maincfgtpl            | The main.cfg file to use as configuration for the ZOO-Project      | "files/zoo-kernel/main.cfg.tpl"                      |
-| zoo.kernel.oas                   | The oas.cfg file to use as OpenAPI definitions for the ZOO-Project | "files/zoo-kernel/oas.cfg"                           |
-| zoo.kernel.htaccess              | The htaccess file to store in Apache root folder                   | "files/zoo-kernel/htaccess"                          |
-| zoo.openapi.startupsh            | The `startUp.sh` script to start the ZOO-FPM                       | "files/openapi/server/startUp.sh"                    |
-| zoo.rabbitmq.rabbitmq            | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
-| zoo.services.cookiecutter_config | The `cookiecutter_config.yaml` file to uses                        | "files/zoo-services/assets/cookiecutter_config.yaml" |
-
-### Workflow
-
-| Name                                                     | Description                        | Value                                                                 |
-|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| workflow.storageClass                                    | The storage class used             | standard                                                              |
-| workflow.defaultVolumeSize                               | The default volume size allocated  | 10190                                                                 |
-| workflow.defaultMaxRam                                   | The default max ram allocated      | 1024                                                                  |
-| workflow.defaultMaxCores                                 | The default max cores allocated    | 2                                                                     |
-| workflow.calrissianImage                                 | The calrissian image version       | "terradue/calrissian:0.12.0"                                          |
-| workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | []                                          |
-| workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label       | {}                                          |
-| workflow.env                                             | Environmental variables for the processing pods       | {}                                          |
-
+See the parameters from the [ZOO-Project-DRU](https://artifacthub.io/packages/helm/zoo-project/zoo-project-dru) dependency.

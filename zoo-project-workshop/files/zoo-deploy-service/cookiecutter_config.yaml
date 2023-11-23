@@ -1,2 +1,0 @@
-replay_dir: "{{ .Values.persistence.tmpPath }}/cookiecutter-templates/"
-cookiecutters_dir: "{{ .Values.persistence.tmpPath }}/cookiecutter-templates/"
