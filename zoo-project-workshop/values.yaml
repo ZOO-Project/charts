@@ -108,3 +108,21 @@ zoo-project-dru:
       - name: zoo-example-config
         mountPath: /var/www/s3_download.md
         subPath: s3_download.md
+
+  persistence:
+    enabled: true
+    # existingUserDataClaim:
+    # existingProcServicesClaim:
+    storageClass: standard
+    userDataAccessMode: ReadWriteOnce
+    userDataSize: 10Gi
+
+    procServicesAccessMode: ReadWriteOnce
+    procServicesStorageClass: standard
+    procServicesSize: 5Gi
+    servicesNamespacePath: /opt/zooservices_user
+
+    tmpAccessMode: ReadWriteMany
+    tmpStorageClass: standard
+    tmpSize: 2Gi
+    tmpPath: /tmp/zTmp

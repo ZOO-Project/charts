@@ -125,8 +125,10 @@ spec:
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
             - name: tmp-folder
               mountPath: {{ .Values.persistence.tmpPath }}
-            {{- with .Values.zookernel.extraMountPoints }}
-            {{- toYaml . | nindent 2 }}
+            {{- range $v := .Values.zookernel.extraMountPoints }}
+            - name: {{ $v.name }}
+              mountPath: {{ $v.mountPath }}
+              subPath: {{ $v.subPath }}
             {{- end }}
       restartPolicy: Always
       volumes:
