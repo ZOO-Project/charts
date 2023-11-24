@@ -34,6 +34,11 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     condition: broker.enabled
 
+  - name: redis
+    version: "17.6.0"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+
   - name: minio
     version: 12.10.3
     repository: https://charts.bitnami.com/bitnami

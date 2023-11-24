@@ -24,3 +24,9 @@ cookiecutter:
 
 iam:
   enabled: false
+
+websocketd:
+  enabled: true
+
+redis:
+  enabled: true

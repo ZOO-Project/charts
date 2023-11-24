@@ -79,6 +79,9 @@ spec:
             - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/security_service.py
               subPath: security_service.py
+            - name: bin-config
+              mountPath: /usr/lib/cgi-bin/publish.py
+              subPath: publish.py
             - name: zoo-example-config
               mountPath: /var/www/html/examples/post_processes/app-package.cwl
               subPath: app-package.cwl
@@ -125,8 +128,17 @@ spec:
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
             - name: tmp-folder
               mountPath: {{ .Values.persistence.tmpPath }}
+            {{- range $v := .Values.zookernel.extraMountPoints }}
+            - name: {{ $v.name }}
+              mountPath: {{ $v.mountPath }}
+              subPath: {{ $v.subPath }}
+            {{- end }}
       restartPolicy: Always
       volumes:
+        - name: bin-config
+          configMap:
+            name: {{ .Release.Name }}-bin-config
+            defaultMode: 0777
         - name: zoo-project-config
           configMap:
             name: {{ .Release.Name }}-zoo-project-config

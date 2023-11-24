@@ -15,6 +15,12 @@
   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "zoo-project-dru.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
   echo http://$SERVICE_IP:{{ .Values.service.port }}
 {{- else if contains "ClusterIP" .Values.service.type }}
+  {{- if .Values.websocketd.enabled }}
+  export POD_WS_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "zoo-project-dru.name" . }}-websocketd,app.kubernetes.io/instance={{ .Release.Name }}-websocketd" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_WS_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_WS_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit ws://127.0.0.1:8888 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_WS_NAME 8888:$CONTAINER_WS_PORT &
+  {{- end }}
   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "zoo-project-dru.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
   export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
   echo "Visit http://127.0.0.1:8080 to use your application"

@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-websocketd
+  labels:
+    {{- if .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    {{- end }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ .Release.Name }}-websocketd
+    app.kubernetes.io/instance: {{ .Release.Name }}-websocketd
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-websocketd
+      app.kubernetes.io/instance: {{ .Release.Name }}-websocketd
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-websocketd
+        app.kubernetes.io/instance: {{ .Release.Name }}-websocketd
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Release.Name }}-websocketd
+      initContainers:
+        - name: init-wait-for-dependencies-websocketd
+          image: docker.io/wshihadeh/wait_for:latest
+          imagePullPolicy: IfNotPresent
+          command: [ "/docker-entrypoint.sh" ]
+          args: [ "wait_for", "redis:{{ .Release.Name }}-redis-master"]
+          env:
+            - name: ZOO_REDI_HOST
+              value: {{ .Release.Name }}-redis-master
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: websocketd
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.websocketd.image.repository }}:{{ .Values.websocketd.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.websocketd.pullPolicy }}
+          env:
+            - name: ZOO_REDIS_HOST
+              value: {{ .Release.Name }}-redis-master
+          ports:
+            - name: ws
+              containerPort: 8888
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: ws
+          readinessProbe:
+            tcpSocket:
+              port: ws
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: bin-config
+              mountPath: /shell.py
+              subPath: subscriber.py
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: bin-config
+          configMap:
+            name: {{ .Release.Name }}-bin-config
+            defaultMode: 0744
