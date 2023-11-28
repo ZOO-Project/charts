@@ -79,9 +79,11 @@ spec:
             - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/security_service.py
               subPath: security_service.py
+            {{ - if .Values.websocketd.enabled }}
             - name: bin-config
               mountPath: /usr/lib/cgi-bin/publish.py
               subPath: publish.py
+            {{ - end }}
             - name: zoo-example-config
               mountPath: /var/www/html/examples/post_processes/app-package.cwl
               subPath: app-package.cwl
