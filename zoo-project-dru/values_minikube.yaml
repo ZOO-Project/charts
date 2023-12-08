@@ -27,6 +27,11 @@ iam:
 
 websocketd:
   enabled: true
+  port: 8888
+  image:
+    repository: zooproject/websocketd
+    pullPolicy: IfNotPresent
+    tag: 8d7a31d15be1ea875c6b7d12335f821ea2495aee
 
 redis:
   enabled: true

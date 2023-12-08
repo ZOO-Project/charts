@@ -87,7 +87,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-7de51b06d7756e5af0d13fb5213ab52da27e0e4d
+    tag: dru-6ab358f109fd5c094ed4bea81160ff142aa09d3b
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -97,7 +97,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-7de51b06d7756e5af0d13fb5213ab52da27e0e4d
+    tag: dru-6ab358f109fd5c094ed4bea81160ff142aa09d3b
   extraMountPoints: []
 
 
@@ -170,14 +170,6 @@ redis:
     replicaCount: 1
   auth:
     enabled: false
-
-websocketd:
-  enabled: false
-  port: 8888
-  image:
-    repository: zooproject/websocketd
-    pullPolicy: IfNotPresent
-    tag: 8d7a31d15be1ea875c6b7d12335f821ea2495aee
 
 iam: 
   enabled: true
