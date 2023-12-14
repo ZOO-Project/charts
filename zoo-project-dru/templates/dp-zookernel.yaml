@@ -77,6 +77,9 @@ spec:
               mountPath: /var/www/html/swagger-ui/oapip/index.html
               subPath: oapi-index.html
             - name: zoo-project-config
+              mountPath: /var/www/html/swagger-ui/oapip/swagger-initializer.js
+              subPath: swagger-initializer.js
+            - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/security_service.py
               subPath: security_service.py
             {{- if .Values.websocketd.enabled }}

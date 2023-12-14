@@ -73,7 +73,11 @@ def securityIn(conf, inputs, outputs):
     for i in conf["renv"]:
         if i.count("SERVICES_NAMESPACE"):
             rPath += conf["renv"][i]
-            conf["auth_env"] = {"user": conf["renv"][i], "cwd": rPath}
+            if "auth_env" not in conf:
+                conf["auth_env"] = {"user": conf["renv"][i], "cwd": rPath}
+            else:
+                conf["auth_env"]["user"] = conf["renv"][i]
+                conf["auth_env"]["cwd"] = rPath
             conf["lenv"]["fpm_user"] = conf["renv"][i]
             conf["lenv"]["fpm_cwd"] = rPath
             # conf["lenv"]["cwd"]=rPath
@@ -88,6 +92,10 @@ def securityIn(conf, inputs, outputs):
                     conf["renv"]["CONTEXT_DOCUMENT_ROOT"] + "/" + rFiles[i],
                     rPath + "/" + rFiles[i],
                 )
+    try:
+        print(conf["auth_env"], file=sys.stderr)
+    except Exception as e:
+        print(e, file=sys.stderr)
     return zoo.SERVICE_SUCCEEDED
 
 
