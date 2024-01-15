@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "zoo-project-dru.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ .Release.Name }}-service:{{ .Values.service.port }}']
   restartPolicy: Never
