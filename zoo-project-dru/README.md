@@ -29,6 +29,8 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 
 ### Persistence
 
+There are two persistent storage: `procServices` and `tmp`. The ZOO-Project uses the first for storing the deployed services (in a dedicated user's namespace) and the second for temporary files.
+
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
 | persistence.enabled            | The persistence is enabled | true                      |
@@ -53,7 +55,11 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 | global.postgresql.auth.database            | Database name                                            | zoo                      |
 | global.postgresql.service.ports.postgresql | PostgreSQL port                                          | "5432"                   |
 
-### PostgreSQL
+### Dependencies
+
+#### PostgreSQL
+
+See the reference [PostgreSQL chart documentation](https://artifacthub.io/packages/helm/bitnami/postgresql) for more parameters.
 
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
@@ -61,7 +67,9 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 | postgresql.primary.initdb.scriptsConfigMap | The init script config map                               | true                     |
 
 
-### RabbitMQ
+#### RabbitMQ
+
+See the reference [RabbitMQ chart documentation](https://artifacthub.io/packages/helm/bitnami/rabbitmq) for more parameters.
 
 | Name                                       | Description                                              | Value                                        |
 |:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
@@ -71,11 +79,26 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 | rabbitmq.loadDefinition.existingSecret     | Existing secret with the load definitions file                              | load-definition                              |
 | rabbitmq.extraConfiguration                | Configuration file content: extra configuration to be appended to RabbitMQ configuration                              | load_definitions = /app/load_definition.json |
 
-### MinIO
+#### MinIO
+
+See the reference [MinIO chart documentation](https://artifacthub.io/packages/helm/bitnami/minio) for more parameters.
 
 | Name          | Description                                          | Value |
 |:--------------|:-----------------------------------------------------|:------|
 | minio.enabled | Is MinIO used for storage in place of AWS            | false |
+| minio.defaultBuckets | Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)            | "processingresults" |
+| minio.fullnameOverride | String to fully override the MinIO's common.names.fullname template            | "s3-service" |
+
+
+#### Redis
+
+See the reference [Redis chart documentation](https://artifacthub.io/packages/helm/bitnami/redis) for more parameters.
+
+| Name          | Description                                          | Value |
+|:--------------|:-----------------------------------------------------|:------|
+| redis.enabled | Is Redis used by the current deployment              | false |
+| redis.replica.replicaCount | Number of Redis replica                 | 1     |
+| redis.auth.enabled | Number of Redis replica                         | false |
 
 
 ### CookieCutter
@@ -90,7 +113,9 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 | Name                             | Description                                                        | Value                                                |
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
 | zoo.rabbitmq.definitions         | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
-
+| zookernel.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
+| zoofpm.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
+ 
 
 ### Identity and Access Management
 
@@ -100,7 +125,20 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 | iam.openIdConnectUrl | The OpenIDConnect configuration URL                    | https://testbed19.geolabs.fr:8099/realms/ZOO_DEMO/.well-known/openid-configuration |
 | iam.type | The IAM type                        | openIdConnect |
 | iam.name | The IAM name                        | OpenIDAuth |
-| iam.realm | The realm associated with the IAM                        | Secured section |
+| iam.realm | The realm associated with the IAM | Secured section |
+| iam.clientId | The clientId to access the IAM (optional) | undefined |
+| iam.clientSecret | The clientSecret to access the IAM (optional) | undefined |
+| iam.userinfoUrl | The userInfo url to access the user details from the IAM (optional) | undefined |
+
+### Websocketd
+
+In case you have enabled redis and disabled IAM, you can activate the websocketd server.
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| websocketd.enabled | The websocketd server is enabled                        | true |
+| websocketd.port | The websocketd server listen port                        | 8888 |
+
 
 ### filter_in process
 
@@ -127,6 +165,7 @@ helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
 | workflow.defaultMaxRam                                   | The default max ram allocated      | 1024                                                                  |
 | workflow.defaultMaxCores                                 | The default max cores allocated    | 2                                                                     |
 | workflow.calrissianImage                                 | The calrissian image version       | "terradue/calrissian:0.12.0"                                          |
+| workflow.additionalInputs                                 | The additiona inputs        | {}                                          |
 | workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | []                                          |
 | workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label       | {}                                          |
 | workflow.env                                             | Environmental variables for the processing pods       | {}                                          |

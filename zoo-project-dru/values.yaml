@@ -20,7 +20,6 @@ serviceAccount:
 useKubeProxy: true
 clusterAdminRoleName: cluster-admin
 
-
 podAnnotations: {}
 
 podSecurityContext: {}
@@ -87,7 +86,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-fdf95be6bfcc34ebc29ae368d44d9992f8213c1e
+    tag: dru-e96836ffe051980aae578dc3ae4b59fefd997888
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -97,9 +96,8 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-fdf95be6bfcc34ebc29ae368d44d9992f8213c1e
+    tag: dru-e96836ffe051980aae578dc3ae4b59fefd997888
   extraMountPoints: []
-
 
 workflow:
   storageClass: standard
@@ -139,7 +137,6 @@ rabbitmq:
   extraConfiguration: |
     load_definitions = /app/load_definition.json
 
-
 persistence:
   enabled: true
   # existingUserDataClaim:
@@ -162,6 +159,9 @@ cookiecutter:
   templateUrl: https://github.com/EOEPCA/proc-service-template.git
 
 minio:
+  enabled: false
+
+websocketd:
   enabled: false
 
 redis: 
