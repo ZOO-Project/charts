@@ -187,3 +187,12 @@ filter_out:
   enabled: true
   path: /usr/lib/cgi-bin
   service: securityOut
+
+# Value overrides for the file assets included within the chart template.
+files:
+  # Directory `files/cwlwrapper-assets` - assets for ConfigMap `XXX-cwlwrapper-config`
+  cwlwrapperAssets: {}
+    # main.yaml: ""
+    # rules.yaml: ""
+    # stagein.yaml: ""
+    # stageout.yaml: ""

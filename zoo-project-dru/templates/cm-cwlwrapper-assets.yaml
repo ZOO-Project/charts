@@ -3,4 +3,12 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-cwlwrapper-config
 data:
-  {{- (.Files.Glob "files/cwlwrapper-assets/*").AsConfig | nindent 2 }}
+{{- $globPattern := "files/cwlwrapper-assets/*" }}
+{{- $values := .Values }}
+{{- $files := .Files }}
+{{- range $path, $_ := $files.Glob $globPattern }}
+  {{- $filename := $path | base }}
+  {{- $fileOverride := get $values.files.cwlwrapperAssets $filename }}
+  {{ $filename }}: |-
+    {{- $fileOverride | default ($files.Get $path) | nindent 4 }}
+{{- end }}
