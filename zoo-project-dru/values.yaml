@@ -196,3 +196,20 @@ files:
     # rules.yaml: ""
     # stagein.yaml: ""
     # stageout.yaml: ""
+
+# Provide custom contribution to the zoo configuration files.
+customConfig:
+  # file main.cfg
+  main: ""
+#
+# Example - passing through custom config that can be accessed directly in a
+# cookiecutter template that is provided as a deployment customisation.
+# The cookiecutter must be coded to expect these passed-thru parameters by name,
+# i.e. under the keys ["myCustomConfig"]["domain"], etc.
+#
+# ---
+# customConfig:
+#   main: |-
+#     [myCustomConfig]
+#     domain=mycluster.myplatform
+#     workspace_prefix=ws
