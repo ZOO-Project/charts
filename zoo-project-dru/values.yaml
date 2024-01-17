@@ -200,7 +200,7 @@ files:
 # Provide custom contribution to the zoo configuration files.
 customConfig:
   # file main.cfg
-  main: ""
+  main: {}
 #
 # Example - passing through custom config that can be accessed directly in a
 # cookiecutter template that is provided as a deployment customisation.
@@ -209,7 +209,10 @@ customConfig:
 #
 # ---
 # customConfig:
-#   main: |-
-#     [myCustomConfig]
-#     domain=mycluster.myplatform
-#     workspace_prefix=ws
+#   main:
+#     myCustomConfig: |-
+#       domain=mycluster.myplatform
+#       workspace_prefix=ws
+#     moreCustomConfig: |-
+#       something=some-data
+#       otherthing=stuff
