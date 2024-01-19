@@ -86,7 +86,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-e96836ffe051980aae578dc3ae4b59fefd997888
+    tag: dru-49b0b627396176dd5e97952396ce2d910ceac86d
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -96,7 +96,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-e96836ffe051980aae578dc3ae4b59fefd997888
+    tag: dru-49b0b627396176dd5e97952396ce2d910ceac86d
   extraMountPoints: []
 
 workflow:
@@ -187,32 +187,3 @@ filter_out:
   enabled: true
   path: /usr/lib/cgi-bin
   service: securityOut
-
-# Value overrides for the file assets included within the chart template.
-files:
-  # Directory `files/cwlwrapper-assets` - assets for ConfigMap `XXX-cwlwrapper-config`
-  cwlwrapperAssets: {}
-    # main.yaml: ""
-    # rules.yaml: ""
-    # stagein.yaml: ""
-    # stageout.yaml: ""
-
-# Provide custom contribution to the zoo configuration files.
-customConfig:
-  # file main.cfg
-  main: {}
-#
-# Example - passing through custom config that can be accessed directly in a
-# cookiecutter template that is provided as a deployment customisation.
-# The cookiecutter must be coded to expect these passed-thru parameters by name,
-# i.e. under the keys ["myCustomConfig"]["domain"], etc.
-#
-# ---
-# customConfig:
-#   main:
-#     myCustomConfig: |-
-#       domain=mycluster.myplatform
-#       workspace_prefix=ws
-#     moreCustomConfig: |-
-#       something=some-data
-#       otherthing=stuff
