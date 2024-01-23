@@ -10,6 +10,9 @@ spec:
   containers:
     - name: wget
       image: busybox
-      command: ['wget']
-      args: ['{{ .Release.Name }}-service:{{ .Values.service.port }}']
+      command: ["sh"]
+      args: [
+        "-c",
+        "let status=1; while test $status -ne 0; do wget -T 5 {{ .Release.Name }}-service:{{ .Values.service.port }}; let status=$?; sleep 5; done"
+      ]
   restartPolicy: Never
