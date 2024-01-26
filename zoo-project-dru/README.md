@@ -171,6 +171,11 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 | workflow.env                                             | Environmental variables for the processing pods       | {}                                          |
 
 
+### customConfig
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| customConfig.main                                    | Optional sections to include in the main.cfg file.             | {}                                                              |
 
 
 
