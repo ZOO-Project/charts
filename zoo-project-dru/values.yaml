@@ -39,6 +39,14 @@ service:
 
 ingress:
   enabled: false
+  # `hosturl` provides the opportunuity to specify the service URL when ingress is provided
+  # external to this helm chart. If ingress is enabled then the service URL can be taken
+  # from `ingress.hosts.host[0]`.
+  # Thus, the value of the service URL is deduced in the following order of priority...
+  #   * `ingress.hosturl`
+  #   * `ingress.hosts.host[0]` if `ingress.enabled: true`
+  #   * `http://localhost:8080` if all else fails
+  # hosturl: https://myzoo.example.com
   className: ""
   annotations: {}
   # kubernetes.io/ingress.class: nginx

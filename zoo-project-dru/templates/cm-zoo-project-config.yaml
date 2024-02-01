@@ -3,4 +3,11 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-zoo-project-config
 data:
-{{ (tpl (.Files.Glob "files/zoo-project/*").AsConfig . ) | indent 4 }}
+{{- $globPattern := "files/zoo-project/*" }}
+{{- $values := .Values }}
+{{- $files := .Files }}
+{{- range $path, $_ := $files.Glob $globPattern }}
+  {{- $filename := $path | base }}
+  {{ $filename }}: |-
+    {{- (tpl (toString ($files.Get $path)) $) | nindent 4 }}
+{{- end }}
