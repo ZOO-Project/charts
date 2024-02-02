@@ -171,11 +171,33 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 | workflow.env                                             | Environmental variables for the processing pods       | {}                                          |
 
 
+### ingress
+
+Defines the ingress through which the `zoo-dru` service is exposed for access outside of the cluster.
+
+In addition, the values specified here are used to derive the service URL that `zoo-dru` uses to reference its own resources - for example, the URLs returned in API responses regarding the location of job status and processing results, etc. Accordingly, the service URL is deduced in the following order of priority...
+* `ingress.hosturl` (if specified)
+* `ingress.hosts.host[0]` if `ingress.enabled: true`
+* `http://localhost:8080` if all else fails
+
+| Name | Descriptoin | Value |
+|:-----|:------------|:------|
+| ingress.enabled | Enables creation of ingress resource for the `zoo-dru` service.<br>In the case that `enabled: false` is set, then other values (with the exception of `hosturl`) do not apply | `false` |
+| ingress.hosturl | (optional) The URL through which the `zoo-dru` service is externally exposed.<br>_See explanation in preamble above._ | _not specified_ |
+| ingress.className | Identifies the class of ingress controller that should satisfy the ingress request | "" |
+| ingress.annotations | Additional parameters that are passed as configuration to the ingress controller that satisfies the ingress.<br>_See documentation of specific ingress controller for details._  | {} |
+| ingress.hosts | Array of one or more host specifications that provide ingress rules | _see following items_ |
+| ingress.hosts[n].host | Hostname to match for the ingress rule | `chart-example.local` |
+| ingress.hosts[n].paths | Array of paths to match for the ingress rule | _see following items_ |
+| ingress.hosts[n].paths[m].path | Path to match for the ingress rule | `/` |
+| ingress.hosts[n].paths[m].pathType | Paths matching policy for the ingress rule | `ImplementationSpecific` |
+| ingress.tls | (optional) Array of zero or more specifications providing details of TLS certificate to be used for specific hostnames | []<br>_see following items_ |
+| ingress.tls[n].hosts | Array of hostnames to be associated with the TLS certificate | _not specified_ |
+| ingress.tls[n].secretName | Name of secret that holds the TLS certificate | _not specified_ |
+
+
 ### customConfig
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
 | customConfig.main                                    | Optional sections to include in the main.cfg file.             | {}                                                              |
-
-
-
