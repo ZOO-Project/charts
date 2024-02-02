@@ -67,3 +67,25 @@ Create the name of the service account to use
 {{- default .Release.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
+{{- define "zoo-project-dru.hosturl" -}}
+{{- if .Values.ingress.hosturl }}
+  {{- .Values.ingress.hosturl }}
+{{- else }}
+  {{- if .Values.ingress.enabled }}
+    {{- with (first .Values.ingress.hosts) }}
+    {{- printf "https://%s" .host }}
+    {{- end }}
+  {{- else }}
+    {{- "http://localhost:8080" }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "zoo-project-dru.hosturlws" -}}
+{{- $hosturl := include "zoo-project-dru.hosturl" . }}
+{{- $hosturlParsed := urlParse $hosturl }}
+{{- $scheme := index $hosturlParsed "scheme" }}
+{{- $scheme := replace "http" "ws" $scheme }}
+{{- $host := index $hosturlParsed "host" }}
+{{- printf "%s://%s:8888" $scheme $host }}
+{{- end }}
