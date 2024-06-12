@@ -19,8 +19,8 @@ minio:
   fullnameOverride: "s3-service"
 
 cookiecutter:
-  templateUrl: https://github.com/EOEPCA/proc-service-template.git
-  templateBranch: zoo-project-dru-http-in
+  templateUrl: https://github.com/EOEPCA/eoepca-proc-service-template.git
+  templateBranch: master
 
 iam:
   enabled: false
