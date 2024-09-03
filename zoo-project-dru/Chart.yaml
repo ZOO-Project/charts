@@ -1,6 +1,7 @@
 apiVersion: v2
 name: zoo-project-dru
 description: A Helm chart for Kubernetes
+icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -15,31 +16,31 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.7
+version: 0.2.8
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.1.9"
+appVersion: "0.2.0"
 
 dependencies:
   - name: postgresql
-    version: "13.2.5"
+    version: "15.5.8"
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
 
   - name: rabbitmq
-    version: "12.5.4"
+    version: "14.4.4"
     repository: https://charts.bitnami.com/bitnami
     condition: broker.enabled
 
   - name: redis
-    version: "17.6.0"
+    version: "19.5.5"
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
 
   - name: minio
-    version: 12.10.3
+    version: 14.6.11
     repository: https://charts.bitnami.com/bitnami
     condition: minio.enabled

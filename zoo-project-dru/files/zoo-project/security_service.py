@@ -92,6 +92,12 @@ def securityIn(conf, inputs, outputs):
                     conf["renv"]["CONTEXT_DOCUMENT_ROOT"] + "/" + rFiles[i],
                     rPath + "/" + rFiles[i],
                 )
+    if conf["renv"]["REDIRECT_QUERY_STRING"].count("/package"):
+        if conf["renv"]["HTTP_ACCEPT"]=="application/cwl+json":
+            print("Conversion to cwl+json should happen in securityOut",file=sys.stderr)
+            conf["renv"]["HTTP_ACCEPT_ORIGIN"]="application/cwl+json"
+            conf["renv"]["HTTP_ACCEPT"]="application/cwl"
+            conf["lenv"]["require_conversion_to_json"]="true"
     try:
         print(conf["auth_env"], file=sys.stderr)
     except Exception as e:
@@ -115,4 +121,11 @@ def securityOut(conf, inputs, outputs):
             print("No JWT service available: " + str(e), file=sys.stderr)
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
         print("securityOut!", file=sys.stderr)
+    if "require_conversion_to_json" in conf["lenv"] and conf["lenv"]["require_conversion_to_json"]=="true":
+        import json
+        import yaml
+        if "require_conversion_to_ogcapppkg" in conf["lenv"]:
+            conf["lenv"]["json_response_object"]=json.dumps({"executionUnit": {"value": yaml.safe_load(conf["lenv"]["json_response_object"]),"mediaType": "application/cwl+json" } }, indent=2)
+        else:
+            conf["lenv"]["json_response_object"]=json.dumps(yaml.safe_load(conf["lenv"]["json_response_object"]), indent=2)
     return zoo.SERVICE_SUCCEEDED
