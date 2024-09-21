@@ -1,6 +1,5 @@
 useKubeProxy: true
 
-
 minio:
   # minio chart value parameters description can be found here:
   # https://github.com/bitnami/charts/tree/main/bitnami/minio
@@ -15,12 +14,12 @@ minio:
     storageClass: standard
     size: 2Gi
     accessMode: ReadWriteOnce
-  defaultBuckets: "processingresults"
+  defaultBuckets: "eoepca"
   fullnameOverride: "s3-service"
 
 cookiecutter:
   templateUrl: https://github.com/EOEPCA/eoepca-proc-service-template.git
-  templateBranch: master
+  templateBranch: feature/python3.8
 
 iam:
   enabled: false
