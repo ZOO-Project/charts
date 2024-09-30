@@ -82,9 +82,15 @@ def securityIn(conf, inputs, outputs):
             conf["lenv"]["fpm_cwd"] = rPath
             # conf["lenv"]["cwd"]=rPath
             conf["zooServicesNamespace"] = {"namespace": conf["renv"][i], "cwd": rPath}
-            break
+            conf["main"]["tmpPath"]=rPath+"/temp"
+        if i.count("REDIRECT_QUERY_STRING") and conf["renv"][i].count("/package"):
+            if conf["renv"]["HTTP_ACCEPT"]=="application/cwl+json":
+                print("Conversion to cwl+json should happen in securityOut",file=sys.stderr)
+                conf["renv"]["HTTP_ACCEPT"]="application/cwl"
+                conf["lenv"]["require_conversion_to_json"]="true"
     if not (os.path.isdir(rPath)):
         os.mkdir(rPath)
+        os.mkdir(rPath+"/temp")
         if "required_files" in conf["servicesNamespace"]:
             rFiles = conf["servicesNamespace"]["required_files"].split(",")
             for i in range(len(rFiles)):
@@ -92,12 +98,6 @@ def securityIn(conf, inputs, outputs):
                     conf["renv"]["CONTEXT_DOCUMENT_ROOT"] + "/" + rFiles[i],
                     rPath + "/" + rFiles[i],
                 )
-    if conf["renv"]["REDIRECT_QUERY_STRING"].count("/package"):
-        if conf["renv"]["HTTP_ACCEPT"]=="application/cwl+json":
-            print("Conversion to cwl+json should happen in securityOut",file=sys.stderr)
-            conf["renv"]["HTTP_ACCEPT_ORIGIN"]="application/cwl+json"
-            conf["renv"]["HTTP_ACCEPT"]="application/cwl"
-            conf["lenv"]["require_conversion_to_json"]="true"
     try:
         print(conf["auth_env"], file=sys.stderr)
     except Exception as e:
@@ -129,3 +129,47 @@ def securityOut(conf, inputs, outputs):
         else:
             conf["lenv"]["json_response_object"]=json.dumps(yaml.safe_load(conf["lenv"]["json_response_object"]), indent=2)
     return zoo.SERVICE_SUCCEEDED
+
+
+def runDismiss(conf,inputs,outputs):
+    import sys
+    print(conf["lenv"],file=sys.stderr)
+    print(outputs,file=sys.stderr)
+    import json
+    import os
+    from loguru import logger
+    from zoo_calrissian_runner import ZooCalrissianRunner
+    from pycalrissian.context import CalrissianContext
+
+    logger.remove()
+    logger.add(sys.stderr, level="INFO")
+    try:
+        if "param" in inputs:
+            print(inputs,file=sys.stderr)
+            json_object=json.loads(inputs["param"]["value"])
+            session = CalrissianContext(
+                namespace=ZooCalrissianRunner.shorten_namespace(json_object["processID"]+"-"+conf["lenv"]["gs_usid"]),
+                storage_class=os.environ.get("STORAGE_CLASS", "openebs-nfs-test"),
+                volume_size="10Mi",
+            )
+        print("DISPOSE NAMESPACE",file=sys.stderr)
+        session.dispose()
+        print("DISPOSED NAMESPACE",file=sys.stderr)
+    except Exception as e:
+        print(e,file=sys.stderr)
+
+    return zoo.SERVICE_SUCCEEDED
+
+
+def browse(conf,inputs,outputs):
+    import sys
+    print(inputs,file=sys.stderr)
+    print(conf["renv"],file=sys.stderr)
+    f=open(conf["servicesNamespace"]["path"]+"/"+conf["renv"]["REDIRECT_REDIRECT_SERVICES_NAMESPACE"]+"/temp/"+inputs["directory"]["value"],"r", encoding="utf-8")
+    if f is not None:
+        if "result" not in outputs:
+            outputs["result"]={}
+        outputs["result"]["value"]=f.read()
+        return zoo.SERVICE_SUCCEEDED
+    conf["lenv"]["message"]="Unable to access the file"
+    return zoo.SERVICE_FAILED
