@@ -114,6 +114,10 @@ spec:
               mountPath: /usr/lib/cgi-bin/oas.cfg
               subPath: oas.cfg
 
+            - name: zoo-project-config
+              mountPath: /usr/lib/cgi-bin/security_service.py
+              subPath: security_service.py
+
             - name: bin-config
               mountPath: /startup.sh
               subPath: start-up.sh
