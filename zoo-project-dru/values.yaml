@@ -164,7 +164,7 @@ persistence:
   tmpPath: /tmp/zTmp
 
 cookiecutter:
-  templateUrl: https://github.com/EOEPCA/proc-service-template.git
+  templateUrl: https://github.com/EOEPCA/eoepca-proc-service-template.git
   templateBranch: feature/python3.8
 
 minio:
