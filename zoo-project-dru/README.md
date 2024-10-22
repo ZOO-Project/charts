@@ -130,6 +130,12 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | iam.clientSecret | The clientSecret to access the IAM (optional) | undefined |
 | iam.userinfoUrl | The userInfo url to access the user details from the IAM (optional) | undefined |
 
+### Documentation
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| documentation.enabled | The Swagger-UI should include the documentation available from files/openapi-config/*                        | false |
+
 ### Websocketd
 
 In case you have enabled redis and disabled IAM, you can activate the websocketd server.

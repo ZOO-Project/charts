@@ -22,6 +22,7 @@
 #  DEALINGS IN THE SOFTWARE.
 ################################################################################
 import zoo
+from loguru import logger
 
 
 def workspaceApi(conf, inputs, outputs):
@@ -51,7 +52,7 @@ def securityIn(conf, inputs, outputs):
     import sys, os, shutil
 
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
-        print("securityIn!", file=sys.stderr)
+        logger.info("securityIn!")
     workspaceApi(conf, inputs, outputs)
     conf["pod_env_vars"] = {"A": "1", "B": "2"}
     conf["pod_node_selector"] = {} #{"C": "3"}
@@ -65,10 +66,11 @@ def securityIn(conf, inputs, outputs):
             res = s.securityIn(conf, inputs, outputs)
             s.addHeader(conf, "dru.securityIn")
             if res == zoo.SERVICE_FAILED:
+                logger.error("dru.securityIn has failed")
                 return res
     except Exception as e:
         if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
-            print("No JWT service available: " + str(e), file=sys.stderr)
+            logger.error(f"No JWT service available: {str(e)}")
     rPath = conf["servicesNamespace"]["path"] + "/"
     for i in conf["renv"]:
         if i.count("SERVICES_NAMESPACE"):
@@ -82,18 +84,23 @@ def securityIn(conf, inputs, outputs):
             conf["lenv"]["fpm_cwd"] = rPath
             # conf["lenv"]["cwd"]=rPath
             conf["zooServicesNamespace"] = {"namespace": conf["renv"][i], "cwd": rPath}
-            conf["main"]["tmpPath"]=rPath+"/temp"
+            conf["main"]["tmpPath"] = rPath + "/temp"
         if i.count("REDIRECT_QUERY_STRING") and conf["renv"][i].count("/package"):
-            if conf["renv"]["HTTP_ACCEPT"]=="application/cwl+json":
-                print("Conversion to cwl+json should happen in securityOut",file=sys.stderr)
-                conf["renv"]["HTTP_ACCEPT"]="application/cwl"
-                conf["lenv"]["require_conversion_to_json"]="true"
+            if conf["renv"]["HTTP_ACCEPT"] == "application/cwl+json":
+                print(
+                    "Conversion to cwl+json should happen in securityOut",
+                    file=sys.stderr,
+                )
+                conf["renv"]["HTTP_ACCEPT"] = "application/cwl"
+                conf["lenv"]["require_conversion_to_json"] = "true"
     if not (os.path.isdir(rPath)):
+        logger.info(f"Creating directory {rPath}")
         os.mkdir(rPath)
-        os.mkdir(rPath+"/temp")
+        os.mkdir(rPath + "/temp")
         if "required_files" in conf["servicesNamespace"]:
             rFiles = conf["servicesNamespace"]["required_files"].split(",")
             for i in range(len(rFiles)):
+                logger.info(f"Copy file {rFile[i]}")
                 shutil.copyfile(
                     conf["renv"]["CONTEXT_DOCUMENT_ROOT"] + "/" + rFiles[i],
                     rPath + "/" + rFiles[i],
@@ -121,20 +128,33 @@ def securityOut(conf, inputs, outputs):
             print("No JWT service available: " + str(e), file=sys.stderr)
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
         print("securityOut!", file=sys.stderr)
-    if "require_conversion_to_json" in conf["lenv"] and conf["lenv"]["require_conversion_to_json"]=="true":
+    if (
+        "require_conversion_to_json" in conf["lenv"]
+        and conf["lenv"]["require_conversion_to_json"] == "true"
+    ):
         import json
         import yaml
+
         if "require_conversion_to_ogcapppkg" in conf["lenv"]:
-            conf["lenv"]["json_response_object"]=json.dumps({"executionUnit": {"value": yaml.safe_load(conf["lenv"]["json_response_object"]),"mediaType": "application/cwl+json" } }, indent=2)
+            conf["lenv"]["json_response_object"] = json.dumps(
+                {
+                    "executionUnit": {
+                        "value": yaml.safe_load(conf["lenv"]["json_response_object"]),
+                        "mediaType": "application/cwl+json",
+                    }
+                },
+                indent=2,
+            )
         else:
-            conf["lenv"]["json_response_object"]=json.dumps(yaml.safe_load(conf["lenv"]["json_response_object"]), indent=2)
+            conf["lenv"]["json_response_object"] = json.dumps(
+                yaml.safe_load(conf["lenv"]["json_response_object"]), indent=2
+            )
     return zoo.SERVICE_SUCCEEDED
 
 
-def runDismiss(conf,inputs,outputs):
+def runDismiss(conf, inputs, outputs):
     import sys
-    print(conf["lenv"],file=sys.stderr)
-    print(outputs,file=sys.stderr)
+
     import json
     import os
     from loguru import logger
@@ -145,31 +165,41 @@ def runDismiss(conf,inputs,outputs):
     logger.add(sys.stderr, level="INFO")
     try:
         if "param" in inputs:
-            print(inputs,file=sys.stderr)
-            json_object=json.loads(inputs["param"]["value"])
+            print(inputs, file=sys.stderr)
+            json_object = json.loads(inputs["param"]["value"])
             session = CalrissianContext(
-                namespace=ZooCalrissianRunner.shorten_namespace(json_object["processID"].replace("_","-")+"-"+conf["lenv"]["gs_usid"]),
+                namespace=ZooCalrissianRunner.shorten_namespace(
+                    json_object["processID"].replace("_", "-")
+                    + "-"
+                    + conf["lenv"]["gs_usid"]
+                ),
                 storage_class=os.environ.get("STORAGE_CLASS", "openebs-nfs-test"),
                 volume_size="10Mi",
             )
-        print("DISPOSE NAMESPACE",file=sys.stderr)
+        logger.info(f"Dispose namespace {session.namespace}")
         session.dispose()
-        print("DISPOSED NAMESPACE",file=sys.stderr)
     except Exception as e:
-        print(e,file=sys.stderr)
+        logger.error(str(e))
 
     return zoo.SERVICE_SUCCEEDED
 
 
-def browse(conf,inputs,outputs):
+def browse(conf, inputs, outputs):
     import sys
-    print(inputs,file=sys.stderr)
-    print(conf["renv"],file=sys.stderr)
-    f=open(conf["servicesNamespace"]["path"]+"/"+conf["renv"]["REDIRECT_REDIRECT_SERVICES_NAMESPACE"]+"/temp/"+inputs["directory"]["value"],"r", encoding="utf-8")
+
+    f = open(
+        conf["servicesNamespace"]["path"]
+        + "/"
+        + conf["renv"]["REDIRECT_REDIRECT_SERVICES_NAMESPACE"]
+        + "/temp/"
+        + inputs["directory"]["value"],
+        "r",
+        encoding="utf-8",
+    )
     if f is not None:
         if "result" not in outputs:
-            outputs["result"]={}
-        outputs["result"]["value"]=f.read()
+            outputs["result"] = {}
+        outputs["result"]["value"] = f.read()
         return zoo.SERVICE_SUCCEEDED
-    conf["lenv"]["message"]="Unable to access the file"
+    conf["lenv"]["message"] = "Unable to access the file"
     return zoo.SERVICE_FAILED

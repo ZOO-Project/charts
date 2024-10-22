@@ -8,6 +8,7 @@ deploy:
     - name: zoo-project-dru
       chartPath: zoo-project-dru
       namespace: zoo
+      createNamespace: true
       valuesFiles:
       - zoo-project-dru/values_minikube.yaml
 

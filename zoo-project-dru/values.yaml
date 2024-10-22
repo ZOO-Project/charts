@@ -93,8 +93,8 @@ zoo:
 zoofpm:
   image:
     repository: zooproject/zoo-project
-    pullPolicy: IfNotPresent
-    tag: dru-cee42c762d6548211debf52cb5fadc40806a0747
+    pullPolicy: Never #IfNotPresent
+    tag: dru-05270ce6b773c6e970cada13e7a8c0b6945081dc
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -103,8 +103,8 @@ zoofpm:
 zookernel:
   image:
     repository: zooproject/zoo-project
-    pullPolicy: IfNotPresent
-    tag: dru-cee42c762d6548211debf52cb5fadc40806a0747
+    pullPolicy: Never #IfNotPresent
+    tag: dru-05270ce6b773c6e970cada13e7a8c0b6945081dc
   extraMountPoints: []
 
 workflow:
@@ -186,6 +186,9 @@ iam:
   type: openIdConnect
   name: OpenIDAuth
   realm: Secured section
+
+documentation:
+  enabled: false
 
 filter_in:
   enabled: true
