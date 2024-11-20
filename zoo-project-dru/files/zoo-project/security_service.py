@@ -22,7 +22,6 @@
 #  DEALINGS IN THE SOFTWARE.
 ################################################################################
 import zoo
-from loguru import logger
 
 
 def workspaceApi(conf, inputs, outputs):
@@ -49,13 +48,12 @@ def workspaceApi(conf, inputs, outputs):
 
 
 def securityIn(conf, inputs, outputs):
-    import sys, os, shutil
-
+    import os
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
-        logger.info("securityIn!")
+        zoo.debug("securityIn")
     workspaceApi(conf, inputs, outputs)
     conf["pod_env_vars"] = {"A": "1", "B": "2"}
-    conf["pod_node_selector"] = {} #{"C": "3"}
+    conf["pod_node_selector"] = {}  # {"C": "3"}
     try:
         if (
             "has_jwt_service" in conf["servicesNamespace"]
@@ -66,11 +64,11 @@ def securityIn(conf, inputs, outputs):
             res = s.securityIn(conf, inputs, outputs)
             s.addHeader(conf, "dru.securityIn")
             if res == zoo.SERVICE_FAILED:
-                logger.error("dru.securityIn has failed")
+                zoo.error("dru.securityIn has failed")
                 return res
     except Exception as e:
         if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
-            logger.error(f"No JWT service available: {str(e)}")
+            zoo.debug(f"No JWT service available: {str(e)}")
     rPath = conf["servicesNamespace"]["path"] + "/"
     for i in conf["renv"]:
         if i.count("SERVICES_NAMESPACE"):
@@ -85,35 +83,30 @@ def securityIn(conf, inputs, outputs):
             # conf["lenv"]["cwd"]=rPath
             conf["zooServicesNamespace"] = {"namespace": conf["renv"][i], "cwd": rPath}
             conf["main"]["tmpPath"] = rPath + "/temp"
-        if i.count("REDIRECT_QUERY_STRING") and conf["renv"][i].count("/package"):
+        if i.count("QUERY_STRING") and conf["renv"][i].count("/package"):
             if conf["renv"]["HTTP_ACCEPT"] == "application/cwl+json":
-                print(
-                    "Conversion to cwl+json should happen in securityOut",
-                    file=sys.stderr,
-                )
+                zoo.info("Conversion to cwl+json should happen in securityOut")
                 conf["renv"]["HTTP_ACCEPT"] = "application/cwl"
                 conf["lenv"]["require_conversion_to_json"] = "true"
     if not (os.path.isdir(rPath)):
-        logger.info(f"Creating directory {rPath}")
+        import shutil
+        zoo.info(f"Creating directory {rPath}")
         os.mkdir(rPath)
         os.mkdir(rPath + "/temp")
         if "required_files" in conf["servicesNamespace"]:
             rFiles = conf["servicesNamespace"]["required_files"].split(",")
             for i in range(len(rFiles)):
-                logger.info(f"Copy file {rFile[i]}")
+                zoo.info(f"Copy file {rFile[i]}")
                 shutil.copyfile(
                     conf["renv"]["CONTEXT_DOCUMENT_ROOT"] + "/" + rFiles[i],
                     rPath + "/" + rFiles[i],
                 )
-    try:
-        print(conf["auth_env"], file=sys.stderr)
-    except Exception as e:
-        print(e, file=sys.stderr)
+    if "auth_env" not in conf:
+        zoo.warning("No auth_env section found")
     return zoo.SERVICE_SUCCEEDED
 
 
 def securityOut(conf, inputs, outputs):
-    import sys
 
     try:
         if (
@@ -125,10 +118,11 @@ def securityOut(conf, inputs, outputs):
             s.addHeader(conf, "dru.securityOut")
     except Exception as e:
         if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
-            print("No JWT service available: " + str(e), file=sys.stderr)
+            zoo.debug("No JWT service available: " + str(e))
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
-        print("securityOut!", file=sys.stderr)
+        zoo.debug("securityOut")
     if (
+        "json_response_object" in conf["lenv"] and
         "require_conversion_to_json" in conf["lenv"]
         and conf["lenv"]["require_conversion_to_json"] == "true"
     ):
@@ -154,15 +148,12 @@ def securityOut(conf, inputs, outputs):
 
 def runDismiss(conf, inputs, outputs):
     import sys
-
     import json
     import os
     from loguru import logger
     from zoo_calrissian_runner import ZooCalrissianRunner
     from pycalrissian.context import CalrissianContext
 
-    logger.remove()
-    logger.add(sys.stderr, level="INFO")
     try:
         if "param" in inputs:
             print(inputs, file=sys.stderr)
@@ -176,21 +167,23 @@ def runDismiss(conf, inputs, outputs):
                 storage_class=os.environ.get("STORAGE_CLASS", "openebs-nfs-test"),
                 volume_size="10Mi",
             )
-        logger.info(f"Dispose namespace {session.namespace}")
+        zoo.info(f"Dispose namespace {session.namespace}")
         session.dispose()
     except Exception as e:
-        logger.error(str(e))
+        zoo.error(str(e))
 
     return zoo.SERVICE_SUCCEEDED
 
 
 def browse(conf, inputs, outputs):
-    import sys
-
+    redirect_url=None
+    for i in conf["renv"]:
+        if i.count("SERVICES_NAMESPACE")>0:
+            redirect_url=conf["renv"][i]
     f = open(
         conf["servicesNamespace"]["path"]
         + "/"
-        + conf["renv"]["REDIRECT_REDIRECT_SERVICES_NAMESPACE"]
+        + redirect_url
         + "/temp/"
         + inputs["directory"]["value"],
         "r",
