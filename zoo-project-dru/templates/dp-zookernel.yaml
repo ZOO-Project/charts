@@ -48,26 +48,6 @@ spec:
           env:
             - name: ZOO_REDIS_HOST
               value: {{ .Release.Name }}-redis-master
-            {{- if .Values.workflow.argo.enabled }}
-            - name: STORAGE_CLASS
-              value: {{ .Values.workflow.argo.storageClass  }}
-            - name: DEFAULT_VOLUME_SIZE
-              value: {{ .Values.workflow.argo.defaultVolumeSize }}
-            - name: DEFAULT_MAX_CORES
-              value: {{ .Values.workflow.argo.defaultMaxCores | toString }}
-            - name: DEFAULT_MAX_RAM
-              value: {{ .Values.workflow.argo.defaultMaxRam }}
-            - name: ARGO_WF_ENDPOINT
-              value: {{ .Values.workflow.argo.wfServer }}
-            - name: ARGO_WF_TOKEN
-              value: {{ .Values.workflow.argo.wfToken }}
-            - name: ARGO_WF_SYNCHRONIZATION_CM
-              value: {{ .Values.workflow.argo.wfSynchronizationCm }}
-            - name: ARGO_CWL_RUNNER_TEMPLATE
-              value: {{ .Values.workflow.argo.CwlRunnerTemplare }}
-            - name: ARGO_CWL_RUNNER_ENTRYPOINT
-              value: {{ .Values.workflow.argo.CwlRunnerEndpoint }}
-            {{- end}}
           image: "{{ .Values.zookernel.image.repository }}:{{ .Values.zookernel.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.zookernel.image.pullPolicy }}
           ports:
