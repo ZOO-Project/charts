@@ -116,7 +116,18 @@ workflow:
   imagePullSecrets: []
   nodeSelector: {}
   env: {}
-
+  argo:
+    enabled: false
+    storageClass: standard
+    defaultVolumeSize: "12Gi"
+    defaultMaxRam: "2Gi"
+    defaultMaxCores: 2
+    wfServer: "http://argo-server.ns1.svc.cluster.local:2746"
+    wfToken: ""
+    wfSynchronizationCm: "semaphore-argo-cwl-runner-stage-in-out"
+    CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
+    CwlRunnerEndpoint: "calrissian-runner"
+    
 postgresql:
   enabled: true
   primary:

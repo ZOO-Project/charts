@@ -37,6 +37,35 @@ spec:
           env:
             - name: ZOO_RABBITMQ_HOST
               value: {{ .Release.Name }}-rabbitmq
+            # k8s cluster RWX storage class, defaults to `standard`.
+            {{ if .Values.workflow.argo.enabled }}
+            - name: STORAGE_CLASS
+              value: {{ .Values.workflow.argo.storageClass | default "standard" }}
+            # Calrissian default RWX volume size, defaults to `12Gi`.
+            - name: DEFAULT_VOLUME_SIZE
+              value: {{ .Values.workflow.argo.defaultVolumeSize | default 10190 }}
+            # Calrissian default max cores, defaults to `4`.
+            -name: DEFAULT_MAX_CORES
+              value: {{ .Values.workflow.argo.defaultMaxCores | default 2 }}
+            # Calrissian default max RAM, defaults to `4Gi`.
+            - name: DEFAULT_MAX_RAM
+              value: {{ .Values.workflow.argo.defaultMaxRam | default 1024 }}
+            # this is the Argo Workflows API endpoint, defaults to `"http://localhost:2746"`.
+            - name: ARGO_WF_ENDPOINT
+              value: {{ .Values.workflow.argo.wfServer | default "" }}
+            # this is the Argo Workflows API token that can be retrieved with: `kubectl get -n ns1 secret argo.service-account-token -o=jsonpath='{.data.token}' | base64 --decode`
+            - name: ARGO_WF_TOKEN
+              value: {{ .Values.workflow.argo.wfToken | default "" }}
+            # This is the Argo Workflows synchronizaion configmap (with key "workflow"). For tests, we use "semaphore-argo-cwl-runner"
+            - name: ARGO_WF_SYNCHRONIZATION_CM
+              value: {{ .Values.workflow.argo.wfSynchronizationCm | default "semaphore-argo-cwl-runner" }}
+            # this is the Argo Workflows WorkflowTemplate that runs the CWL, defaults to: "argo-cwl-runner"
+            - name: ARGO_CWL_RUNNER_TEMPLATE
+              value: {{ .Values.workflow.argo.CwlRunnerTemplare | default "argo-cwl-runner" }}
+            # this is the Argo Workflows WorkflowTemplate entrypoint, defaults to: "calrissian-runner"
+            - name: ARGO_CWL_RUNNER_ENTRYPOINT
+              value: {{ .Values.workflow.argo.CwlRunnerEndpoint | default "calrissian-runner" }}
+            {{ - end}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
