@@ -109,21 +109,20 @@ zookernel:
 
 workflow:
   storageClass: standard
-  defaultVolumeSize: 10190
-  defaultMaxRam: 1024
-  defaultMaxCores: 2
+  defaultVolumeSize: "10190"
+  defaultMaxRam: "1024"
+  defaultMaxCores: "2"
   calrissianImage: "terradue/calrissian:0.12.0"
   imagePullSecrets: []
   nodeSelector: {}
   env: {}
   argo:
-    enabled: false
+    enabled: true
     storageClass: standard
     defaultVolumeSize: "12Gi"
     defaultMaxRam: "2Gi"
-    defaultMaxCores: 2
     wfServer: "http://argo-server.ns1.svc.cluster.local:2746"
-    wfToken: ""
+    wfToken: "aaaabbbbccccdddd"
     wfSynchronizationCm: "semaphore-argo-cwl-runner-stage-in-out"
     CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
     CwlRunnerEndpoint: "calrissian-runner"
