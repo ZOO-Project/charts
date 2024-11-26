@@ -65,7 +65,7 @@ spec:
             # this is the Argo Workflows WorkflowTemplate entrypoint, defaults to: "calrissian-runner"
             - name: ARGO_CWL_RUNNER_ENTRYPOINT
               value: {{ .Values.workflow.argo.CwlRunnerEndpoint | default "calrissian-runner" }}
-            {{ - end}}
+            {{- end}}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
