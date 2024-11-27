@@ -82,13 +82,13 @@ spec:
             {{- end }}
 
             {{- if .Values.workflow.argo.enabled }}
-            - name: STORAGE_CLASS
+            - name: ARGO_WF_STORAGE_CLASS
               value: {{ .Values.workflow.argo.storageClass  }}
-            - name: DEFAULT_VOLUME_SIZE
+            - name: ARGO_WF_DEFAULT_VOLUME_SIZE
               value: {{ .Values.workflow.argo.defaultVolumeSize }}
-            - name: DEFAULT_MAX_CORES
+            - name: ARGO_WF_DEFAULT_MAX_CORES
               value: {{ .Values.workflow.argo.defaultMaxCores | toString }}
-            - name: DEFAULT_MAX_RAM
+            - name: ARGO_WF_DEFAULT_MAX_RAM
               value: {{ .Values.workflow.argo.defaultMaxRam }}
             - name: ARGO_WF_ENDPOINT
               value: {{ .Values.workflow.argo.wfServer }}
