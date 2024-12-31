@@ -94,7 +94,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-641cb18fec58de43a3468f314e5f8808c560e6d9
+    tag: dru-b22f31090171289f8bc68388250ed8bfc1eab8bb
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -104,7 +104,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-641cb18fec58de43a3468f314e5f8808c560e6d9
+    tag: dru-b22f31090171289f8bc68388250ed8bfc1eab8bb
   extraMountPoints: []
 
 workflow:
@@ -159,18 +159,34 @@ persistence:
   enabled: true
   # existingUserDataClaim:
   # existingProcServicesClaim:
-  storageClass: standard
+  ## @param persistence.storageClass Storage class of backing PVC
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  storageClass: ""
   userDataAccessMode: ReadWriteOnce
   userDataSize: 10Gi
 
-  procServicesAccessMode: ReadWriteOnce
+  ## @param persistence.procServicesAccessMode Access mode of the PVC
+  procServicesAccessMode: ReadWriteMany
+  ## @param persistence.procServicesStorageClass Storage class of backing PVC
+  ## require ReadWriteMany access mode
   procServicesStorageClass: standard
   procServicesSize: 5Gi
+  ## @param persistence.tmpPath Path to mount the PVC
   servicesNamespacePath: /opt/zooservices_user
 
+  ## @param persistence.tmpAccessMode Access mode of the PVC
   tmpAccessMode: ReadWriteMany
+  ## @param persistence.tmpStorageClass Storage class of backing PVC
+  ## require ReadWriteMany access mode
   tmpStorageClass: standard
+  ## @param persistence.tmpSize Size of the PVC
   tmpSize: 2Gi
+  ## @param persistence.tmpPath Path to mount the PVC
   tmpPath: /tmp/zTmp
 
 cookiecutter:
