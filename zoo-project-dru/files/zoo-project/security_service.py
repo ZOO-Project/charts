@@ -24,34 +24,10 @@
 import zoo
 
 
-def workspaceApi(conf, inputs, outputs):
-    conf["additional_parameters"] = {}
-    conf["additional_parameters"]["APP"] = "zoo-project-dru"
-    conf["additional_parameters"]["STAGEIN_AWS_REGION"] = "RegionOne"
-    conf["additional_parameters"]["STAGEIN_AWS_ACCESS_KEY_ID"] = "minio-admin"
-    conf["additional_parameters"][
-        "STAGEIN_AWS_SECRET_ACCESS_KEY"
-    ] = "minio-secret-password"
-    conf["additional_parameters"][
-        "STAGEIN_AWS_SERVICEURL"
-    ] = "http://s3-service.zoo.svc.cluster.local:9000"
-    conf["additional_parameters"]["STAGEOUT_AWS_REGION"] = "RegionOne"
-    conf["additional_parameters"]["STAGEOUT_AWS_ACCESS_KEY_ID"] = "minio-admin"
-    conf["additional_parameters"][
-        "STAGEOUT_AWS_SECRET_ACCESS_KEY"
-    ] = "minio-secret-password"
-    conf["additional_parameters"][
-        "STAGEOUT_AWS_SERVICEURL"
-    ] = "http://s3-service.zoo.svc.cluster.local:9000"
-    conf["additional_parameters"]["STAGEOUT_OUTPUT"] = "s3://processingresults"
-    return zoo.SERVICE_SUCCEEDED
-
-
 def securityIn(conf, inputs, outputs):
     import os
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
         zoo.debug("securityIn")
-    workspaceApi(conf, inputs, outputs)
     conf["pod_env_vars"] = {"A": "1", "B": "2"}
     conf["pod_node_selector"] = {}  # {"C": "3"}
     try:
