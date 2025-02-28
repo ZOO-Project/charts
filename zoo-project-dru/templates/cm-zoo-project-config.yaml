@@ -3,6 +3,10 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-zoo-project-config
 data:
+  additional_inputs: {{ toYaml .Values.workflow.additionalInputs | quote }}
+  pod_env_vars: {{ toYaml .Values.workflow.env | quote }}
+  pod_nodeselectors: {{ toYaml .Values.workflow.nodeSelector | quote }}
+  pod_imagePullSecrets: {{  toYaml .Values.workflow.imagePullSecrets | quote }}
 {{- $globPattern := "files/zoo-project/*" }}
 {{- $values := .Values }}
 {{- $files := .Files }}

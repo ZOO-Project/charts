@@ -116,6 +116,7 @@ workflow:
   imagePullSecrets: []
   nodeSelector: {}
   env: {}
+  additionalInputs: {}
   argo:
     enabled: true
     storageClass: standard

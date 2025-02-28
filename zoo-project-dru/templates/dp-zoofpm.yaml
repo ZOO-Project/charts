@@ -139,6 +139,22 @@ spec:
               mountPath: /usr/lib/cgi-bin/security_service.py
               subPath: security_service.py
 
+            - name: zoo-project-config
+              mountPath: /assets/additional_inputs.yaml
+              subPath: additional_inputs
+
+            - name: zoo-project-config
+              mountPath: /assets/pod_env_vars.yaml
+              subPath: pod_env_vars
+
+            - name: zoo-project-config
+              mountPath: /assets/pod_nodeselectors.yaml
+              subPath: pod_nodeselectors
+
+            - name: zoo-project-config
+              mountPath: /assets/pod_imagePullSecrets.yaml
+              subPath: pod_imagePullSecrets
+
             - name: bin-config
               mountPath: /startup.sh
               subPath: start-up.sh
