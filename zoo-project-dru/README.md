@@ -212,18 +212,16 @@ The customConfig can be used to define new section in the ZOO-Project-DRU `main.
 
 The sections that will be passed per default are the following:
 
- * `additional_parameters`: used to provide parameters for accessing the S3 bucket foir storing results,
- * `pod_env_vars`: used to define specific environmenet variables for the pod executing workflow steps,
- * `pod_node_selector`: used to define specific node selection constraints (cf. [nodeSelector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector)).
+ * `additional_parameters`: corresponds to the `workflow.additionalInputs` parameter, used to provide parameters for accessing the S3 bucket foir storing results,
+ * `pod_env_vars`: corresponds to the `workflow.env` parameter, used to define specific environmenet variables for the pod executing workflow steps,
+ * `pod_node_selector`: corresponds to the `workflow.nodeSelector` parameter, used to define specific node selection constraints.
 
 The syntaxe should use the key-value pairs definition is in the example below (cf. [main.cfg](https://zoo-project.github.io/docs/kernel/configuration.html#default-main-cfg)):
 
 `````
-customConfig.main.additional_parameters: |-
-  s3_bucket=bucket-name
-  region_name=region-name
-  aws_secret_access_key=secret-access-key
-  aws_access_key_id=access-key
-  endpoint_url=endpoint:port
+customConfig.main.mySection: |-
+  myKey=myValue
+  mySecondKey=mySecondValue
 `````
 
+All these sections will be added to the `sections_list` from the `servicesNamespace` section.
