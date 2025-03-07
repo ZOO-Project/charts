@@ -28,10 +28,6 @@ def securityIn(conf, inputs, outputs):
     import os
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
         zoo.debug("securityIn")
-    if "pod_env_vars" not in conf:
-        conf["pod_env_vars"] = {"A": "1", "B": "2"}
-    if "pod_node_selector" not in conf:
-        conf["pod_node_selector"] = {}  # {"C": "3"}
     try:
         if (
             "has_jwt_service" in conf["servicesNamespace"]
