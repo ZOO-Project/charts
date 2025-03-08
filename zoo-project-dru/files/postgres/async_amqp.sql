@@ -44,6 +44,24 @@ CREATE TABLE workers (
 );
 
 
+-- Keep previous definitino of the function
+CREATE OR REPLACE FUNCTION checkAvailableExecutionSlot(schema text,uuid text, pid int) RETURNS boolean AS 
+$BODY$
+DECLARE
+	res int;
+        cnt int;
+BEGIN
+        EXECUTE 'SELECT count(*) from '||schema||'.workers where uuid = '''||uuid||'''' INTO cnt;
+	IF cnt = 0  THEN
+	   EXECUTE 'INSERT INTO '||schema||'.workers (uuid,pid,status) VALUES ('''||uuid||''','||pid||',1)';
+	   RETURN true;
+	ELSE
+	   RETURN false;
+	END IF;
+END;
+$BODY$
+LANGUAGE 'plpgsql' COST 100.0 SECURITY INVOKER;
+
 CREATE OR REPLACE FUNCTION checkAvailableExecutionSlot(schema text,uuid text, host text, pid int) RETURNS boolean AS 
 $BODY$
 DECLARE
