@@ -114,17 +114,9 @@ workflow:
   defaultMaxCores: "2"
   calrissianImage: "terradue/calrissian:0.12.0"
   imagePullSecrets: []
-  nodeSelector: 
-    kubernetes.io/hostname: minikube-error
-    kubernetes.io/polux: linux
+  nodeSelector: {}
   env: {}
-  additionalInputs:
-    s3_bucket: "results"
-    region_name: "us-east-1"
-    aws_secret_access_key: "test"
-    aws_access_key_id: "test"
-    endpoint_url: "http://eoap-zoo-project-localstack.eoap-zoo-project.svc.cluster.local:4566"
-
+  additionalInputs: {}
   argo:
     enabled: true
     storageClass: standard
@@ -199,10 +191,8 @@ persistence:
   tmpPath: /tmp/zTmp
 
 cookiecutter:
-  #templateUrl: https://github.com/EOEPCA/eoepca-proc-service-template.git
-  #templateBranch: feature/python3.8
-  templateUrl: https://github.com/eoap/zoo-service-template.git
-  templateBranch: feature-collection
+  templateUrl: https://github.com/EOEPCA/eoepca-proc-service-template.git
+  templateBranch: feature/python3.8
 
 minio:
   enabled: false
