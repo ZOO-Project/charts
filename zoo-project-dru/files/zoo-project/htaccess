@@ -1,13 +1,13 @@
 {{- $hosturl := include "zoo-project-dru.hosturl" . -}}
 RewriteEngine On
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
-SetEnvIf Request_URI "^\/?(\w+)\/temp/(.*)" SERVICES_NAMESPACE=$1
-RewriteRule ^\/?(\w+)\/temp/(.*) /temp/$2 [PT]
+SetEnvIf Request_URI "^\/?(.*)\/temp/(.*)" SERVICES_NAMESPACE=$1
+RewriteRule ^\/?(.*)\/temp/(.*) /temp/$2 [PT]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^temp/(.*)$ /cgi-bin/zoo_loader.cgi?service=WPS&service=WPS&request=Execute&version=1.0.0&Identifier=browse&RawDataOutput=Result&DataInputs=directory=$1 [L,QSA]
-SetEnvIf Request_URI "^\/?(\w+)\/ogc-api(.*)" SERVICES_NAMESPACE=$1
-RewriteRule ^\/?(\w+)\/ogc-api/(.*) /ogc-api/$2 [PT]
+SetEnvIf Request_URI "^\/?(.*)\/ogc-api(.*)" SERVICES_NAMESPACE=$1
+RewriteRule ^\/?(.*)\/ogc-api/(.*) /ogc-api/$2 [PT]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ogc-api/api.html$ /cgi-bin/zoo_loader.cgi?/api.html [L,QSA]

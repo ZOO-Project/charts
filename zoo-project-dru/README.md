@@ -48,6 +48,8 @@ There are two persistent storage: `procServices` and `tmp`. The ZOO-Project uses
 
 ### Global parameters
 
+See the reference [PostgreSQL chart documentation](https://artifacthub.io/packages/helm/bitnami/postgresql#global-parameters) for other options.
+
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
 | global.postgresql.auth.username            | User that will be used to connect to postgresql database | zoo                      |
