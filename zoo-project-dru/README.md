@@ -56,6 +56,37 @@ See the reference [PostgreSQL chart documentation](https://artifacthub.io/packag
 | global.postgresql.auth.password            | Password for the user                                    | zoo                      |
 | global.postgresql.auth.database            | Database name                                            | zoo                      |
 | global.postgresql.service.ports.postgresql | PostgreSQL port                                          | "5432"                   |
+| global.postgresql.auth.existingSecret      | Use an existing secrets to store the connection string   | zoo                      |
+
+When using the `global.postgresql.auth.existingSecret`, it is required that the secret contains at the bare minimum the following keys: 
+
+ * `postgres-password` is the password for the PostgreSQL administrator,
+ * `password` is the password used to authenticate as a ¨PostgreSQL user.
+
+The other keys can be added and will be added to the environment variables (`PGHOST`,`PGPORT`,`PGDATABASE`,`PGUSER`)
+
+ * `host` the hostname/IP address where the PostgreSQL Server can be reached
+ * `port` the port used to access the server
+ * `database` the database to connect to
+ * `username` the user to use for authenticating to the server
+
+You can create a minimal secret using the command below.
+
+````
+kubectl create secret generic postgresql-secret \
+  --from-literal=password=zoo \
+  --from-literal=username=zoo \
+  --from-literal=postgres-password=zoo \
+  -n myNamespace --dry-run -o yaml | kubectl apply -f -
+````
+
+Then, you can use the following:
+
+````
+global.postgresql.auth.existingSecret: postgresql-secret
+````
+
+If an environment variable for PostgreSQKis available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
 ### Dependencies
 
@@ -63,11 +94,14 @@ See the reference [PostgreSQL chart documentation](https://artifacthub.io/packag
 
 See the reference [PostgreSQL chart documentation](https://artifacthub.io/packages/helm/bitnami/postgresql) for more parameters.
 
-| Name                                       | Description                                              | Value                    |
-|:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
-| postgresql.enabled                         | Is database used to store process execution status       | true                     |
-| postgresql.primary.initdb.scriptsConfigMap | The init script config map                               | true                     |
+| Name                                       | Description                                                     | Value                    |
+|:-------------------------------------------|:----------------------------------------------------------------|:-------------------------|
+| postgresql.defineEnvironmentVariables      | Set it to true to get PostgreSQL environment variables defined  | false                    |
+| postgresql.enabled                         | Is database used to store process execution status              | true                     |
+| postgresql.primary.initdb.scriptsConfigMap | The init script config map                                      | true                     |
 
+When `postgresql.defineEnvironmentVariables` is set to true, the environment variables for PostgreSQL (`PGHOST`,`PGPORT`,`PGUSER`,`PGPASSWORD`,`PGDATABASE`) will be defined for the ZOO-Kernel and the ZOO-FPM pods.
+If an environment variable for PostgreSQKis available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
 #### RabbitMQ
 

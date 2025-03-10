@@ -129,6 +129,7 @@ workflow:
     CwlRunnerEndpoint: "calrissian-runner"
     
 postgresql:
+  defineEnvironmentVariables: false
   enabled: true
   primary:
     initdb:

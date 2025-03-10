@@ -102,17 +102,53 @@ spec:
               value: {{ .Values.workflow.argo.CwlRunnerEndpoint }}
             {{- end}}
 
-            {{- if .Values.postgresql.enabled }}
+            {{- if (.Values.global.postgresql.auth.existingSecret) }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.auth.existingSecret }}
+                  key: password
+                  optional: true
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.auth.existingSecret }}
+                  key: username
+                  optional: true
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.auth.existingSecret }}
+                  key: host
+                  optional: true
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.auth.existingSecret }}
+                  key: port
+                  optional: true
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.auth.existingSecret }}
+                  key: database
+                  optional: true
+            {{- else }}
+            {{- if .Values.postgresql.defineEnvironmentVariables }}
             - name: PGHOST
               value: "{{ .Release.Name}}-postgresql-hl"
             - name: PGDATABASE
               value: {{ .Values.global.postgresql.auth.database | quote}}
             - name: PGPASSWORD
-              value: {{ .Values.global.postgresql.auth.password | quote}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgresql
+                  key: password
             - name: PGUSER
               value: {{ .Values.global.postgresql.auth.username | quote}}
             - name: PGPORT
               value: {{ .Values.global.postgresql.service.ports.postgresql | quote}}
+            {{- end }}
             {{- end }}
 
             {{- range $k, $v := .Values.workflow.inputs }}
