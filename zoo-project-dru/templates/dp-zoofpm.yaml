@@ -53,6 +53,8 @@ spec:
       {{- end }}
       containers:
         - env:
+            - name: ORIGIN_NAMESPACE
+              value: {{ .Release.Namespace }}
             - name: ZOO_RABBITMQ_HOST
               value: {{ .Release.Name }}-rabbitmq
             - name: STORAGE_CLASS
