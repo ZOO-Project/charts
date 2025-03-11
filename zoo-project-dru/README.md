@@ -86,7 +86,7 @@ Then, you can use the following:
 global.postgresql.auth.existingSecret: postgresql-secret
 ````
 
-If an environment variable for PostgreSQKis available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
+If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
 ### Dependencies
 
@@ -101,6 +101,7 @@ See the reference [PostgreSQL chart documentation](https://artifacthub.io/packag
 | postgresql.primary.initdb.scriptsConfigMap | The init script config map                                      | true                     |
 
 When `postgresql.defineEnvironmentVariables` is set to true, the environment variables for PostgreSQL (`PGHOST`,`PGPORT`,`PGUSER`,`PGPASSWORD`,`PGDATABASE`) will be defined for the ZOO-Kernel and the ZOO-FPM pods.
+
 If an environment variable for PostgreSQKis available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
 #### RabbitMQ
@@ -208,9 +209,21 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 | workflow.defaultMaxCores                                 | The default max cores allocated    | 2                                                                     |
 | workflow.calrissianImage                                 | The calrissian image version       | "terradue/calrissian:0.12.0"                                          |
 | workflow.additionalInputs                                 | The additiona inputs        | {}                                          |
-| workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | []                                          |
+| workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
 | workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label       | {}                                          |
 | workflow.env                                             | Environmental variables for the processing pods       | {}                                          |
+
+The `workflow.imagePullSecrets` is used at runtime by Calrissian to dynamically create a secret containing the object attributes defined for pulling an image from a resgistry.
+The syntaxe is as presenter below.
+
+````
+            auths:
+              fake.registry.io:
+                username: fakeuser
+                password: fakepassword
+                email: fake@example.com
+                auth: ''
+````
 
 
 ### ingress
