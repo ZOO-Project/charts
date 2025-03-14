@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.0.3
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.3.38
 ````
 
 ## Parameters
@@ -217,12 +217,12 @@ The `workflow.imagePullSecrets` is used at runtime by Calrissian to dynamically 
 The syntaxe is as presenter below.
 
 ````
-            auths:
-              fake.registry.io:
-                username: fakeuser
-                password: fakepassword
-                email: fake@example.com
-                auth: ''
+auths:
+  fake.registry.io:
+    username: fakeuser
+    password: fakepassword
+    email: fake@example.com
+    auth: ''
 ````
 
 
@@ -267,10 +267,10 @@ The sections that will be passed per default are the following:
 
 The syntaxe should use the key-value pairs definition is in the example below (cf. [main.cfg](https://zoo-project.github.io/docs/kernel/configuration.html#default-main-cfg)):
 
-`````
+````
 customConfig.main.mySection: |-
   myKey=myValue
   mySecondKey=mySecondValue
-`````
+````
 
 All these sections will be added to the `sections_list` from the `servicesNamespace` section.
