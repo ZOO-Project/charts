@@ -65,6 +65,15 @@ def securityIn(conf, inputs, outputs):
                 zoo.info("Conversion to cwl+json should happen in securityOut")
                 conf["renv"]["HTTP_ACCEPT"] = "application/cwl"
                 conf["lenv"]["require_conversion_to_json"] = "true"
+
+    if not(has_rpath):
+        rPath += "anonymous"
+        conf["lenv"]["fpm_user"] = "anonymous"
+        conf["lenv"]["fpm_cwd"] = rPath
+        conf["auth_env"] = {"user": "anonymous","cwd": rPath}
+        conf["main"]["tmpPath"]=rPath+"/temp"
+        conf["zooServicesNamespace"] = {"namespace": "anonymous","cwd": rPath}
+
     if not (os.path.isdir(rPath)):
         import shutil
         zoo.info(f"Creating directory {rPath}")

@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.3.38
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.4.2
 ````
 
 ## Parameters
