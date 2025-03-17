@@ -94,7 +94,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-022f5671051dcb296bfdf7990af334cae79411d6
+    tag: dru-2b1fc71843881c21286f2f13b8b6295f2964724e
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -104,7 +104,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-022f5671051dcb296bfdf7990af334cae79411d6
+    tag: dru-2b1fc71843881c21286f2f13b8b6295f2964724e
   extraMountPoints: []
 
 workflow:
@@ -115,11 +115,12 @@ workflow:
   calrissianImage: "terradue/calrissian:0.12.0"
   imagePullSecrets: {}
   # auths:
-  #  fake.registry.io:
+  #  fake\.registry\.io:
   #    username: fakeuser
   #    password: fakepassword
   #    email: fakeuser@fake.registry.io
   #    auth: ""
+  additionalImagePullSecrets: []
   nodeSelector: {}
   env: {}
   additionalInputs: {}

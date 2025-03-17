@@ -181,6 +181,10 @@ spec:
               mountPath: /assets/pod_imagePullSecrets.yaml
               subPath: pod_imagePullSecrets
 
+            - name: zoo-project-config
+              mountPath: /assets/pod_additionalImagePullSecrets.yaml
+              subPath: pod_additionalImagePullSecrets
+
             - name: bin-config
               mountPath: /startup.sh
               subPath: start-up.sh

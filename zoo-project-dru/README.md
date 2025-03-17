@@ -203,27 +203,53 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| workflow.storageClass                                    | The storage class used             | standard                                                              |
-| workflow.defaultVolumeSize                               | The default volume size allocated  | 10190                                                                 |
-| workflow.defaultMaxRam                                   | The default max ram allocated      | 1024                                                                  |
-| workflow.defaultMaxCores                                 | The default max cores allocated    | 2                                                                     |
-| workflow.calrissianImage                                 | The calrissian image version       | "terradue/calrissian:0.12.0"                                          |
-| workflow.additionalInputs                                 | The additiona inputs        | {}                                          |
+| workflow.storageClass                                    | The storage class used.             | standard                                                              |
+| workflow.defaultVolumeSize                               | The default volume size allocated.  | 10190                                                                 |
+| workflow.defaultMaxRam                                   | The default max ram allocated.      | 1024                                                                  |
+| workflow.defaultMaxCores                                 | The default max cores allocated.    | 2                                                                     |
+| workflow.calrissianImage                                 | The calrissian image version.       | "terradue/calrissian:0.12.0"                                          |
+| workflow.additionalInputs                                | The additional inputs passed as attributes to wrapped CWL Application.        | {}                                          |
 | workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
-| workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label       | {}                                          |
-| workflow.env                                             | Environmental variables for the processing pods       | {}                                          |
+| workflow.additionalImagePullSecrets                      | additionalImagePullSecrets is an optional list of references to existing secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
+| workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label/       | {}                                          |
+| workflow.env                                             | Environmental variables for the processing pods/       | {}                                          |
 
 The `workflow.imagePullSecrets` is used at runtime by Calrissian to dynamically create a secret containing the object attributes defined for pulling an image from a resgistry.
 The syntaxe is as presenter below.
 
 ````
 auths:
-  fake.registry.io:
+  fake\.registry\.io:
     username: fakeuser
     password: fakepassword
     email: fake@example.com
     auth: ''
 ````
+
+In addition, you can also use secrets already available in the namespace where the ZOO-Project-DRU Helm chart was deployed. 
+For doing so, you can use the `workflow.additionalImagesPullSecrets` with an array of object with a name pointing to the existing secret's name.
+
+Example:
+
+Create the secret in the dedicated namespace.
+
+````bash
+kubectl create secret docker-registry my-secret \
+  --docker-email=tiger@acme.example \
+  --docker-username=tiger \
+  --docker-password=pass1234 \
+  --docker-server=my-registry.example:5000 \
+  -n given-namespace
+````
+
+Then, you can define the `workflow.additionalImagesPullSecrets` as below.
+
+````yaml
+workflow:
+  additionalImagesPullSecrets:
+  - name: my-secret
+````
+
 
 
 ### ingress
