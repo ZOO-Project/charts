@@ -227,7 +227,7 @@ auths:
 ````
 
 In addition, you can also use secrets already available in the namespace where the ZOO-Project-DRU Helm chart was deployed. 
-For doing so, you can use the `workflow.additionalImagesPullSecrets` with an array of object with a name pointing to the existing secret's name.
+For doing so, you can use the `workflow.additionalImagePullSecrets` with an array of object with a name pointing to the existing secret's name.
 
 Example:
 
@@ -242,11 +242,11 @@ kubectl create secret docker-registry my-secret \
   -n given-namespace
 ````
 
-Then, you can define the `workflow.additionalImagesPullSecrets` as below.
+Then, you can define the `workflow.additionalImagePullSecrets` as below.
 
 ````yaml
 workflow:
-  additionalImagesPullSecrets:
+  additionalImagePullSecrets:
   - name: my-secret
 ````
 
