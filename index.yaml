@@ -2,6 +2,48 @@ apiVersion: v1
 entries:
   zoo-project-dru:
   - annotations:
+      artifacthub.io/changes: |
+        - kind: fixed
+          description: Fix schema for custom types in process description
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.18
+    created: "2025-03-28T18:08:54.630562665Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.3.5
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.2.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.6.1
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.10.3
+    description: A Helm chart for Kubernetes
+    digest: 5e2ead1640998fb6f7434182229fc646cc93c559a9a252f5ad4856ad82240fc4
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.4.3/zoo-project-dru-0.4.3.tgz
+    version: 0.4.3
+  - annotations:
       artifacthub.io/changes: "- kind: fixed\n  description: Fix version number in
         the README file\n- kind: fixed\n  description: Use the correct version of
         security_service.py\n- kind: added\n  description: Bind user to anonymous
@@ -2082,4 +2124,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-03-17T18:47:11.192584916Z"
+generated: "2025-03-28T18:08:54.630821267Z"
