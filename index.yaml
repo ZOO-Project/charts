@@ -4,6 +4,50 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: changed
+          description: Update schema for float and double when no default value is set
+        - kind: changed
+          description: Use the ZOO-Project/zoo-wes-runner repository instead of EOEPCA/eoepcazoo-wes-runner
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.20
+    created: "2025-03-30T09:51:15.377055988Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.3.5
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.2.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.6.1
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.10.3
+    description: A Helm chart for Kubernetes
+    digest: aa58f6453804a5f1ca158ae67a278386e25cf3fac958b99754ba400583104ede
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.4.5/zoo-project-dru-0.4.5.tgz
+    version: 0.4.5
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: changed
           description: Add the minOccurs key when the value is 0 in the process description
         - kind: fixed
           description: Update the README.md file to add the correct Helm chart version number
@@ -2170,4 +2214,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-03-29T15:19:04.343681422Z"
+generated: "2025-03-30T09:51:15.377287922Z"
