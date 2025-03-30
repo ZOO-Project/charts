@@ -30,7 +30,7 @@ websocketd:
   image:
     repository: zooproject/websocketd
     pullPolicy: IfNotPresent
-    tag: 8d7a31d15be1ea875c6b7d12335f821ea2495aee
+    tag: 67449315857b54bbc970f02c7aa4fd10a94721f0
 
 redis:
   enabled: true

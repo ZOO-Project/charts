@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.4.6
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.4.7
 ````
 
 ## Parameters
@@ -250,6 +250,34 @@ workflow:
   - name: my-secret
 ````
 
+#### WES support
+
+ZOO-Project-DRU can execute CWL workflows through the toil Workflow Execution Service (WES).
+See [reference documentation](https://zoo-project.github.io/zoo-wes-runner/) for more informations.
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| workflow.inputs.WES_URL                                    | The toil Workflow Execution Service (WES) URL | "http://192.168.1.59:8100/ga4gh/wes/v1/" |
+| workflow.inputs.WES_USER                               | The user name to authenticate to access the WES | "test" |
+| workflow.inputs.WES_PASSWORD                          | The password to authenticate to access the WES | `"$$2y$$12$$ci.4U63YX83CwkyUrjqxAucnmi2xXOIlEF6T/KdP9824f1Rf1iyNG"` |
+
+
+#### Argo support
+
+ZOO-Project-DRU can execute CWL workflows through Argo Workflow.
+See [reference documentation](https://github.com/EOEPCA/zoo-argowf-runner) for more informations.
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| workflow.argo.enabled                                    | Activate Argo support by setting this to `true` | true |
+| workflow.argo.storageClass                               | The storage class to use for temporary data | standard |
+| workflow.argo.defaultVolumeSize                          | The default volume size | "12Gi" |
+| workflow.argo.defaultMaxRam                              | The default maximum allocated ram | "2Gi" |
+| workflow.argo.wfServer                                   | The Argo server URL  | "http://argo-server.ns1.svc.cluster.local:2746" |
+| workflow.argo.wfToken                                    | The Argo server token | "aaaabbbbccccdddd" |
+| workflow.argo.wfSynchronizationCm                        | The configmap name | "semaphore-argo-cwl-runner-stage-in-out" |
+| workflow.argo.CwlRunnerTemplare                          | The workflow name (available from the Argo workflow templates) to use as CWL Runner Template  | "argo-cwl-runner-stage-in-out" |
+| workflow.argo.CwlRunnerEndpoint                          | The entry point to use from the CWL Runner Template | "calrissian-runner" |
 
 
 ### ingress

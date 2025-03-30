@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.6
+version: 0.4.7
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -54,12 +54,18 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: updated
+    - kind: fixed
+      description: Remove updated kind in the annotations to enable publication on Artifact Hub
+    - kind: changed
+      description: Update the README to include the workflow optional parameters for WES and Argo
+    - kind: changed
+      description: Update the version of the zoo-project-dru chart to 0.4.7
+    - kind: changed
       description: Update pycalrissian to feature/v1subject-fix
       links:
         - name: Github branch
           url: https://github.com/Terradue/pycalrissian/tree/feature/v1subject-fix
-    - kind: updated
+    - kind: changed
       description: Use the develop branch from EOEPCA/zoo-calrissian-runner
       links:
         - name: Github branch
