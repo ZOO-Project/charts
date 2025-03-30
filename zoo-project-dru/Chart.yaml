@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.4
+version: 0.4.5
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.19"
+appVersion: "0.2.20"
 
 dependencies:
   - name: postgresql
@@ -55,11 +55,9 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: Add the minOccurs key when the value is 0 in the process description
-    - kind: fixed
-      description: Update the README.md file to add the correct Helm chart version number
-    - kind: fixed
-      description: Set the default value for boolean input parameters properly
+      description: Update schema for float and double when no default value is set
+    - kind: changed
+      description: Use the ZOO-Project/zoo-wes-runner repository instead of EOEPCA/eoepcazoo-wes-runner
 
   artifacthub.io/links: |
     - name: source
