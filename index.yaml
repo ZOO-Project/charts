@@ -59,12 +59,12 @@ entries:
     version: 0.4.7
   - annotations:
       artifacthub.io/changes: |
-        - kind: updated
+        - kind: changed
           description: Update pycalrissian to feature/v1subject-fix
           links:
             - name: Github branch
               url: https://github.com/Terradue/pycalrissian/tree/feature/v1subject-fix
-        - kind: updated
+        - kind: changed
           description: Use the develop branch from EOEPCA/zoo-calrissian-runner
           links:
             - name: Github branch
