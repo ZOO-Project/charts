@@ -3,6 +3,56 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: updated
+          description: Update pycalrissian to feature/v1subject-fix
+          links:
+            - name: Github branch
+              url: https://github.com/Terradue/pycalrissian/tree/feature/v1subject-fix
+        - kind: updated
+          description: Use the develop branch from EOEPCA/zoo-calrissian-runner
+          links:
+            - name: Github branch
+              url: https://github.com/EOEPCA/zoo-calrissian-runner/tree/develop
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.21
+    created: "2025-03-30T12:34:52.488956146Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.3.5
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.2.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.6.1
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.10.3
+    description: A Helm chart for Kubernetes
+    digest: d1abd70ed5dff42129abccc398fd43e5b0aabee1037437db56bd1f282c96a483
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.4.6/zoo-project-dru-0.4.6.tgz
+    version: 0.4.6
+  - annotations:
+      artifacthub.io/changes: |
         - kind: changed
           description: Update schema for float and double when no default value is set
         - kind: changed
@@ -2214,4 +2264,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-03-30T09:51:15.377287922Z"
+generated: "2025-03-30T12:34:52.489308284Z"
