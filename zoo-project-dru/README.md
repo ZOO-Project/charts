@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.4.9
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.4.11
 ````
 
 ## Parameters
@@ -211,8 +211,9 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 | workflow.additionalInputs                                | The additional inputs passed as attributes to wrapped CWL Application.        | {}                                          |
 | workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
 | workflow.additionalImagePullSecrets                      | additionalImagePullSecrets is an optional list of references to existing secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
-| workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label/       | {}                                          |
-| workflow.env                                             | Environmental variables for the processing pods/       | {}                                          |
+| workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label.       | {}                                          |
+| workflow.inputs                                          | Environmental variables for the ZOO-FPM pod (from where the processing is started).         | {}                                          |
+| workflow.env                                             | Environmental variables for the processing pods.       | {}                                          |
 
 The `workflow.imagePullSecrets` is used at runtime by Calrissian to dynamically create a secret containing the object attributes defined for pulling an image from a resgistry.
 The syntaxe is as presenter below.
