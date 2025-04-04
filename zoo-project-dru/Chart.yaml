@@ -23,53 +23,44 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.7
+version: 0.4.8
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.21"
+appVersion: "0.2.22"
 
 dependencies:
   - name: postgresql
-    version: "16.3.5"
+    version: "16.6.0"
     repository: https://charts.bitnami.com/bitnami
     condition: postgresql.enabled
 
   - name: rabbitmq
-    version: "15.2.1"
+    version: "15.4.1"
     repository: https://charts.bitnami.com/bitnami
     condition: broker.enabled
 
   - name: redis
-    version: "20.6.1"
+    version: "20.11.4"
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
 
   - name: minio
-    version: "14.10.3"
+    version: "16.0.0"
     repository: https://charts.bitnami.com/bitnami
     condition: minio.enabled
 
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
-      description: Remove updated kind in the annotations to enable publication on Artifact Hub
-    - kind: changed
-      description: Update the README to include the workflow optional parameters for WES and Argo
-    - kind: changed
-      description: Update the version of the zoo-project-dru chart to 0.4.7
-    - kind: changed
-      description: Update pycalrissian to feature/v1subject-fix
+      description: Return an error message if RabbitMQ is not reachable when trying to execute a process.
       links:
-        - name: Github branch
-          url: https://github.com/Terradue/pycalrissian/tree/feature/v1subject-fix
+        - name: Github commit
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/b18367d7d291eb0c55fcd5b3a27e7592e301b1cf
     - kind: changed
-      description: Use the develop branch from EOEPCA/zoo-calrissian-runner
-      links:
-        - name: Github branch
-          url: https://github.com/EOEPCA/zoo-calrissian-runner/tree/develop
+      description: Versions bump for dependencies: postgresql, rabbitmq, redis and minio
 
   artifacthub.io/links: |
     - name: source
