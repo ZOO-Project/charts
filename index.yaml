@@ -4,6 +4,55 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: fixed
+          description: Fix the issue with artifactshub.io changes description and version number in the README.
+        - kind: fixed
+          description: Return an error message if RabbitMQ is not reachable when trying to execute a process.
+          links:
+            - name: Github commit
+              url: https://github.com/ZOO-Project/ZOO-Project/commit/b18367d7d291eb0c55fcd5b3a27e7592e301b1cf
+        - kind: changed
+          description: Versions bump for dependencies postgresql, rabbitmq, redis and minio
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.22
+    created: "2025-04-04T14:14:06.533252207Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    description: A Helm chart for Kubernetes
+    digest: 9e8d915f1c187d7459130ecb20a80e2e858b33ef5c22f186580bd81fd0b2d6c5
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.4.9/zoo-project-dru-0.4.9.tgz
+    version: 0.4.9
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: fixed
           description: Return an error message if RabbitMQ is not reachable when trying to execute a process.
           links:
             - name: Github commit
@@ -2367,4 +2416,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-04-04T13:48:43.470878783Z"
+generated: "2025-04-04T14:14:06.533491636Z"
