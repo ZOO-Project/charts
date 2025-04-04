@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.9
+version: 0.4.10
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -55,14 +55,14 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
-      description: Fix the issue with artifactshub.io changes description and version number in the README.
+      description: "Fix the issue with artifactshub.io changes description and version number in the README."
     - kind: fixed
-      description: Return an error message if RabbitMQ is not reachable when trying to execute a process.
+      description: "Return an error message if RabbitMQ is not reachable when trying to execute a process."
       links:
         - name: Github commit
           url: https://github.com/ZOO-Project/ZOO-Project/commit/b18367d7d291eb0c55fcd5b3a27e7592e301b1cf
     - kind: changed
-      description: Versions bump for dependencies postgresql, rabbitmq, redis and minio
+      description: "Versions bump for dependencies postgresql, rabbitmq, redis and minio"
 
   artifacthub.io/links: |
     - name: source
