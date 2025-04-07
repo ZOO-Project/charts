@@ -3,6 +3,52 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: added
+          description: "Add values defined in zookernel.env into the main.cfg env section."
+        - kind: added
+          description: "Document the zookernel.env in the README file."
+        - kind: changed
+          description: "Use PassEnv in htaccess in case secrets are used for deploying PostgreSQL."
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.23
+    created: "2025-04-07T19:47:40.946502748Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    description: A Helm chart for Kubernetes
+    digest: 047a05dcf0981891dd425094b6d86c3bbc73d1d2c3036a0e7878eaabf2dc4c8f
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.4.13/zoo-project-dru-0.4.13.tgz
+    version: 0.4.13
+  - annotations:
+      artifacthub.io/changes: |
         - kind: fixed
           description: "Fix typo while testing AMQP messaging."
           links:
@@ -2556,4 +2602,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-04-07T09:41:44.677519701Z"
+generated: "2025-04-07T19:47:40.946909158Z"
