@@ -101,6 +101,8 @@ zoofpm:
   extraMountPoints: []
 
 zookernel:
+  env: {}
+    # ZOO_OUTPUT_FORMAT: stac-collection
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
@@ -123,6 +125,7 @@ workflow:
   additionalImagePullSecrets: []
   nodeSelector: {}
   env: {}
+  inputs: {}
   additionalInputs: {}
   argo:
     enabled: true

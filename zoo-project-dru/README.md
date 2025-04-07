@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.4.12
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.4.13
 ````
 
 ## Parameters
@@ -102,7 +102,7 @@ See the reference [PostgreSQL chart documentation](https://artifacthub.io/packag
 
 When `postgresql.defineEnvironmentVariables` is set to true, the environment variables for PostgreSQL (`PGHOST`,`PGPORT`,`PGUSER`,`PGPASSWORD`,`PGDATABASE`) will be defined for the ZOO-Kernel and the ZOO-FPM pods.
 
-If an environment variable for PostgreSQKis available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
+If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
 #### RabbitMQ
 
@@ -150,6 +150,7 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | Name                             | Description                                                        | Value                                                |
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
 | zoo.rabbitmq.definitions         | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
+| zookernel.env                    | The environment variables defined in the main.cfg `env` section    | {}                    |
 | zookernel.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
 | zoofpm.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
  

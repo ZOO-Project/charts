@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.12
+version: 0.4.13
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -54,11 +54,12 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: "Fix typo while testing AMQP messaging."
-      links:
-        - name: GitHub commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/e912be9fd38445c7416a2b4b3d749b1ae67247ea
+    - kind: added
+      description: "Add values defined in zookernel.env into the main.cfg env section."
+    - kind: added
+      description: "Document the zookernel.env in the README file."
+    - kind: changed
+      description: "Use PassEnv in htaccess in case secrets are used for deploying PostgreSQL."
 
   artifacthub.io/links: |
     - name: source

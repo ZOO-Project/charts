@@ -1,5 +1,12 @@
 {{- $hosturl := include "zoo-project-dru.hosturl" . -}}
 RewriteEngine On
+{{- if or (.Values.global.postgresql.auth.existingSecret) (.Values.postgresql.defineEnvironmentVariables) }}
+PassEnv PGUSER
+PassEnv PGPASSWORD
+PassEnv PGHOST
+PassEnv PGPORT
+PassEnv PGDATABASE
+{{- end }}
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 SetEnvIf Request_URI "^\/?(.*)\/temp/(.*)" SERVICES_NAMESPACE=$1
 RewriteRule ^\/?(.*)\/temp/(.*) /temp/$2 [PT]
