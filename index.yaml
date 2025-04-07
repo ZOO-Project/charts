@@ -4,6 +4,51 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: fixed
+          description: "Fix typo while testing AMQP messaging."
+          links:
+            - name: GitHub commit
+              url: https://github.com/ZOO-Project/ZOO-Project/commit/e912be9fd38445c7416a2b4b3d749b1ae67247ea
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.23
+    created: "2025-04-07T09:41:44.677203419Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    description: A Helm chart for Kubernetes
+    digest: f76086394b438df270f89294ae50b5159d920c5dcf0df8c4a9a23247dbadf8af
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.4.12/zoo-project-dru-0.4.12.tgz
+    version: 0.4.12
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: fixed
           description: "Fix the version number in the README."
         - kind: fixed
           description: "Always use double quote for strings, this is the reason why 0.4.9 and 0.4.10 get the exact same descriptions."
@@ -2511,4 +2556,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-04-04T15:35:16.094349823Z"
+generated: "2025-04-07T09:41:44.677519701Z"
