@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.11
+version: 0.4.12
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.22"
+appVersion: "0.2.23"
 
 dependencies:
   - name: postgresql
@@ -55,11 +55,10 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
-      description: "Fix the version number in the README."
-    - kind: fixed
-      description: "Always use double quote for strings, this is the reason why 0.4.9 and 0.4.10 get the exact same descriptions."
-    - kind: changed
-      description: "Update the README to include information relative to workflow.inputs."
+      description: "Fix typo while testing AMQP messaging."
+      links:
+        - name: GitHub commit
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/e912be9fd38445c7416a2b4b3d749b1ae67247ea
 
   artifacthub.io/links: |
     - name: source
