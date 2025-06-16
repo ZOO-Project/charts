@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.15
+version: 0.4.16
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.24"
+appVersion: "0.2.25"
 
 dependencies:
   - name: postgresql
@@ -54,6 +54,8 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
+    - kind: fixed
+      description: "Fix the changelog, please do not consider the previous one.
     - kind: added
       description: "Add service for websocket and expose port through skaffold."
     - kind: added

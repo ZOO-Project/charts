@@ -94,7 +94,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-d614e1fe7ce28cb08a246eb14747631cecf4802b
+    tag: dru-52999310861d654848bd4c6005331d519616bead
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -106,7 +106,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-d614e1fe7ce28cb08a246eb14747631cecf4802b
+    tag: dru-52999310861d654848bd4c6005331d519616bead
   extraMountPoints: []
 
 workflow:
