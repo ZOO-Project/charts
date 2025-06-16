@@ -18,12 +18,25 @@ deploy:
             command: ["sh", "-c", "./wait-for-it.sh"]
             os: [darwin, linux]
 
+profiles:
+
+  - name: hostpath
+    patches:
+      - op: replace
+        path: /deploy/helm/releases/0/valuesFiles
+        value: [zoo-project-dru/values_apple.yaml]
+
 portForward:
 - resourceType: service
   resourceName:	zoo-project-dru-service
   namespace: zoo
   port: 80
   localPort: 8080
+- resourceType: service
+  resourceName:	zoo-project-dru-websocketd
+  namespace: zoo
+  port: 8888
+  localPort: 8888
 - resourceType: service
   resourceName: s3-service
   namespace: zoo 

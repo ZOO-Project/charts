@@ -81,11 +81,26 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
+{{- define "zoo-project-dru.localhosturl" -}}
+{{- if .Values.ingress.hosturl }}
+  {{- .Values.ingress.hosturl }}
+{{- else }}
+  {{- if .Values.ingress.enabled }}
+    {{- with (first .Values.ingress.hosts) }}
+    {{- printf "https://%s" .host }}
+    {{- end }}
+  {{- else }}
+    {{- "http://localhost" }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "zoo-project-dru.hosturlws" -}}
 {{- $hosturl := include "zoo-project-dru.hosturl" . }}
 {{- $hosturlParsed := urlParse $hosturl }}
 {{- $scheme := index $hosturlParsed "scheme" }}
 {{- $scheme := replace "http" "ws" $scheme }}
-{{- $host := index $hosturlParsed "host" }}
+{{- $hostOrigin := index $hosturlParsed "host" }}
+{{- $host := trimAll ":8080" $hostOrigin }}
 {{- printf "%s://%s:8888" $scheme $host }}
 {{- end }}

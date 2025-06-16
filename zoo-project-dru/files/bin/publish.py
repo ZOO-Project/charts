@@ -1,4 +1,4 @@
-#!/usr/miniconda3/envs/ades-dev/bin/python
+#!/usr/bin/python3
 import os
 import sys
 import redis
@@ -6,9 +6,6 @@ data = sys.stdin.read();
 
 print('Content-Type: text/html')
 print('')
-print('Environment variables')
-for param in os.environ.keys():
-        print ("<b>%20s</b>: %s<br/>" % (param, os.environ[param]))
 
 print(data)
 

@@ -1,0 +1,44 @@
+useKubeProxy: true
+
+persistence:
+  storageClass: hostpath
+  procServicesStorageClass: hostpath
+  tmpStorageClass: hostpath
+
+workflow:
+  storageClass: hostpath
+  
+minio:
+  # minio chart value parameters description can be found here:
+  # https://github.com/bitnami/charts/tree/main/bitnami/minio
+  enabled: true
+  auth:
+    rootUser: minio-admin
+    rootPassword: minio-secret-password
+    # to access the dashboard from browser run the following port-forward command:
+    # kubectl port-forward svc/zoo-project-dru-minio 9001:9001 -n zp
+  persistence:
+    enabled: true
+    storageClass: hostpath
+    size: 2Gi
+    accessMode: ReadWriteOnce
+  defaultBuckets: "eoepca"
+  fullnameOverride: "s3-service"
+
+cookiecutter:
+  templateUrl: https://github.com/EOEPCA/eoepca-proc-service-template.git
+  templateBranch: feature/python3.8
+
+iam:
+  enabled: false
+
+websocketd:
+  enabled: true
+  port: 8888
+  image:
+    repository: zooproject/websocketd
+    pullPolicy: IfNotPresent
+    tag: 67449315857b54bbc970f02c7aa4fd10a94721f0
+
+redis:
+  enabled: true
