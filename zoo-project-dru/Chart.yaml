@@ -54,8 +54,14 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
+    - kind: added
+      description: "Add service for websocket and expose port through skaffold."
+    - kind: added
+      description: "Add hostpath profile for apple silicon in skaffold."
+    - kind: changed
+      description: "Change the oas.cfg settings to access websocket and redis."
     - kind: fixed
-      description: "Typo in the oas.cfg file for the geometryGeoJSON schema."
+      description: "Fix the hosturl in the htaccess to access the HTML Basic UI."
 
   artifacthub.io/links: |
     - name: source
