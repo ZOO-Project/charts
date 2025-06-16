@@ -4,6 +4,56 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: fixed
+          description: "Fix the changelog, please do not consider the previous one.
+        - kind: added
+          description: "Add service for websocket and expose port through skaffold."
+        - kind: added
+          description: "Add hostpath profile for apple silicon in skaffold."
+        - kind: changed
+          description: "Change the oas.cfg settings to access websocket and redis."
+        - kind: fixed
+          description: "Fix the hosturl in the htaccess to access the HTML Basic UI."
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.25
+    created: "2025-06-16T08:55:33.409855359Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    description: A Helm chart for Kubernetes
+    digest: 09c4f250d2b50f3d22ca3ab050dc4362b564920d4da9ebad9d8232d1933a005b
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.4.16/zoo-project-dru-0.4.16.tgz
+    version: 0.4.16
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: fixed
           description: "Typo in the oas.cfg file for the geometryGeoJSON schema."
       artifacthub.io/links: |-
         - name: source
@@ -2686,4 +2736,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-06-16T07:40:31.14303154Z"
+generated: "2025-06-16T08:55:33.410162804Z"
