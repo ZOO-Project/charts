@@ -54,7 +54,7 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: fixed
-          description: "Fix the changelog, please do not consider the previous one.
+          description: "Fix the changelog, please do not consider the previous one."
         - kind: added
           description: "Add service for websocket and expose port through skaffold."
         - kind: added
@@ -470,18 +470,18 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: fixed
-          description: Remove updated kind in the annotations to enable publication on Artifact Hub
+          description: "Remove updated kind in the annotations to enable publication on Artifact Hub"
         - kind: changed
-          description: Update the README to include the workflow optional parameters for WES and Argo
+          description: "Update the README to include the workflow optional parameters for WES and Argo"
         - kind: changed
-          description: Update the version of the zoo-project-dru chart to 0.4.7
+          description: "Update the version of the zoo-project-dru chart to 0.4.7"
         - kind: changed
-          description: Update pycalrissian to feature/v1subject-fix
+          description: "Update pycalrissian to feature/v1subject-fix"
           links:
             - name: Github branch
               url: https://github.com/Terradue/pycalrissian/tree/feature/v1subject-fix
         - kind: changed
-          description: Use the develop branch from EOEPCA/zoo-calrissian-runner
+          description: "Use the develop branch from EOEPCA/zoo-calrissian-runner"
           links:
             - name: Github branch
               url: https://github.com/EOEPCA/zoo-calrissian-runner/tree/develop
@@ -576,9 +576,9 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: changed
-          description: Update schema for float and double when no default value is set
+          description: "Update schema for float and double when no default value is set"
         - kind: changed
-          description: Use the ZOO-Project/zoo-wes-runner repository instead of EOEPCA/eoepcazoo-wes-runner
+          description: "Use the ZOO-Project/zoo-wes-runner repository instead of EOEPCA/eoepcazoo-wes-runner"
       artifacthub.io/links: |-
         - name: source
           url: https://github.com/ZOO-Project/charts
