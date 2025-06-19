@@ -3,6 +3,52 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: changed
+          description: "Enable CORS per default and add Content-Security-Policy."
+        - kind: added
+          description: "Add optional support for openEO authentication mechanism."
+        - kind: added
+          description: "Add endpoints attributes in the landing page if openEO authentication is enabled."
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.25
+    created: "2025-06-19T14:12:51.971150111Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    description: A Helm chart for Kubernetes
+    digest: 9e84b8c08494974b4532c61e1cb9fc5a4d0543de00dc2af997825014c79f4f49
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.4.18/zoo-project-dru-0.4.18.tgz
+    version: 0.4.18
+  - annotations:
+      artifacthub.io/changes: |
         - kind: fixed
           description: "Fix the changelog, please do not consider the previous one."
         - kind: added
@@ -2786,4 +2832,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-06-16T09:19:41.79953541Z"
+generated: "2025-06-19T14:12:51.971366588Z"
