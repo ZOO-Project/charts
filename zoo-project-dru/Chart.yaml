@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.17
+version: 0.4.18
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -54,16 +54,12 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: "Fix the changelog, please do not consider the previous one."
-    - kind: added
-      description: "Add service for websocket and expose port through skaffold."
-    - kind: added
-      description: "Add hostpath profile for apple silicon in skaffold."
     - kind: changed
-      description: "Change the oas.cfg settings to access websocket and redis."
-    - kind: fixed
-      description: "Fix the hosturl in the htaccess to access the HTML Basic UI."
+      description: "Enable CORS per default and add Content-Security-Policy."
+    - kind: added
+      description: "Add optional support for openEO authentication mechanism."
+    - kind: added
+      description: "Add endpoints attributes in the landing page if openEO authentication is enabled."
 
   artifacthub.io/links: |
     - name: source

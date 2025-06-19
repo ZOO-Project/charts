@@ -220,10 +220,20 @@ redis:
 
 iam: 
   enabled: true
-  openIdConnectUrl: https://testbed19.geolabs.fr:8099/realms/ZOO_DEMO/.well-known/openid-configuration
+  #openIdConnectUrl: https://testbed19.geolabs.fr:8099/realms/ZOO_DEMO/.well-known/openid-configuration
+  openIdConnectUrl: https://auth.geolabs.fr/realms/zooproject/.well-known/openid-configuration
   type: openIdConnect
   name: OpenIDAuth
-  realm: Secured section
+  realm: ZOO-Project-secured-access
+  openeoAuth:
+    enabled: false
+    title: OpenId Connect Secured Access
+    grant_types:
+      - implicit
+      - authorization_code+pkce
+      - urn:ietf:params:oauth:grant-type:device_code+pkce
+    redirect_uris:
+      - https://m-mohr.github.io/gdc-web-editor/
 
 documentation:
   enabled: false

@@ -23,6 +23,8 @@ cookiecutter:
 
 iam:
   enabled: false
+  openeoAuth:
+    enabled: false
 
 websocketd:
   enabled: true

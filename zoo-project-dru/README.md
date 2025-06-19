@@ -167,6 +167,14 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | iam.clientId | The clientId to access the IAM (optional) | undefined |
 | iam.clientSecret | The clientSecret to access the IAM (optional) | undefined |
 | iam.userinfoUrl | The userInfo url to access the user details from the IAM (optional) | undefined |
+| iam.openeoAuth.enabled | Enable the openEO authentication mechanism | false |
+| iam.openeoAuth.title | The title used for the default client | OpenId Connect Secured Access |
+| iam.openeoAuth.grant_types | The required grant types to be supported | ["implicit","authorization_code+pkce","urn:ietf:params:oauth:grant-type:device_code+pkce"] |
+| iam.openeoAuth.redirect_uris | The redirect urls the be supported | ["https://m-mohr.github.io/gdc-web-editor/"] |
+
+When `iam.openeoAuth.enabled` is set to `true`, two new endpoints are added to the exposed OpenAPI:
+ * `GET /credentials/oidc` to access the openid connect metadata information required by the client to authenticate (similar to the `.well-known/openid-configuration` with additional metadata).
+ * `GET /me` to access metadata information about the authenticated user. 
 
 ### Documentation
 

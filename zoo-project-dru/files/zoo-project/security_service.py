@@ -65,6 +65,44 @@ def securityIn(conf, inputs, outputs):
                 zoo.info("Conversion to cwl+json should happen in securityOut")
                 conf["renv"]["HTTP_ACCEPT"] = "application/cwl"
                 conf["lenv"]["require_conversion_to_json"] = "true"
+{{- if and (.Values.iam.enabled) (.Values.iam.openeoAuth.enabled) }}
+        import json
+        if i.count("QUERY_STRING") and conf["renv"][i].count("/credentials"):
+            import requests
+            response = requests.get(
+                conf["osecurity"]["openIdConnectUrl"],
+                verify = False
+            )
+            if response.status_code == 200:
+                jsonObject = response.json()
+                jsonObject["id"]= {{ .Values.iam.realm | quote }}
+                jsonObject["title"]= {{ .Values.iam.openeoAuth.title | quote }}
+                jsonObject["default_clients"]=[{
+                    "id": {{ .Values.iam.realm | quote }},
+                    "title": {{ .Values.iam.openeoAuth.title | quote }},
+                    "grant_types": [
+                        {{- range $i, $e := .Values.iam.openeoAuth.grant_types -}}
+                        {{- if $i -}},{{ end -}}
+                        {{- $e | quote -}}
+                        {{- end -}}
+                    ],
+                    "redirect_urls": [
+                        {{- range $i, $e := .Values.iam.openeoAuth.redirect_uris -}}
+                        {{- if $i -}},{{ end -}}
+                        {{- $e | quote -}}
+                        {{- end -}}
+                    ],
+                }]
+                resultObject={"providers": [jsonObject]}
+                conf["lenv"]["response"]=json.dumps(resultObject)
+                conf["headers"]["Content-Type"]="application/json"
+                conf["headers"]["Status"]="200 OK"
+        if i.count("QUERY_STRING") and conf["renv"][i].count("/me")>0:
+            conf["headers"]["Content-Type"]="application/json"
+            conf["headers"]["Status"]="200 OK"
+            conf["lenv"]["response"]=conf["lenv"]["json_user"]
+{{- end }}
+
 
     if not(has_rpath):
         rPath += "anonymous"
@@ -129,6 +167,26 @@ def securityOut(conf, inputs, outputs):
             conf["lenv"]["json_response_object"] = json.dumps(
                 yaml.safe_load(conf["lenv"]["json_response_object"]), indent=2
             )
+{{- if and (.Values.iam.enabled) (.Values.iam.openeoAuth.enabled) }}
+    import json
+    for i in conf["renv"]:
+        if i.count("QUERY_STRING")>0 and len(conf["renv"][i])==1:
+            jsonObjectResponse=json.loads(conf["lenv"]["json_response_object"])
+            jsonObjectResponse["endpoints"]=[
+                {"path":"/credentials/oidc","methods":["GET"]},
+                {"path":"/me","methods":["GET"]},
+                {"path":"/processes","methods":["GET"]},
+                {"path":"/processes/{process_id}","methods":["GET"]},
+                {"path":"/processes/{process_id}/execution","methods":["POST"]},
+                {"path":"/jobs","methods":["GET"]},
+                {"path":"/jobs/{job_id}","methods":["GET","DELETE"]},
+                {"path":"/jobs/{job_id}/results","methods":["GET"]},
+            ]
+            conf["lenv"]["json_response_object"]=json.dumps(jsonObjectResponse)
+            return zoo.SERVICE_SUCCEEDED
+        elif i.count("QUERY_STRING")>0:
+                return zoo.SERVICE_SUCCEEDED
+{{- end }}
     return zoo.SERVICE_SUCCEEDED
 
 
