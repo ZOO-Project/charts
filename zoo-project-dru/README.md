@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.4.15
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.5.0
 ````
 
 ## Parameters
@@ -172,7 +172,7 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | iam.openeoAuth.grant_types | The required grant types to be supported | ["implicit","authorization_code+pkce","urn:ietf:params:oauth:grant-type:device_code+pkce"] |
 | iam.openeoAuth.redirect_uris | The redirect urls the be supported | ["https://m-mohr.github.io/gdc-web-editor/"] |
 
-When `iam.openeoAuth.enabled` is set to `true`, two new endpoints are added to the exposed OpenAPI:
+When both `iam.enabled` and `iam.openeoAuth.enabled` are set to `true`, two new endpoints are added to the exposed OpenAPI:
  * `GET /credentials/oidc` to access the openid connect metadata information required by the client to authenticate (similar to the `.well-known/openid-configuration` with additional metadata).
  * `GET /me` to access metadata information about the authenticated user. 
 
@@ -338,3 +338,119 @@ customConfig.main.mySection: |-
 ````
 
 All these sections will be added to the `sections_list` from the `servicesNamespace` section.
+
+### Notification using Knative
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| notification.enabled                                    | Define if notification using Knative CloudEvents should be activated             | false                                      |
+| notification.ksink                                    | Define the ksink to use to send [CloudEvents](https://cloudevents.io/)             | {"kind":"Broker","namespace":"default","name":"default"}                                      |
+
+You can refer to the tutorial available [here](https://knative.dev/docs/install/operator/knative-with-operators/) to install by using the Knative Operator.
+We provide below an example of deployment with the default values set in the `values.yaml`.
+
+#### Setup the required components
+
+````bash
+helm repo add knative-operator https://knative.github.io/operator
+helm install knative-operator --create-namespace --namespace knative-operator knative-operator/knative-operator
+kubectl config set-context --current --namespace=knative-operator
+kubectl get deployment knative-operator
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-serving
+---
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: knative-serving
+spec:
+  config:
+    network:
+      ingress-class: kourier.ingress.networking.knative.dev
+  ingress:
+    kourier:
+      enabled: true
+EOF
+kubectl get deployment -n knative-serving
+kubectl --namespace knative-serving get service kourier
+kubectl get KnativeServing knative-serving -n knative-serving
+````
+
+After some time, you should see the following output for the last command:
+
+````bash
+NAME               VERSION   READY   REASON
+knative-serving   1.18.0    True
+````
+
+You can proceed with deploying `knative-eventing`.
+
+````bash
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: knative-eventing
+---
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeEventing
+metadata:
+  name: knative-eventing
+  namespace: knative-eventing
+EOF
+kubectl get deployment -n knative-eventing
+kubectl get KnativeEventing knative-eventing -n knative-eventing
+````
+
+After some time, you should see the following output for the last command:
+
+````bash
+NAME               VERSION   READY   REASON
+knative-eventing   1.18.1    True    
+````
+
+Then, it means everything is in place and you can now proceed with creating the Broker then the trigger.
+
+````bash
+kubectl apply -f - <<EOF
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: default
+  namespace: default
+EOF
+````
+
+#### Enable notifications
+
+From there, you are able to deploy the ZOO-Project-DRU with the `notifications.enabled` parameter set to true in your `values.yaml` file.
+
+The following settings should work properly with the setup illustrated here. The `ksink` attributes are the values defined per default.
+
+````yaml
+notifications:
+  enabled: true
+  ksink:
+    kind: Broker
+    namespace: default
+    name: default
+````
+
+#### Debugging
+
+In case you want to display the CloudEvents received by the broker for debugging purpose, you can use the commands below.
+
+````bash
+kn service create event-display --image gcr.io/knative-releases/knative.dev/eventing/cmd/event_display -n default --scale-min 1
+kn trigger create mytrigger --broker default --sink ksvc:event-display -n default
+````
+
+Then, using the command below, you can get the pod name to access its log (using `kubectl logs -f <POD_NAME> -n default`).
+
+````bash
+kubectl get pods -n default
+````

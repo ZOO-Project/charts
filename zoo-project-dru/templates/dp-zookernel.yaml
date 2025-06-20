@@ -115,6 +115,9 @@ spec:
           resources: {}
           volumeMounts:
             - name: zoo-project-config
+              mountPath: /etc/apache2/sites-enabled/000-default.conf
+              subPath: default.conf
+            - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/main.cfg
               subPath: main.cfg
             - name: zoo-project-config

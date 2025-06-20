@@ -94,7 +94,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-52999310861d654848bd4c6005331d519616bead
+    tag: dru-aeb658e352885d33c3de1d7a3b1bb30878574186
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -106,8 +106,15 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-52999310861d654848bd4c6005331d519616bead
+    tag: dru-aeb658e352885d33c3de1d7a3b1bb30878574186
   extraMountPoints: []
+
+notifications:
+  enabled: false
+  ksink:
+    kind: Broker
+    namespace: default
+    name: default
 
 workflow:
   storageClass: standard

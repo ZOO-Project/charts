@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.4.18
+version: 0.5.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.25"
+appVersion: "0.2.26"
 
 dependencies:
   - name: postgresql
@@ -55,11 +55,20 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Enable CORS per default and add Content-Security-Policy."
+      description: "Remove Content-Security-Policy headers to enable Basic HTML UI."
+    - kind: security
+      description: "Allow only the ZOO-FPM to access the publish.py CGI script."
     - kind: added
-      description: "Add optional support for openEO authentication mechanism."
+      description: "Add support for Knative ClouEvents (without EventPolicy)."
     - kind: added
-      description: "Add endpoints attributes in the landing page if openEO authentication is enabled."
+      description: "Add apache configuration file to pass environment variables required by the ZOO-Kernel."
+    - kind: added
+      description: "Add documentation to enable knative eventing."
+    - kind: changed
+      description: "Update the ZOO-Project to the latest version."
+      links:
+        - name: GitHub Commit
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/aeb658e352885d33c3de1d7a3b1bb30878574186
 
   artifacthub.io/links: |
     - name: source

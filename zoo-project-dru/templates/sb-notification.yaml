@@ -1,0 +1,21 @@
+{{- if .Values.notifications.enabled }}
+apiVersion: sources.knative.dev/v1
+kind: SinkBinding
+metadata:
+  name: bind-{{ .Release.Name }}-sinkbinding
+spec:
+  subject:
+    apiVersion: apps/v1
+    kind: Deployment
+    namespace: {{ .Release.Namespace }}
+    #name: {{ .Release.Name }}
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: {{ .Release.Name }}
+  sink:
+    ref:
+      apiVersion: eventing.knative.dev/v1
+      kind: {{ .Values.notifications.ksink.kind }}
+      name: {{ .Values.notifications.ksink.name }}
+      namespace: {{ .Values.notifications.ksink.namespace }}
+{{- end }}
