@@ -83,6 +83,17 @@ spec:
               value: /var/etc/ades/kubeconfig
             {{- end }}
 
+            {{- if .Values.workflow.dedicatedNamespace.enabled }}
+            {{- if .Values.workflow.dedicatedNamespace.name }}
+            - name: USE_NAMESPACE
+              value: {{ .Values.workflow.dedicatedNamespace.name | quote }}
+            {{- end }}
+            {{- if .Values.workflow.dedicatedNamespace.serviceAccount }}
+            - name: USE_SERVICE_ACCOUNT
+              value: {{ .Values.workflow.dedicatedNamespace.serviceAccount | quote }}
+            {{- end }}
+            {{- end }}
+
             {{- if .Values.workflow.argo.enabled }}
             - name: ARGO_WF_STORAGE_CLASS
               value: {{ .Values.workflow.argo.storageClass  }}

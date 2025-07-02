@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.5.0
+version: 0.5.1
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.26"
+appVersion: "0.2.27"
 
 dependencies:
   - name: postgresql
@@ -55,20 +55,36 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Remove Content-Security-Policy headers to enable Basic HTML UI."
-    - kind: security
-      description: "Allow only the ZOO-FPM to access the publish.py CGI script."
-    - kind: added
-      description: "Add support for Knative ClouEvents (without EventPolicy)."
-    - kind: added
-      description: "Add apache configuration file to pass environment variables required by the ZOO-Kernel."
-    - kind: added
-      description: "Add documentation to enable knative eventing."
-    - kind: changed
-      description: "Update the ZOO-Project to the latest version."
+      description: "Use the latest ZOO-Project-DRU version available."
       links:
-        - name: GitHub Commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/aeb658e352885d33c3de1d7a3b1bb30878574186
+        - name: GitHub commit
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/e61e6e704c6398225b25caf7690d2abbbf0e9522
+        - name: Docker image
+          url: https://hub.docker.com/layers/zooproject/zoo-project/dru-b019cfee90ca31a18d45f9ec699ab06320e1a5af/images/sha256-d21a59f96529c5f98b2dbe2cbd03e863771173e21e977da9dbd87a8a38c7bdb8
+    - kind: fixed
+      description: "Add default abstract for the ZOO-Project-DRU in case documentation.enabled is set to false."
+    - kind: fixed
+      description: "Security settings for the /processes/{processId}/package endpoint."
+    - kind: added
+      description: "Add support for optional namespace annotations."
+    - kind: fixed
+      description: "Add link schema in case openeo security is activated."
+    - kind: added
+      description: "Add support for reusing an existing namespace for executing a process."
+      links:
+        - name: GitHub branch
+          url: https://github.com/EOEPCA/zoo-calrissian-runner/tree/develop
+    - kind: added
+      description: "Add the WebUI service corresponding to the ZOO-Project/nuxt-client web application."
+      links:
+        - name: Docker image
+          url: https://hub.docker.com/r/zooproject/nuxt-client
+        - name: GitHub branch
+          url: https://github.com/veogeo/zooproject-nuxt-client/tree/develop
+    - kind: added
+      description: "Add comments in the skaffold.yaml to enable webui port-forward."
+    - kind: changed
+      description: "Update the ZOO-Project-DRU Helm chart documentation to reflect the latest changes."
 
   artifacthub.io/links: |
     - name: source

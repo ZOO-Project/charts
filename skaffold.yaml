@@ -27,6 +27,12 @@ profiles:
         value: [zoo-project-dru/values_apple.yaml]
 
 portForward:
+# The following port forward is used to access the webui
+# - resourceType: service
+#   resourceName:	zoo-project-dru-webui
+#   namespace: zoo
+#   port: 3000
+#   localPort: 3058
 - resourceType: service
   resourceName:	zoo-project-dru-service
   namespace: zoo

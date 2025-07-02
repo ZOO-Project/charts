@@ -1,0 +1,17 @@
+{{- $hosturl := include "zoo-project-dru.hosturl" . -}}
+# Copy this file to env_nuxt and fill in the values for your environment
+NUXT_OIDC_ISSUER = {{ .Values.webui.oidc.issuer }}
+NUXT_OIDC_CLIENT_ID = {{ .Values.webui.oidc.clientId }}
+NUXT_OIDC_CLIENT_SECRET = {{ .Values.webui.oidc.clientSecret }}
+
+NUXT_ZOO_BASEURL = {{ $hosturl }}
+NUXT_BASE_URL = {{ .Values.webui.url }}
+AUTH_ORIGIN = {{ .Values.webui.url }}
+NUXT_AUTH_SECRET = client_secret_basic
+
+#NODE_ENV = production
+# Uncomment NODE_ENV for production
+NEXTAUTH_URL = {{ .Values.webui.url }}
+ZOO_OGCAPI_REQUIRES_BEARER_TOKEN = true
+
+NODE_TLS_REJECT_UNAUTHORIZED=0

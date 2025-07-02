@@ -94,7 +94,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-aeb658e352885d33c3de1d7a3b1bb30878574186
+    tag: dru-e61e6e704c6398225b25caf7690d2abbbf0e9522
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -106,7 +106,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-aeb658e352885d33c3de1d7a3b1bb30878574186
+    tag: dru-e61e6e704c6398225b25caf7690d2abbbf0e9522
   extraMountPoints: []
 
 notifications:
@@ -134,6 +134,10 @@ workflow:
   env: {}
   inputs: {}
   additionalInputs: {}
+  dedicatedNamespace:
+    enabled: false
+    #name: "my-dedicated-namespace"
+    #serviceAccount: "my-dedicated-service-account"
   argo:
     enabled: true
     storageClass: standard
@@ -217,6 +221,11 @@ minio:
 
 websocketd:
   enabled: false
+  port: 8888
+  image:
+    repository: zooproject/websocketd
+    pullPolicy: IfNotPresent
+    tag: 67449315857b54bbc970f02c7aa4fd10a94721f0
 
 redis: 
   enabled: false
@@ -227,7 +236,6 @@ redis:
 
 iam: 
   enabled: true
-  #openIdConnectUrl: https://testbed19.geolabs.fr:8099/realms/ZOO_DEMO/.well-known/openid-configuration
   openIdConnectUrl: https://auth.geolabs.fr/realms/zooproject/.well-known/openid-configuration
   type: openIdConnect
   name: OpenIDAuth
@@ -241,6 +249,23 @@ iam:
       - urn:ietf:params:oauth:grant-type:device_code+pkce
     redirect_uris:
       - https://m-mohr.github.io/gdc-web-editor/
+      - https://editor.openeo.org/
+
+webui:
+  enabled: false
+  url: http://localhost:3058
+  port: 3000
+  image:
+    repository: zooproject/nuxt-client
+    pullPolicy: IfNotPresent
+    tag: 0.0.2
+  enforce: false
+  oidc:
+    issuer: https://auth.geolabs.fr/realms/zooproject
+    remoteUserClaim: email
+    providerTokenEndpointAuth: client_secret_basic
+    authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
+    scope: "openid email"
 
 documentation:
   enabled: false

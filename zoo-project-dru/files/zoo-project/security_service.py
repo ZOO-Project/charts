@@ -182,6 +182,19 @@ def securityOut(conf, inputs, outputs):
                 {"path":"/jobs/{job_id}","methods":["GET","DELETE"]},
                 {"path":"/jobs/{job_id}/results","methods":["GET"]},
             ]
+            jsonObjectResponse["provider"]={
+                "name": conf["provider"]["providerName"],
+                "url": conf["provider"]["providerSite"],
+                "description": conf["identification"]["abstract"],
+                "roles": [
+                    "processor"
+                ]
+            }
+            jsonObjectResponse["stac_version"]="1.0.0"
+            jsonObjectResponse["api_version"]="1.0.0"
+            jsonObjectResponse["version"]="1.0.0"
+            jsonObjectResponse["id"]=conf["identification"]["title"]
+            jsonObjectResponse["type"]="Catalog"
             conf["lenv"]["json_response_object"]=json.dumps(jsonObjectResponse)
             return zoo.SERVICE_SUCCEEDED
         elif i.count("QUERY_STRING")>0:

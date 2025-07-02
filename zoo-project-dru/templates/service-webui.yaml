@@ -1,0 +1,15 @@
+{{- if .Values.webui.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-webui
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: webui
+  selector:
+    app.kubernetes.io/name: {{ .Release.Name }}-webui
+{{- end }}  

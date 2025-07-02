@@ -1,0 +1,84 @@
+{{- if .Values.webui.enabled -}}
+{{- $hosturl := include "zoo-project-dru.hosturl" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-webui
+  labels:
+    {{- if .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    {{- end }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ .Release.Name }}-webui
+    app.kubernetes.io/instance: {{ .Release.Name }}-webui
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-webui
+      app.kubernetes.io/instance: {{ .Release.Name }}-webui
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-webui
+        app.kubernetes.io/instance: {{ .Release.Name }}-webui
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-wait-for-dependencies-webui
+          image: docker.io/wshihadeh/wait_for:latest
+          imagePullPolicy: IfNotPresent
+          command: [ "/docker-entrypoint.sh" ]
+          args: [ "wait_for", "zookernel:{{ .Release.Name }}-service" ]
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: webui
+          command: [ "/bin/sh","-c" ]
+          # Run npm run build and then npm run start everytime the container starts
+          args: [ "npm run build ; npm run start" ]            
+          image: "{{ .Values.webui.image.repository }}:{{ .Values.webui.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.webui.image.pullPolicy }}
+          ports:
+            - name: webui-http
+              containerPort: {{ .Values.webui.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: webui-http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: webui-http
+          resources: {}
+          volumeMounts:
+            - name: bin-config
+              mountPath: /usr/src/app/.env
+              subPath: env_nuxt.sample
+            - name: bin-config
+              mountPath: /usr/src/app/env_sample
+              subPath: env_nuxt.sample
+
+      restartPolicy: Always
+      volumes:
+        - name: bin-config
+          configMap:
+            name: {{ .Release.Name }}-bin-config
+            defaultMode: 0777
+
+status: {}
+{{- end }}

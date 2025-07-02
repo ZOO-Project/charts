@@ -20,7 +20,7 @@ This chart bootstraps a [ZOO-Project](http://zoo-project.org) deployment on a cl
 
 To install the chart with the release name `my-zoo-project-dru`:
 
-````
+````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
 helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.5.0
 ````
@@ -72,7 +72,7 @@ The other keys can be added and will be added to the environment variables (`PGH
 
 You can create a minimal secret using the command below.
 
-````
+````bash
 kubectl create secret generic postgresql-secret \
   --from-literal=password=zoo \
   --from-literal=username=zoo \
@@ -82,7 +82,7 @@ kubectl create secret generic postgresql-secret \
 
 Then, you can use the following:
 
-````
+````bash
 global.postgresql.auth.existingSecret: postgresql-secret
 ````
 
@@ -160,7 +160,7 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | Name                             | Description                                                        | Value                                                |
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
 | iam.enabled | The Identity and Access Management (IAM)                        | true |
-| iam.openIdConnectUrl | The OpenIDConnect configuration URL                    | https://testbed19.geolabs.fr:8099/realms/ZOO_DEMO/.well-known/openid-configuration |
+| iam.openIdConnectUrl | The OpenIDConnect configuration URL                    | https://auth.geolabs.fr/realms/zooproject/.well-known/openid-configuration |
 | iam.type | The IAM type                        | openIdConnect |
 | iam.name | The IAM name                        | OpenIDAuth |
 | iam.realm | The realm associated with the IAM | Secured section |
@@ -175,6 +175,39 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 When both `iam.enabled` and `iam.openeoAuth.enabled` are set to `true`, two new endpoints are added to the exposed OpenAPI:
  * `GET /credentials/oidc` to access the openid connect metadata information required by the client to authenticate (similar to the `.well-known/openid-configuration` with additional metadata).
  * `GET /me` to access metadata information about the authenticated user. 
+
+When in IAM is enabled, you cannot use all interfaces from the Basic HTML UI provided by the ZOO-Project.
+
+### WebUI 
+
+The WebUI lets you interact with the ZOO-Project-DRU when authentication is required to use the service.
+
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| webui.enabled | Activate the webui service                        | false |
+| webui.url | The fully defined URL to access the WebUI                        | http://localhost:3058 |
+| webui.port | Port                         | 3000 |
+| webui.enforce | Should apache handle security before the requests are sent to the ZOO-Project?                         | false |
+| webui.oidc | The specific OpenIDConnect configuration                         | {"issuer":https://auth.geolabs.fr/realms/zooproject,"remoteUserClaim": email, "providerTokenEndpointAuth": client_secret_basic, "authVerifyJwksUri": https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs, "scope": "openid email"} |
+
+
+If you set `enabled` to `true`, you should ensure that the `webui.oidc` object contains the following informations.
+
+```yaml
+  enabled: true
+  oidc:
+    issuer: <AUTH_URL>/realms<REALM>
+    clientId: YOUR_CLIENT_ID
+    clientSecret: YOUR_CLIENT_SECRET
+    remoteUserClaim: email
+    providerTokenEndpointAuth: client_secret_basic
+    authVerifyJwksUri: <AUTH_URL>/realms/<REALM>/protocol/openid-connect/certs
+    scope: "openid email"
+```
+
+WHere `<AUTH_URL>` is pointing to your keycloak instance (ie. `https://auth.geolabs.fr`), `<REALM>` (ie. `zooproject`) the realm you are willing to use. You can set the `YOUR_CLIENT_ID` and `YOUR_CLIENT_SECRET` to enable authentication.
+
 
 ### Documentation
 
@@ -217,17 +250,91 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 | workflow.defaultMaxRam                                   | The default max ram allocated.      | 1024                                                                  |
 | workflow.defaultMaxCores                                 | The default max cores allocated.    | 2                                                                     |
 | workflow.calrissianImage                                 | The calrissian image version.       | "terradue/calrissian:0.12.0"                                          |
+| workflow.dedicatedNamespace                              | Reuse an existing namespace rather createing a new one for every job | {"enabled":false} |
 | workflow.additionalInputs                                | The additional inputs passed as attributes to wrapped CWL Application.        | {}                                          |
 | workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
 | workflow.additionalImagePullSecrets                      | additionalImagePullSecrets is an optional list of references to existing secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
 | workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label.       | {}                                          |
 | workflow.inputs                                          | Environmental variables for the ZOO-FPM pod (from where the processing is started).         | {}                                          |
+| workflow.podAnnotations                                          | Use an object of key value pairs containing the annotations you want to flag your pods with.         | Not defined                                          |
 | workflow.env                                             | Environmental variables for the processing pods.       | {}                                          |
+
+#### Reuse an existing namespace
+
+The zoo-calrissian-runner can be configured to use an existing namespace to handle the pods responsible for the workflow execution. 
+
+You can set the `workflow.dedicatedNamespace.enabled` configuration to true to enable this feature. Then you need to specify the namespace's name with the `name` and optionally a service account with the `serviceAccount` parameter.
+
+````yaml
+dedicatedNamespace:
+  enabled: true
+  name: "my-dedicated-namespace"
+  # Below is an example value, uncomment and provide an existing service acount name available in the namespace
+  #service_account: "my-dedicated-service-account"
+````
+
+Below is an example demonstrating how to setup a `my-dedicated-namespace` namespace to be used by pycalrissian to run the workflow.
+Note that the default service account is `"default"`.
+
+````bash
+kubectl create ns my-dedicated-namespace
+# Apply a Role
+kubectl apply -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: my-dedicated-namespace
+  name: pod-reader
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods","pods/log"]
+  verbs: ["get", "watch", "list"]
+EOF
+# Apply a RoleBinding
+kubectl apply -n my-dedicated-namespace -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+subjects:
+- kind: User
+  name: default
+  namespace: my-dedicated-namespace
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
+EOF
+# Apply RoleBinding
+kubectl apply -n my-dedicated-namespace -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: default-cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: my-dedicated-namespace
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+EOF
+````
+
+This is a very basic example and it does not provide a one-to-one mapping for every user, but only for a single user.
+
+If you want to define a one-to-one mapping, you can implement the following methods in the handler of your service template: 
+ * `get_namespace`: should return the Kubernetes namespace to use for executing the process, or `None` if a new namespace should be created for each process execution.
+ * `get_service_account`: should return the Kubernetes service account to use, or `None` if the default service account should be used.
+
+#### imagePullSecrets
 
 The `workflow.imagePullSecrets` is used at runtime by Calrissian to dynamically create a secret containing the object attributes defined for pulling an image from a resgistry.
 The syntaxe is as presenter below.
 
-````
+````yaml
 auths:
   fake\.registry\.io:
     username: fakeuser
@@ -331,7 +438,7 @@ The sections that will be passed per default are the following:
 
 The syntaxe should use the key-value pairs definition is in the example below (cf. [main.cfg](https://zoo-project.github.io/docs/kernel/configuration.html#default-main-cfg)):
 
-````
+````yaml
 customConfig.main.mySection: |-
   myKey=myValue
   mySecondKey=mySecondValue
