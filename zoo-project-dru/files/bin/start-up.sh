@@ -15,10 +15,11 @@ if [ -e toto.out ]; then echo "Should start" ; else echo wait; sleep 1; $CMD ; f
 
 while [ ! -e toto.out ]; do echo wait; sleep 1; $CMD ;  done
 
-
+{{- if not .Values.keda.enabled }}
 echo "START FPM in 5 seconds"
-
 sleep 5
+{{- end }}
+rm toto.out
 
 cd /usr/lib/cgi-bin
 touch /var/log/zoofpm.log

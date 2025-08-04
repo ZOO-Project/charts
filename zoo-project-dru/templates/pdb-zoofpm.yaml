@@ -1,0 +1,22 @@
+{{- if .Values.keda.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-zoofpm-pdb
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "15"  # Execute after KEDA ScaledObject
+spec:
+  # CRITICAL PROTECTION: Guarantee at least 1 pod remains available
+  # if workers are active, preventing involuntary disruptions
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
+      app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
+  # Conditional protection based on annotations
+  # Pods with active workers cannot be evicted
+  unhealthyPodEvictionPolicy: AlwaysAllow
+{{- end }}

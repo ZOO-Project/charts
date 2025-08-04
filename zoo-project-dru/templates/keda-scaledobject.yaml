@@ -1,0 +1,100 @@
+{{- if and .Values.keda.enabled .Values.keda.scaleTargetRef }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-{{ .Values.keda.scaleTargetRef.deployment }}-scaler
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"  # Execute after RabbitMQ and PostgreSQL are ready
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "zoo-project-dru.fullname" . }}-{{ .Values.keda.scaleTargetRef.deployment }}
+  pollingInterval: {{ .Values.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
+  minReplicaCount: {{ .Values.keda.minReplicas }}
+  maxReplicaCount: {{ .Values.keda.maxReplicas }}
+  
+  # CRITICAL PROTECTION: Advanced configuration to prevent premature scale-down
+  {{- if .Values.keda.advancedConfig }}
+  advanced:
+    {{- if .Values.keda.advancedConfig.horizontalPodAutoscalerConfig }}
+    horizontalPodAutoscalerConfig:
+      {{- if .Values.keda.advancedConfig.horizontalPodAutoscalerConfig.behavior }}
+      behavior:
+        {{- if .Values.keda.advancedConfig.horizontalPodAutoscalerConfig.behavior.scaleDown }}
+        scaleDown:
+          stabilizationWindowSeconds: {{ .Values.keda.advancedConfig.horizontalPodAutoscalerConfig.behavior.scaleDown.stabilizationWindowSeconds | default 300 }}
+          {{- if .Values.keda.advancedConfig.horizontalPodAutoscalerConfig.behavior.scaleDown.policies }}
+          policies:
+          {{- range .Values.keda.advancedConfig.horizontalPodAutoscalerConfig.behavior.scaleDown.policies }}
+          - type: {{ .type }}
+            value: {{ .value }}
+            periodSeconds: {{ .periodSeconds }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.keda.advancedConfig.horizontalPodAutoscalerConfig.behavior.scaleDown.selectPolicy }}
+          selectPolicy: {{ .Values.keda.advancedConfig.horizontalPodAutoscalerConfig.behavior.scaleDown.selectPolicy }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  
+  triggers:
+  {{- if .Values.keda.triggers.postgresql.enabled }}
+  - type: postgresql
+    name: pg_workers_and_jobs
+    metadata:
+      query: {{ .Values.keda.triggers.postgresql.query | quote }}
+      targetQueryValue: {{ .Values.keda.triggers.postgresql.targetQueryValue | quote }}
+      {{- if .Values.keda.triggers.postgresql.activationTargetQueryValue }}
+      activationTargetQueryValue: {{ .Values.keda.triggers.postgresql.activationTargetQueryValue | quote }}
+      {{- end }}
+      {{- if .Values.global.postgresql.auth.existingSecret }}
+      # Host, port, database, and username will be retrieved from existing secret via TriggerAuthentication
+      # Only specify non-secret metadata here
+      sslmode: {{ .Values.keda.triggers.postgresql.sslmode | quote }}
+      {{- else }}
+      # Use values from configuration since no existing secret is defined
+      {{- $pgHost := .Values.keda.triggers.postgresql.host }}
+      {{- if not $pgHost }}
+      {{- $pgHost = printf "%s-postgresql.%s.svc.cluster.local" (include "zoo-project-dru.fullname" .) .Release.Namespace }}
+      {{- end }}
+      host: {{ $pgHost | quote }}
+      {{- $pgPort := .Values.keda.triggers.postgresql.port }}
+      {{- if not $pgPort }}
+      {{- $pgPort = .Values.global.postgresql.service.ports.postgresql }}
+      {{- end }}
+      port: {{ $pgPort | quote }}
+      {{- $dbName := .Values.keda.triggers.postgresql.dbName }}
+      {{- if not $dbName }}
+      {{- $dbName = .Values.global.postgresql.auth.database }}
+      {{- end }}
+      dbName: {{ $dbName | quote }}
+      {{- $userName := .Values.keda.triggers.postgresql.userName }}
+      {{- if not $userName }}
+      {{- $userName = .Values.global.postgresql.auth.username }}
+      {{- end }}
+      userName: {{ $userName | quote }}
+      sslmode: {{ .Values.keda.triggers.postgresql.sslmode | quote }}
+      {{- end }}
+    authenticationRef:
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-postgresql-auth
+  {{- end }}
+  
+  {{- if .Values.keda.triggers.rabbitmq.enabled }}
+  - type: rabbitmq
+    name: amqp_queue_length
+    metadata:
+      protocol: {{ .Values.keda.triggers.rabbitmq.protocol | quote }}
+      queueName: {{ .Values.keda.triggers.rabbitmq.queueName | quote }}
+      mode: {{ .Values.keda.triggers.rabbitmq.mode | quote }}
+      value: {{ .Values.keda.triggers.rabbitmq.value | quote }}
+    authenticationRef:
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-rabbitmq-auth
+  {{- end }}
+{{- end }}

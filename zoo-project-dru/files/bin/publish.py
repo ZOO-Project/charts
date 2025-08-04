@@ -46,6 +46,7 @@ else:
     print("You are not allowed to publish this job", file=sys.stderr)
     sys.exit(0)
 
+{{- if .Values.redis.enabled }}
 try:
     params=parse.parse_qs(os.environ["QUERY_STRING"])
     r=None
@@ -57,6 +58,7 @@ try:
     r.publish(params["jobid"][0],data)
 except Exception as e:
 	print(e,file=sys.stderr)
+{{- end }}
 
 {{- if .Values.notifications.enabled }}
 k_sink = os.environ.get("K_SINK", None)

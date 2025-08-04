@@ -2,6 +2,7 @@ apiVersion: skaffold/v4beta11
 kind: Config
 metadata:
   name: zoo-project-dru-minikube-deployment
+
 deploy:
   helm:
     releases:
@@ -25,6 +26,16 @@ profiles:
       - op: replace
         path: /deploy/helm/releases/0/valuesFiles
         value: [zoo-project-dru/values_apple.yaml]
+
+  - name: keda
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/setValues
+        value:
+          keda.enabled: "true"
+          keda.triggers.postgresql.enabled: "true"
+          keda.triggers.rabbitmq.enabled: "true"
+          zoofpm.autoscaling.enabled: "false"
 
 portForward:
 # The following port forward is used to access the webui

@@ -1,0 +1,75 @@
+{{- if and .Values.keda.enabled .Values.keda.scaleTargetRef }}
+{{- if .Values.keda.triggers.rabbitmq.enabled }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-keda-rabbitmq-auth
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+spec:
+  secretTargetRef:
+    - parameter: host
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-secret
+      key: host
+    - parameter: username
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-secret
+      key: username
+    - parameter: password
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-secret
+      key: password
+{{- end }}
+
+{{- if .Values.keda.triggers.postgresql.enabled }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-keda-postgresql-auth
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+spec:
+  secretTargetRef:
+    {{- if .Values.global.postgresql.auth.existingSecret }}
+    # Use existing PostgreSQL secret
+    - parameter: password
+      name: {{ .Values.global.postgresql.auth.existingSecret }}
+      key: password
+    - parameter: username
+      name: {{ .Values.global.postgresql.auth.existingSecret }}
+      key: username
+    - parameter: host
+      name: {{ .Values.global.postgresql.auth.existingSecret }}
+      key: host
+    - parameter: port
+      name: {{ .Values.global.postgresql.auth.existingSecret }}
+      key: port
+    - parameter: database
+      name: {{ .Values.global.postgresql.auth.existingSecret }}
+      key: database
+    {{- else }}
+    # Use KEDA-specific secret with values from configuration
+    - parameter: password
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-secret
+      key: pg_password
+    - parameter: username
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-secret
+      key: pg_username
+    - parameter: host
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-secret
+      key: pg_host
+    - parameter: port
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-secret
+      key: pg_port
+    - parameter: database
+      name: {{ include "zoo-project-dru.fullname" . }}-keda-secret
+      key: pg_database
+    {{- end }}
+{{- end }}
+{{- end }}

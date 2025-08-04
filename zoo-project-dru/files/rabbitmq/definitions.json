@@ -40,43 +40,16 @@
   "policies": [],
   "queues": [
     {
-      "name": "amq.gen-67C6b7LbpXCa_2JKu5hsbQ",
-      "vhost": "/",
-      "durable": false,
-      "auto_delete": true,
-      "arguments": {
-        "x-message-ttl": 6000
-      }
-    },
-    {
-      "name": "amq.gen-A_NBM-thDA0ivfU5ni05eg",
-      "vhost": "/",
-      "durable": false,
-      "auto_delete": true,
-      "arguments": {
-        "x-message-ttl": 6000
-      }
-    },
-    {
-      "name": "amq.gen--15Q21vMHiRYsrhyftTmVw",
-      "vhost": "/",
-      "durable": false,
-      "auto_delete": true,
-      "arguments": {
-        "x-message-ttl": 6000
-      }
-    },
-    {
-      "name": "amq.gen-rsQm2-BNFiyT_1KEcDldsQ",
-      "vhost": "/",
-      "durable": false,
-      "auto_delete": true,
-      "arguments": {
-        "x-message-ttl": 6000
-      }
-    },
-    {
       "name": "zoo_service_queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "unroutable_messages_queue",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -85,6 +58,44 @@
       }
     }
   ],
-  "exchanges": [],
-  "bindings": []
+  "exchanges": [
+    {
+      "name": "main_exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {
+        "alternate-exchange": "unroutable_exchange"
+      }
+    },
+    {
+      "name": "unroutable_exchange",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "main_exchange",
+      "vhost": "/",
+      "destination": "zoo_service_queue",
+      "destination_type": "queue",
+      "routing_key": "zoo_service",
+      "arguments": {}
+    },
+    {
+      "source": "unroutable_exchange",
+      "vhost": "/",
+      "destination": "unroutable_messages_queue",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    }
+  ]
 }

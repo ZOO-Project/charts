@@ -80,6 +80,124 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
+# KEDA Event-driven autoscaling configuration
+keda:
+  # Enable KEDA as a subchart dependency
+  enabled: false
+  # KEDA subchart configuration
+  # When enabled, KEDA will be deployed as part of this chart
+  # See: https://github.com/kedacore/charts/tree/main/keda
+  operator:
+    #name: keda-operator
+    replicaCount: 1
+  metricsServer:
+    replicaCount: 1
+  webhooks:
+    enabled: false
+  
+  # Worker protection sidecar configuration
+  sidecar:
+    # Image configuration for the worker protection sidecar
+    image:
+      repository: ghcr.io/zoo-project/zoofpm-protection-sidecar
+      tag: "latest"
+      # repository: zoo-project/worker-protection-sidecar
+      # tag: "1.0.0"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 50m
+        memory: 64Mi
+  
+  # ZOO-Project specific KEDA configuration
+  scaleTargetRef:
+    deployment: "zoofpm"  # Will be prefixed with release name
+  pollingInterval: 10     # Check triggers every 10 seconds
+  cooldownPeriod: 60      # Wait 1 minute before scaling down
+  minReplicas: 0          # Allow scale-to-zero
+  maxReplicas: 20         # Scale up to maximum 20 replicas
+  idleReplicaCount: 0     # Number of replicas when idle (scale-to-zero)
+  triggers:
+    postgresql:
+      enabled: true
+      # STRICT query - Absolute protection of pods by IP
+      # GUARANTEE: No pod with its IP in workers.host can be deleted
+      query: |
+        WITH active_worker_ips AS (
+          -- IPs of pods that have active workers - ABSOLUTE PROTECTION
+          SELECT DISTINCT host as protected_ip
+          FROM workers 
+          WHERE status = 1 AND host IS NOT NULL
+        ),
+        protected_count AS (
+          -- MINIMUM number of pods to keep (those with workers)
+          SELECT COUNT(*) as must_keep_minimum
+          FROM active_worker_ips
+        ),
+        workload_needs AS (
+          -- Calculation based on total workload
+          SELECT 
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_workers,
+            -- Pods needed for workload (async_worker=10 per pod)
+            -- Scale-to-zero if no active workers
+            CASE 
+              WHEN SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) > 0
+              THEN GREATEST(CEIL(SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END)::decimal / 10), 1)
+              ELSE 0  -- Scale-to-zero if no workers
+            END as pods_for_workload
+          FROM workers
+          WHERE host IS NOT NULL
+        ),
+        service_needs AS (
+          -- Pods needed for running services
+          SELECT 
+            COUNT(*) as running_services,
+            -- Only if workers exist AND services
+            CASE 
+              WHEN EXISTS(SELECT 1 FROM workers WHERE status = 1 AND host IS NOT NULL) 
+                AND COUNT(*) > 0 
+              THEN GREATEST(CEIL(COUNT(*)::decimal / 10), 1)
+              ELSE 0  -- Scale-to-zero if no active workers
+            END as pods_for_services
+          FROM services 
+          WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')
+        )
+        SELECT 
+          -- Hybrid logic: active workers AND pending services
+          GREATEST(
+            -- Calculation based on active workers (1 pod per 10 workers)
+            CASE 
+              WHEN (SELECT COUNT(*) FROM workers WHERE status = 1 AND host IS NOT NULL) > 0
+              THEN CEIL((SELECT COUNT(*)::decimal FROM workers WHERE status = 1 AND host IS NOT NULL) / 10)
+              ELSE 0
+            END,
+            -- Calculation based on active services (1 pod per 5 services)
+            CASE 
+              WHEN (SELECT COUNT(*) FROM services WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')) > 0
+              THEN CEIL((SELECT COUNT(*)::decimal FROM services WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')) / 5)
+              ELSE 0
+            END,
+            -- Scale-to-zero if no activity
+            0
+          )
+      targetQueryValue: "1.0"  # 1:1 scaling - no over-allocation
+      activationTargetQueryValue: "0.1"  # Scale-up at the slightest activity
+      host: "" # Will be auto-generated from postgresql service
+      port: "5432"
+      dbName: "" # Will be taken from global.postgresql.auth.database
+      userName: "" # Will be taken from global.postgresql.auth.username
+      sslmode: "disable"
+    rabbitmq:
+      enabled: true
+      protocol: "amqp"
+      queueName: "zoo_service_queue"
+      mode: "QueueLength"
+      value: "1"
+      host: "" # Will be auto-generated from rabbitmq service
+
 nodeSelector: {}
 
 tolerations: []
@@ -94,7 +212,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-e61e6e704c6398225b25caf7690d2abbbf0e9522
+    tag: dru-d82f8fdec40599df9f945f72f64a40bc6b861ba5
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -106,7 +224,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-e61e6e704c6398225b25caf7690d2abbbf0e9522
+    tag: dru-d82f8fdec40599df9f945f72f64a40bc6b861ba5
   extraMountPoints: []
 
 notifications:
@@ -145,6 +263,7 @@ workflow:
     defaultMaxRam: "2Gi"
     wfServer: "http://argo-server.ns1.svc.cluster.local:2746"
     wfToken: "aaaabbbbccccdddd"
+    wfNamespace: "zoo"
     wfSynchronizationCm: "semaphore-argo-cwl-runner-stage-in-out"
     CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
     CwlRunnerEndpoint: "calrissian-runner"

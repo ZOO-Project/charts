@@ -22,7 +22,54 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.5.0
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.6.0
+````
+
+### Installing with KEDA Autoscaling
+
+To enable KEDA autoscaling, simply configure the chart with KEDA enabled. **The chart will automatically deploy KEDA as a subchart dependency:**
+
+````bash
+# Install zoo-project-dru with KEDA automatically deployed
+helm install my-zoo-project-dru zoo-project/zoo-project-dru \
+  --set keda.enabled=true \
+  --set zoofpm.autoscaling.enabled=false \
+  --version 0.6.0
+````
+
+**Note:** When `keda.enabled=true`, KEDA will be automatically installed as part of the chart deployment. No separate KEDA installation is required.
+
+Or create a custom values file for more advanced configuration:
+
+````yaml
+# values-keda.yaml
+keda:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  pollingInterval: 5
+  cooldownPeriod: 300
+  triggers:
+    postgresql:
+      enabled: true
+      targetQueryValue: "0.5"
+      activationTargetQueryValue: "0.1"
+    rabbitmq:
+      enabled: true
+      queueName: "zoo_service_queue"
+      value: "1"
+
+zoofpm:
+  autoscaling:
+    enabled: false  # Disable default HPA when using KEDA
+````
+
+Then install with:
+
+````bash
+helm install my-zoo-project-dru zoo-project/zoo-project-dru \
+  -f values-keda.yaml \
+  --version 0.6.0
 ````
 
 ## Parameters
@@ -90,6 +137,30 @@ If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZO
 
 ### Dependencies
 
+#### KEDA
+
+KEDA (Kubernetes Event-driven Autoscaler) is used to provide event-driven autoscaling based on PostgreSQL and RabbitMQ metrics. 
+
+The ZOO-Project-DRU chart automatically deploys KEDA as a subchart dependency when `keda.enabled` is set to true.
+
+```bash
+# Optional: Install KEDA separately (not required when using keda.enabled=true)
+helm repo add kedacore https://kedacore.github.io/charts
+helm repo update
+```
+
+When `keda.enabled` is set to true, the chart will:
+- Create a ScaledObject that monitors PostgreSQL worker status and RabbitMQ queue metrics
+- Deploy a worker protection sidecar that dynamically manages pod eviction protection
+- Implement intelligent scaling logic that protects pods with active workers
+- Support scale-to-zero functionality when no work is available
+
+The KEDA integration includes several advanced features:
+- **Real-time worker protection**: Sidecar monitors active workers and updates `cluster-autoscaler.kubernetes.io/safe-to-evict` annotations
+- **Hybrid scaling triggers**: Combines PostgreSQL worker metrics with RabbitMQ queue length
+- **Custom scaling queries**: Uses sophisticated PostgreSQL queries that account for active workers
+- **Health monitoring**: Provides comprehensive health probes and status annotations
+
 #### PostgreSQL
 
 See the reference [PostgreSQL chart documentation](https://artifacthub.io/packages/helm/bitnami/postgresql) for more parameters.
@@ -153,6 +224,119 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | zookernel.env                    | The environment variables defined in the main.cfg `env` section    | {}                    |
 | zookernel.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
 | zoofpm.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
+
+### KEDA Autoscaling
+
+KEDA (Kubernetes Event-driven Autoscaler) provides intelligent, event-driven pod autoscaling based on PostgreSQL and RabbitMQ metrics. This implementation includes advanced worker protection to ensure job continuity.
+
+**Automatic KEDA Deployment:** When `keda.enabled` is set to true, the chart automatically deploys KEDA as a subchart dependency. This ensures version compatibility and simplifies the deployment process.
+
+| Name                                        | Description                                                    | Value                    |
+|:--------------------------------------------|:---------------------------------------------------------------|:-------------------------|
+| keda.enabled                                | Enable KEDA autoscaling (automatically deploys KEDA)         | false                     |
+| keda.operator.replicaCount                  | Number of KEDA operator replicas                              | 1                        |
+| keda.metricsServer.replicaCount             | Number of KEDA metrics server replicas                        | 1                        |
+| keda.webhooks.enabled                       | Enable KEDA webhooks                                          | true                     |
+| keda.scaleTargetRef.deployment              | Target deployment for scaling                                 | "zoofpm"                 |
+| keda.minReplicas                            | Minimum number of replicas (supports scale-to-zero when 0)   | 1                        |
+| keda.maxReplicas                            | Maximum number of replicas                                    | 5                        |
+| keda.pollingInterval                        | Metrics polling interval in seconds                           | 5                        |
+| keda.cooldownPeriod                         | Cooldown period before scaling down (seconds)                 | 300                      |
+
+#### Worker Protection Sidecar
+
+KEDA includes an integrated worker protection sidecar that monitors active workers and dynamically manages pod eviction protection:
+
+| Name                                        | Description                                                    | Value                    |
+|:--------------------------------------------|:---------------------------------------------------------------|:-------------------------|
+| keda.sidecar.image.repository               | Sidecar container image repository                             | zoo-project/zoofpm-protection-sidecar |
+| keda.sidecar.image.tag                      | Sidecar container image tag                                    | "1.0.0"                  |
+| keda.sidecar.image.pullPolicy               | Sidecar image pull policy                                      | IfNotPresent             |
+| keda.sidecar.resources.requests.cpu         | Sidecar CPU resource requests                                  | 10m                      |
+| keda.sidecar.resources.requests.memory      | Sidecar memory resource requests                               | 32Mi                     |
+| keda.sidecar.resources.limits.cpu           | Sidecar CPU resource limits                                    | 50m                      |
+| keda.sidecar.resources.limits.memory        | Sidecar memory resource limits                                 | 64Mi                     |
+
+#### PostgreSQL Trigger Configuration
+
+The PostgreSQL trigger monitors both active services and workers using an intelligent query:
+
+| Name                                        | Description                                                    | Value                    |
+|:--------------------------------------------|:---------------------------------------------------------------|:-------------------------|
+| keda.triggers.postgresql.enabled            | Enable PostgreSQL trigger for scaling                         | true                     |
+| keda.triggers.postgresql.targetQueryValue   | Target scaling ratio for steady state                         | "0.5"                    |
+| keda.triggers.postgresql.activationTargetQueryValue | Threshold for scale-up activation                    | "0.1"                    |
+| keda.triggers.postgresql.host               | PostgreSQL host (auto-generated if empty)                     | ""                       |
+| keda.triggers.postgresql.port               | PostgreSQL port                                                | "5432"                   |
+| keda.triggers.postgresql.dbName             | Database name (uses global.postgresql.auth.database if empty) | ""                       |
+| keda.triggers.postgresql.userName           | Username (uses global.postgresql.auth.username if empty)      | ""                       |
+| keda.triggers.postgresql.sslmode            | SSL mode for connection                                        | "disable"                |
+| keda.triggers.postgresql.query              | Custom PostgreSQL query for scaling metrics                   | See below                |
+
+
+#### RabbitMQ Trigger Configuration
+
+The RabbitMQ trigger monitors queue length for immediate scaling:
+
+| Name                                        | Description                                                    | Value                    |
+|:--------------------------------------------|:---------------------------------------------------------------|:-------------------------|
+| keda.triggers.rabbitmq.enabled              | Enable RabbitMQ trigger for scaling                           | true                     |
+| keda.triggers.rabbitmq.protocol             | RabbitMQ protocol                                              | "amqp"                   |
+| keda.triggers.rabbitmq.queueName            | Queue name to monitor                                          | "zoo_service_queue"      |
+| keda.triggers.rabbitmq.mode                 | Scaling mode                                                   | "QueueLength"            |
+| keda.triggers.rabbitmq.value                | Target messages per replica                                    | "1"                      |
+| keda.triggers.rabbitmq.host                 | RabbitMQ host (auto-generated if empty)                       | ""                       |
+
+#### KEDA Authentication
+
+KEDA supports two authentication methods:
+
+**Method 1: Using existing PostgreSQL secret (recommended)**
+
+When `global.postgresql.auth.existingSecret` is configured, KEDA automatically uses the existing secret:
+
+```yaml
+global:
+  postgresql:
+    auth:
+      existingSecret: postgresql-secret
+```
+
+**Method 2: Using values from configuration**
+
+When no existing secret is configured, KEDA uses values from `global.postgresql.auth.*` and creates a dedicated secret.
+
+#### Scaling Logic and Protection
+
+The autoscaler implements a hybrid approach:
+
+1. **Worker-based scaling**: Scales based on active workers in PostgreSQL
+2. **Service-based scaling**: Scales based on running services and pending jobs
+3. **Pod protection**: Pods with active workers are protected using `cluster-autoscaler.kubernetes.io/safe-to-evict="false"`
+4. **Scale-to-zero**: Supports scaling to 0 when no work is available (if minReplicas=0)
+
+#### Worker Protection Features
+
+- **Real-time monitoring**: Sidecar continuously monitors worker status
+- **Dynamic annotations**: Automatically updates pod annotations based on worker activity
+- **Eviction protection**: Prevents cluster autoscaler from evicting pods with active workers
+- **Health probes**: Provides readiness and startup probes for reliable operation
+
+#### Monitoring KEDA Autoscaling
+
+```bash
+# Check KEDA ScaledObject status
+kubectl get scaledobjects -n <namespace>
+
+# View HPA created by KEDA
+kubectl get hpa -n <namespace>
+
+# Monitor scaling events
+kubectl get events -n <namespace> --sort-by='.lastTimestamp'
+
+# Check worker protection status
+kubectl get pods -n <namespace> -o jsonpath='{range .items[*]}{.metadata.name}{": safe-to-evict="}{.metadata.annotations.cluster-autoscaler\.kubernetes\.io/safe-to-evict}{", workers="}{.metadata.annotations.zoo-project\.org/has-active-workers}{"\n"}{end}'
+```
  
 
 ### Identity and Access Management
