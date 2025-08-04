@@ -3,6 +3,76 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: added
+          description: "Add KEDA autoscaling support with scale-to-zero functionality and intelligent pod protection."
+          links:
+            - name: KEDA documentation
+              url: https://keda.sh/
+        - kind: added
+          description: "Implement hybrid scaling logic based on PostgreSQL workers and RabbitMQ queues."
+        - kind: added
+          description: "Add pod protection mechanisms preventing termination of pods with active workers registered in PostgreSQL."
+        - kind: added
+          description: "Add comprehensive KEDA configuration parameters for minReplicas, maxReplicas, pollingInterval, and cooldownPeriod."
+        - kind: changed
+          description: "Disable traditional HPA when KEDA is enabled to prevent conflicts between autoscaling mechanisms."
+        - kind: added
+          description: "Add KEDA as a chart dependency with version 2.14.2 from kedacore repository."
+        - kind: changed
+          description: "Update chart documentation with detailed KEDA autoscaling configuration and monitoring instructions."
+        - kind: fixed
+          description: "Update to the latest ZOO-Project version to avoid issue with argo dependencies."
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.28
+    created: "2025-08-04T16:04:36.913076844Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    description: A Helm chart for Kubernetes
+    digest: 75797b6036b80acba95e18ec5eaa8ad3e8de8354b2ef3cdff11ac21109aa8db3
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.6.0/zoo-project-dru-0.6.0.tgz
+    version: 0.6.0
+  - annotations:
+      artifacthub.io/changes: |
         - kind: changed
           description: "Use the latest ZOO-Project-DRU version available."
           links:
@@ -2958,4 +3028,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-07-02T13:02:15.076182259Z"
+generated: "2025-08-04T16:04:36.913359475Z"
