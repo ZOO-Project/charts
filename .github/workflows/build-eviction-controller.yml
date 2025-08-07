@@ -35,7 +35,7 @@ jobs:
       matrix:
         include:
           - dockerfile: Dockerfile
-            context: ./sidecar
+            context: ./eviction-controller
             platforms: linux/amd64,linux/arm64
 
     steps:
