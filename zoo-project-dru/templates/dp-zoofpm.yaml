@@ -31,7 +31,6 @@ spec:
         zoo-project.org/scale-protection: "strict"
         # Annotation to identify critical pods
         zoo-project.org/prestop-protection: "active"
-        # Initial state - will be updated dynamically by sidecar
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
         {{- end }}
         checksum/cm-cwlwrapper-assets: {{ include (print .Template.BasePath "/cm-cwlwrapper-assets.yaml") . | sha256sum }}
@@ -64,102 +63,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        {{- if .Values.keda.enabled }}
-        # Protection sidecar - Monitors active workers in real time (only when KEDA is enabled)
-        - name: worker-protection-sidecar
-          image: {{ .Values.keda.sidecar.image.repository }}:{{ .Values.keda.sidecar.image.tag }}
-          imagePullPolicy: {{ .Values.keda.sidecar.image.pullPolicy }}
-          resources: {{- toYaml .Values.keda.sidecar.resources | nindent 12 }}
+        # Main zoofpm container
+        - name: zoofpm
+          image: "{{ .Values.zoofpm.image.repository }}:{{ .Values.zoofpm.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.zoofpm.image.pullPolicy }}
+          command: ["/startup.sh"]
+          resources: {}
           env:
-            {{- if .Values.global.postgresql.auth.existingSecret }}
-            - name: PGPASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.postgresql.auth.existingSecret }}
-                  key: password
-                  optional: true
-            - name: PGUSER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.postgresql.auth.existingSecret }}
-                  key: username
-                  optional: true
-            - name: PGHOST
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.postgresql.auth.existingSecret }}
-                  key: host
-                  optional: true
-            - name: PGDATABASE
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.global.postgresql.auth.existingSecret }}
-                  key: database
-                  optional: true
-            {{- else }}
-            - name: PGPASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-postgresql
-                  key: password
-            - name: PGUSER
-              value: {{ .Values.global.postgresql.auth.username | quote}}
-            - name: PGHOST
-              value: "{{ .Release.Name}}-postgresql-hl"
-            - name: PGDATABASE
-              value: {{ .Values.global.postgresql.auth.database | quote}}
-            {{- end }}
-          readinessProbe:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - |
-                # If workers are active, be more lenient with readiness
-                if [ -f /tmp/worker-protection-active ]; then
-                  echo "Workers active - extended readiness tolerance"
-                  test -f /tmp/sidecar-ready
-                else
-                  test -f /tmp/sidecar-ready
-                fi
-            initialDelaySeconds: 15
-            periodSeconds: 30  # Plus conservateur sous charge
-            timeoutSeconds: 10  # Timeout plus long
-            successThreshold: 1
-            failureThreshold: 10  # Plus tolérant
-          livenessProbe:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - |
-                # If workers are active, be very lenient with liveness
-                if [ -f /tmp/worker-protection-active ]; then
-                  WORKER_COUNT=$(cat /tmp/active-worker-count 2>/dev/null || echo "0")
-                  echo "🛡️  Protected pod with $WORKER_COUNT workers - skipping strict liveness check"
-                  exit 0  # Always pass liveness when workers are active
-                else
-                  test -f /tmp/sidecar-ready
-                fi
-            initialDelaySeconds: 30
-            periodSeconds: 60  # Plus d'espace entre les checks
-            timeoutSeconds: 15  # Timeout plus long
-            successThreshold: 1
-            failureThreshold: 8  # Plus tolérant
-          startupProbe:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - "test -f /tmp/sidecar-ready"
-            initialDelaySeconds: 30
-            periodSeconds: 20
-            timeoutSeconds: 10
-            successThreshold: 1
-            failureThreshold: 30  # 10 minutes max pour startup (30 * 20s)
-        {{- end }}
-        
-        - env:
             - name: ORIGIN_NAMESPACE
               value: {{ .Release.Namespace }}
             - name: ZOO_RABBITMQ_HOST
@@ -280,12 +190,6 @@ spec:
               value: {{ $v }}
             {{- end }}
 
-
-          name: zoofpm
-          image: "{{ .Values.zoofpm.image.repository }}:{{ .Values.zoofpm.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.zoofpm.image.pullPolicy }}
-          command: ["/startup.sh"]
-          resources: {}
           volumeMounts:
             - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/main.cfg

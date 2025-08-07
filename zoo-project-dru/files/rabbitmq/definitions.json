@@ -86,7 +86,7 @@
       "vhost": "/",
       "destination": "zoo_service_queue",
       "destination_type": "queue",
-      "routing_key": "zoo_service",
+      "routing_key": "zoo",
       "arguments": {}
     },
     {

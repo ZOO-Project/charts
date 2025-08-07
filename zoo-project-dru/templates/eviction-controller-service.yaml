@@ -1,0 +1,20 @@
+{{- if and .Values.keda.enabled .Values.keda.evictionController.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-eviction-controller
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eviction-controller
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: metrics
+  selector:
+    app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: eviction-controller
+{{- end }}

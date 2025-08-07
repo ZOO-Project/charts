@@ -60,3 +60,29 @@ Watching for changes...
 
 Open the browser on http://127.0.0.1:8080/ogc-api/api.html to access the ZOO-Project-DRU API documentation
 Open the browser on http://127.0.0.1:9001 to access the Minio console (minio-admin/minio-admin)
+
+#### KEDA Autoscaling profile
+
+The ZOO-Project-DRU chart now includes advanced [KEDA](https://keda.sh/) (Kubernetes Event-driven Autoscaler) configuration for intelligent pod autoscaling based on PostgreSQL and RabbitMQ metrics.
+
+In addition to KEDA, which will be deployed from the chart directly, you will need to setup [Kyverno](https://kyverno.io/) on your cluster.
+
+```bash
+# Add the Helm repository to your repo list
+helm repo add kyverno https://kyverno.github.io/kyverno/
+
+skaffold dev -p keda
+```
+
+Ensure that the Kyverno resources are properly removed from the cluster before starting using the `keda` profile. Consult [the official documentation](https://kyverno.io/docs/troubleshooting/) for more information.
+
+#### Apple silicon profile
+
+A dedicated hostpath profile is available for users deploying the solution on Apple silicon platforms and can be combined with other.
+
+```bash
+# Traditional startup
+skaffold dev -p hostpath
+# Activating keda
+skaffold dev -p hostpath,keda
+```

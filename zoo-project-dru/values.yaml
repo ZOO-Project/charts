@@ -95,23 +95,33 @@ keda:
   webhooks:
     enabled: false
   
-  # Worker protection sidecar configuration
-  sidecar:
-    # Image configuration for the worker protection sidecar
+  # Eviction controller configuration (alternative to sidecar approach)
+  evictionController:
+    enabled: false  # Enable centralized eviction controller instead of individual sidecars
     image:
-      repository: ghcr.io/zoo-project/zoofpm-protection-sidecar
+      repository: ghcr.io/zoo-project/zoofpm-eviction-controller
       tag: "latest"
-      # repository: zoo-project/worker-protection-sidecar
-      # tag: "1.0.0"
       pullPolicy: IfNotPresent
     resources:
       requests:
-        cpu: 10m
-        memory: 32Mi
-      limits:
         cpu: 50m
         memory: 64Mi
-  
+      limits:
+        cpu: 200m
+        memory: 128Mi
+
+  # Kyverno Policy Engine for enhanced protection
+  kyverno:
+    enabled: false  # Disabled as Kyverno is installed separately by Skaffold
+    namespaceOverride: "kyverno-system"  # Dedicated namespace for Kyverno
+    policies:
+      zoofpmProtection:
+        enabled: true  # Policy to protect zoofpm pods
+        failurePolicy: "Enforce"  # Strictly block deletions (Enforce/Audit)
+        background: false  # Real-time validation only
+        protectZoofpm: true  # Prevent deletion of zoofpm pods
+        allowedOperations: ["CREATE", "UPDATE"]  # Only these operations are allowed
+
   # ZOO-Project specific KEDA configuration
   scaleTargetRef:
     deployment: "zoofpm"  # Will be prefixed with release name

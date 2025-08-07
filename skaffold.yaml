@@ -3,8 +3,20 @@ kind: Config
 metadata:
   name: zoo-project-dru-minikube-deployment
 
+build:
+  artifacts:
+    - image: ghcr.io/zoo-project/zoofpm-eviction-controller
+      context: eviction-controller
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "run.sh"
+            dest: "/app/"
+
 deploy:
   helm:
+
     releases:
     - name: zoo-project-dru
       chartPath: zoo-project-dru
@@ -29,12 +41,40 @@ profiles:
 
   - name: keda
     patches:
+
       - op: add
-        path: /deploy/helm/releases/0/setValues
+        path: /deploy/helm/releases/0
+        value:
+          name: kyverno
+          remoteChart: kyverno/kyverno
+          version: "3.1.4"
+          namespace: kyverno-system
+          createNamespace: true
+          values:
+            crds:
+              install: true
+            replicaCount: 2
+            podDisruptionBudget:
+              enabled: true
+              minAvailable: 1
+            resources:
+              limits:
+                cpu: 1000m
+                memory: 512Mi
+              requests:
+                cpu: 100m
+                memory: 256Mi
+
+      - op: add
+        path: /deploy/helm/releases/1/setValues
         value:
           keda.enabled: "true"
           keda.triggers.postgresql.enabled: "true"
           keda.triggers.rabbitmq.enabled: "true"
+          keda.kyverno.enabled: "false"
+          keda.evictionController.enabled: "true"
+          keda.evictionController.image.tag: ""
+          keda.kyverno.policies.zoofpmProtection.enabled: "true"
           zoofpm.autoscaling.enabled: "false"
 
 portForward:
@@ -49,11 +89,13 @@ portForward:
   namespace: zoo
   port: 80
   localPort: 8080
+# Websocketd service not available in keda profile  
 - resourceType: service
   resourceName:	zoo-project-dru-websocketd
   namespace: zoo
   port: 8888
   localPort: 8888
+# S3/Minio services not available in keda profile
 - resourceType: service
   resourceName: s3-service
   namespace: zoo 

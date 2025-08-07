@@ -1,0 +1,82 @@
+{{- if and .Values.keda.enabled .Values.keda.evictionController.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-eviction-controller
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eviction-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: eviction-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: eviction-controller
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/cm-zoo-project-config.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "zoo-project-dru.fullname" . }}-eviction-controller
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: eviction-controller
+        image: {{ .Values.keda.evictionController.image.repository }}:{{ .Values.keda.evictionController.image.tag | default "latest" }}
+        imagePullPolicy: {{ .Values.keda.evictionController.image.pullPolicy | default "IfNotPresent" }}
+        env:
+        - name: NAMESPACE
+          value: {{ .Release.Namespace }}
+        - name: SCALEDOBJECT_NAME
+          value: {{ include "zoo-project-dru.fullname" . }}-{{ .Values.keda.scaleTargetRef.deployment }}-scaler
+        - name: PG_HOST
+          value: {{ .Release.Name }}-postgresql
+        - name: PG_PORT
+          value: "5432"
+        - name: PG_USER
+          value: {{ .Values.global.postgresql.auth.username | default "zoo" }}
+        - name: PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.postgresql.auth.existingSecret | default (print .Release.Name "-postgresql") }}
+              key: password
+        - name: PG_DATABASE
+          value: {{ .Values.global.postgresql.auth.database | default "zoo" }}
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+{{- end }}

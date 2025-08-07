@@ -1,0 +1,47 @@
+{{- if and .Values.keda.enabled .Values.keda.evictionController.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-eviction-controller
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eviction-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-eviction-controller
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eviction-controller
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "patch", "update"]
+- apiGroups: ["policy"]
+  resources: ["poddisruptionbudgets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+# Permissions pour gérer les ScaledObjects KEDA
+- apiGroups: ["keda.sh"]
+  resources: ["scaledobjects"]
+  verbs: ["get", "list", "watch", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-eviction-controller
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: eviction-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "zoo-project-dru.fullname" . }}-eviction-controller
+subjects:
+- kind: ServiceAccount
+  name: {{ include "zoo-project-dru.fullname" . }}-eviction-controller
+  namespace: {{ .Release.Namespace }}
+{{- end }}

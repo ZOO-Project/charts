@@ -7,6 +7,8 @@ persistence:
 
 workflow:
   storageClass: hostpath
+  argo:
+    storageClass: "hostpath"
 
 minio:
   # minio chart value parameters description can be found here:

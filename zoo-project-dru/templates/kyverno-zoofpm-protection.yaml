@@ -1,0 +1,74 @@
+{{- if and .Values.keda.enabled .Values.keda.kyverno.policies.zoofpmProtection.enabled }}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-protect-zoofpm-pods
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: kyverno-policy
+  annotations:
+    # Network interruption resistance
+    policies.kyverno.io/title: "Absolute protection for ZooFPM pods"
+    policies.kyverno.io/category: "Pod Security, Workload Protection"
+    policies.kyverno.io/severity: "high"
+    policies.kyverno.io/subject: "Pod"
+    policies.kyverno.io/description: >-
+      This policy prevents deletion of zoofpm pods to protect running executions.
+      Resistant to network failures and interruptions.
+spec:
+  # Robust configuration against interruptions
+  validationFailureAction: {{ .Values.keda.kyverno.policies.zoofpmProtection.failurePolicy | default "Enforce" }}
+  background: {{ .Values.keda.kyverno.policies.zoofpmProtection.background | default false }}
+  
+  # ZooFPM pod protection rules
+  rules:
+    - name: block-zoofpm-pod-deletion
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+            names:
+            - "{{ include "zoo-project-dru.fullname" . }}-zoofpm-*"
+            namespaces:
+            - {{ .Release.Namespace }}
+            operations:
+            - DELETE
+        - resources:
+            kinds:
+            - Pod
+            namespaces:
+            - {{ .Release.Namespace }}
+            operations:
+            - DELETE
+            selector:
+              matchLabels:
+                app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
+                app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
+
+      # Validation with critical exception handling
+      validate:
+        message: >-
+          DELETION FORBIDDEN: ZOO-FPM pod protected by Kyverno Policy.
+          This pod has {{`{{ request.object.metadata.annotations."zoo-project.org/active-workers" || "some" }}`}} active workers.
+          ZOO-FPM pods with active workers can only be deleted by the eviction controller
+          or in emergency cases with the annotation 'zoo-project.org/emergency-delete=true'.
+          Namespace: {{ .Release.Namespace }}, Policy: {{ include "zoo-project-dru.fullname" . }}-protect-zoofpm-pods
+        
+        # Allow deletion only if no protection annotation OR emergency annotation present
+        deny:
+          conditions:
+            all:
+            # Condition 1: The pod MUST have the protection annotation to be blocked
+            - key: "{{`{{ request.object.metadata.annotations.\"zoo-project.org/protected\" || 'false' }}`}}"
+              operator: Equals
+              value: "true"
+            # Condition 2: AND no emergency annotation present  
+            - key: "{{`{{ request.object.metadata.annotations.\"zoo-project.org/emergency-delete\" || 'false' }}`}}"
+              operator: NotEquals
+              value: "true"
+            # Condition 3: AND it's actually a DELETE operation
+            - key: "{{`{{ request.operation }}`}}"
+              operator: Equals
+              value: DELETE
+{{- end }}
