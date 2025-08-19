@@ -4,6 +4,108 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: added
+          description: "Added ZOO-Project latest version 0.2.29 with Python 3.10"
+          links:
+            - name: commit
+              url: https://github.com/ZOO-Project/ZOO-Project/commit/c29a1da89d5a2d00a4b34af555bcd52dc987df6f
+        - kind: added
+          description: "Integrated Argo Workflows support with real-time monitoring and event-driven automation"
+          links:
+            - name: Helm chart
+              url: https://artifacthub.io/packages/helm/argo/argo-workflows
+        - kind: added
+          description: "Added Argo Events integration for real-time workflow event capture and webhook notifications"
+          links:
+            - name: Helm chart
+              url: https://artifacthub.io/packages/helm/argo/argo-events
+        - kind: added
+          description: "Integrated kube-prometheus-stack with custom Grafana dashboards for workflow metrics visualization"
+          links:
+            - name: Helm chart
+              url: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+        - kind: added
+          description: "Added prometheus-node-exporter"
+        - kind: added
+          description: "Implemented automatic ServiceMonitor patching to resolve connection refused errors on local environments"
+        - kind: added
+          description: "Added real-time dashboard refresh (5s intervals) for immediate workflow status updates"
+        - kind: added
+          description: "Enhanced RBAC permissions for monitoring components access to ServiceMonitors API"
+        - kind: added
+          description: "Added monitoring.disableProblematicTargets parameter for local development environments"
+        - kind: added
+          description: "Integrated workflow.argo.events configuration with EventBus, EventSource, and Sensor components"
+        - kind: added
+          description: "Added argo profile to skaffold configuration for streamlined development workflows"
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.29
+    created: "2025-08-19T17:27:20.620386106Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.1.4
+    - condition: workflow.argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.21
+    - condition: workflow.argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 98b5ed41cfb821a923e519fda111ed73b0a37c92c754476c1799ed92944ca84a
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.7.0/zoo-project-dru-0.7.0.tgz
+    version: 0.7.0
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: added
           description: "Add KEDA autoscaling support with scale-to-zero functionality and intelligent pod protection."
           links:
             - name: KEDA documentation
@@ -3107,4 +3209,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-08-07T10:29:01.716759495Z"
+generated: "2025-08-19T17:27:20.620621498Z"
