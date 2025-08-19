@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: workflow-metrics-sensor
+  namespace: zoo
+  labels:
+    app.kubernetes.io/component: argo-events
+spec:
+  template:
+    serviceAccountName: argo-workflow
+  dependencies:
+    - name: workflow-events
+      eventSourceName: workflow-events
+      eventName: workflowEvents
+  triggers:
+    # Trigger 1: Log workflow events pour debugging
+    - template:
+        name: log-workflow-event
+        log:
+          intervalSeconds: 1
+    
+    # Trigger 2: Publier des métriques personnalisées vers Prometheus via PushGateway
+    - template:
+        name: update-prometheus-metrics
+        http:
+          url: http://zoo-project-dru-kube-prome-prometheus-pushgateway.zoo.svc.cluster.local:9091/metrics/job/argo-workflows-events/instance/zoo
+          method: POST
+          headers:
+            Content-Type: text/plain
+          # Payload contenant les métriques Prometheus à pousser
+          payload:
+            - src:
+                dependencyName: workflow-events
+                dataKey: object.status.phase
+              dest: workflow_phase
+            - src:
+                dependencyName: workflow-events
+                dataKey: object.metadata.name
+              dest: workflow_name
+            - src:
+                dependencyName: workflow-events
+                dataKey: object.status.startedAt
+              dest: workflow_started
+            - src:
+                dependencyName: workflow-events
+                dataKey: object.status.finishedAt
+              dest: workflow_finished
+          # Template du payload avec les métriques
+          body: |
+            # HELP argo_workflows_events_total Total number of workflow events
+            # TYPE argo_workflows_events_total counter
+            argo_workflows_events_total{phase="{{.workflow_phase}}",workflow="{{.workflow_name}}"} 1
+            
+            # HELP argo_workflows_last_event_timestamp Last workflow event timestamp
+            # TYPE argo_workflows_last_event_timestamp gauge
+            argo_workflows_last_event_timestamp{phase="{{.workflow_phase}}",workflow="{{.workflow_name}}"} {{time.Now.Unix}}
+    
+    # Trigger 3: Déclencher un webhook vers Grafana pour forcer le rechargement des dashboards
+    - template:
+        name: refresh-grafana-dashboard
+        conditions: "workflow_phase == 'Succeeded' || workflow_phase == 'Failed'"
+        http:
+          url: http://zoo-project-dru-grafana.zoo.svc.cluster.local:3000/api/dashboards/db
+          method: POST
+          headers:
+            Authorization: "Bearer {{.Values.grafana.adminToken}}"
+            Content-Type: application/json
+          body: |
+            {
+              "refresh": true,
+              "dashboard": {
+                "uid": "argo-workflows-zoo"
+              }
+            }

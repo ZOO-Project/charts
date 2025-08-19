@@ -1,0 +1,31 @@
+{{- if and .Values.workflow.argo.enabled .Values.workflow.argo.events.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-workflow-events
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: argo-events
+spec:
+  resource:
+    workflowEvents:
+      # Écouter les événements des workflows Argo
+      group: argoproj.io
+      version: v1alpha1
+      resource: workflows
+      # Filtrer seulement les workflows dans notre namespace
+      namespace: {{ .Release.Namespace }}
+      # Types d'événements à écouter
+      eventTypes:
+        - ADD      # Workflow créé
+        - UPDATE   # Workflow mis à jour
+        - DELETE   # Workflow supprimé
+      # Filtrer les événements intéressants
+      filter:
+        expression: >-
+          (data.type == "ADD" && data.object.status.phase == "Running") ||
+          (data.type == "UPDATE" && data.object.status.phase == "Succeeded") ||
+          (data.type == "UPDATE" && data.object.status.phase == "Failed") ||
+          (data.type == "UPDATE" && data.object.status.phase == "Error")
+{{- end }}

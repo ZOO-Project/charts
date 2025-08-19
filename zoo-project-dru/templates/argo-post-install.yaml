@@ -1,0 +1,57 @@
+{{ if .Values.workflow.argo.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-argo-post-install
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: argo-post-install
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 300  # Supprime le Job 5 minutes après completion
+  template:
+    metadata:
+      name: {{ include "zoo-project-dru.fullname" . }}-argo-post-install
+      labels:
+        {{- include "zoo-project-dru.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: argo-post-install
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.workflow.argo.serviceAccount.name }}
+      containers:
+      - name: post-install
+        image: bitnami/kubectl:1.28
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          echo "Waiting for Argo Workflows controller to be ready..."
+          
+          # Wait for controller deployment to be ready
+          kubectl wait --for=condition=Available deployment/{{ .Release.Name }}-argo-workflows-workflow-controller --timeout=300s || true
+          
+          # Wait for server deployment to be ready
+          kubectl wait --for=condition=Available deployment/{{ .Release.Name }}-argo-workflows-server --timeout=300s || true
+          
+          echo "Verifying WorkflowTemplate installation..."
+          
+          # Check if WorkflowTemplate exists
+          if kubectl get workflowtemplate argo-cwl-runner-stage-in-out; then
+            echo "WorkflowTemplate argo-cwl-runner-stage-in-out already exists"
+          else
+            echo "WorkflowTemplate argo-cwl-runner-stage-in-out not found, but should be created by template"
+          fi
+          
+          echo "Argo Workflows post-installation completed successfully"
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+{{ end }}

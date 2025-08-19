@@ -104,3 +104,29 @@ Create the name of the service account to use
 {{- $host := trimAll ":8080" $hostOrigin }}
 {{- printf "%s://%s:8888" $scheme $host }}
 {{- end }}
+
+{{/*
+Argo Workflows MinIO endpoint helper
+*/}}
+{{- define "zoo-project-dru.argo.minio.endpoint" -}}
+{{- $endpoint := .Values.workflow.argo.s3.endpoint | default "s3-service:9000" -}}
+{{- if and (not (hasPrefix "http://" $endpoint)) (not (hasPrefix "https://" $endpoint)) -}}
+{{- printf "http://%s" $endpoint -}}
+{{- else -}}
+{{- $endpoint -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Argo Workflows MinIO access key helper
+*/}}
+{{- define "zoo-project-dru.argo.minio.accessKey" -}}
+{{- .Values.minio.auth.rootUser | default "minio-admin" }}
+{{- end }}
+
+{{/*
+Argo Workflows MinIO secret key helper
+*/}}
+{{- define "zoo-project-dru.argo.minio.secretKey" -}}
+{{- .Values.minio.auth.rootPassword | default "minio-secret-password" }}
+{{- end }}

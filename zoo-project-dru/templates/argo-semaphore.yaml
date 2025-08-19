@@ -1,0 +1,12 @@
+{{ if .Values.workflow.argo.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: semaphore-argo-cwl-runner-stage-in-out
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    component: argo-semaphore
+data:
+  workflow: "10"  # Maximum concurrent workflows
+{{ end }}

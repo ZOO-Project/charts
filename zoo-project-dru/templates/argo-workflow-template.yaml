@@ -1,0 +1,448 @@
+{{ if .Values.workflow.argo.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: argo-cwl-runner-stage-in-out
+  labels:
+    workflows.argoproj.io/controller-instanceid: {{ .Values.workflow.argo.instanceID | default "argo" }}
+  annotations:
+    workflows.argoproj.io/version: ">= v3.3.0"
+    workflows.argoproj.io/description: |
+      This workflow template is a CWL runner for Argo Workflows with stage-in/stage-out capabilities.
+spec:
+  serviceAccountName: {{ .Values.workflow.argo.serviceAccount.name | default "argo-workflow" }}
+  entrypoint: calrissian-runner
+  parameters:
+  - name: parameters
+    description: "Parameters in JSON format"
+    value: ""
+  - name: cwl
+    description: "CWL document in JSON format"
+    value: ""
+  - name: max_ram
+    description: "Max RAM"
+    value: "8G"
+  - name: max_cores
+    description: "Max cores"
+    value: "8"
+
+  # this is the Workflow throttling to avoid overloading the cluster
+  # the configMap contains the number of concurrent Workflows allowed
+  synchronization:
+    semaphore:
+      configMapKeyRef:
+        name: semaphore-argo-cwl-runner-stage-in-out
+        key: workflow
+
+  # volumes 
+  volumes:
+  - name: usersettings-vol
+    secret:
+      secretName: user-settings-stage-in-out
+  - name: calrissian-wdir
+    persistentVolumeClaim:
+      claimName: calrissian-wdir
+  - name: cwl-wrapper-config-vol
+    configMap:
+      name: cwl-wrapper-config
+      items:
+        - key: main.yaml
+        - key: rules.yaml
+        - key: stage-in.cwl
+        - key: stage-out.cwl
+
+  # Workflow templates are used to define the Workflow steps
+  templates:
+  - name: calrissian-runner
+    # this is the entry point of the Workflow
+    inputs:
+      parameters:
+      - name: parameters
+        description: "Parameters in JSON format"
+      - name: cwl
+        description: "CWL document in JSON format"
+      - name: max_ram
+        description: "Max RAM (e.g. 8G)"
+        default: "8G"
+      - name: max_cores
+        description: "Max cores (e.g. 4)"
+        default: "4"
+      - name: entry_point
+        description: "CWL document entry_point"
+    outputs:
+      parameters:
+        - name: results
+          valueFrom:
+            expression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.parameters['calrissian-output'] : 'null'"` }}
+        - name: log
+          valueFrom:
+            expression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.parameters['calrissian-stderr'] : steps['get-results-on-failure'].outputs.parameters['calrissian-stderr']"` }}    
+        - name: usage-report
+          valueFrom:
+            expression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.parameters['calrissian-report']: steps['get-results-on-failure'].outputs.parameters['calrissian-report']"` }}
+        - name: stac-catalog
+          valueFrom:
+            expression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.parameters['stac-catalog'] : 'null'"` }}
+        - name: feature-collection
+          valueFrom:
+            expression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['feature-collection'].outputs.parameters['feature-collection'] : 'null'"` }}
+        - name: outcome
+          valueFrom:
+            expression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.parameters['outcome']: steps['get-results-on-failure'].outputs.parameters['outcome']"` }}
+      artifacts:
+        - name: tool-logs
+          fromExpression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.artifacts['tool-logs'] : steps['get-results-on-failure'].outputs.artifacts['tool-logs']"` }}
+        - name: calrissian-output
+          fromExpression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.artifacts['calrissian-output'] : steps['get-results-on-failure'].outputs.artifacts['artifact-null']"` }}
+        - name: calrissian-stderr
+          fromExpression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.artifacts['calrissian-stderr'] : steps['get-results-on-failure'].outputs.artifacts['calrissian-stderr']"` }}
+        - name: calrissian-report
+          fromExpression: {{ `"steps['cwl-runner'].status == 'Succeeded' ? steps['get-results'].outputs.artifacts['calrissian-report'] : steps['get-results-on-failure'].outputs.artifacts['calrissian-report']"` }}
+
+    steps:
+      # Workflow steps are defined here
+      - - name: cwl-prepare
+          template: cwl-prepare
+          arguments:
+            parameters:
+            - name: cwl
+              value: {{ `"{{inputs.parameters.cwl}}"` }}
+            - name: parameters
+              value: {{ `"{{inputs.parameters.parameters}}"` }}
+
+      - - name: cwl-runner
+          continueOn:
+            failed: true 
+          template: calrissian-tmpl
+          arguments:
+            parameters:
+            - name: entry_point
+              value: {{ `"{{inputs.parameters.entry_point}}"` }}
+            - name: max_ram
+              value: {{ `"{{inputs.parameters.max_ram}}"` }}
+            - name: max_cores
+              value: {{ `"{{inputs.parameters.max_cores}}"` }}
+
+      - - name: get-results
+          when: "{{"{{steps.cwl-runner.status}}"}} == Succeeded"
+          template: get-results
+          arguments:
+            parameters:
+            - name: calrissian-output
+              value: "/calrissian/output.json"
+            - name: calrissian-stderr
+              value: "/calrissian/stderr.log"
+            - name: calrissian-report
+              value: "/calrissian/report.json"
+
+      - - name: get-results-on-failure
+          when: "{{"{{steps.cwl-runner.status}}"}} == Failed"
+          template: get-results-on-failure
+          arguments:
+            parameters:
+            - name: calrissian-output
+              value: "/calrissian/output.json"
+            - name: calrissian-stderr
+              value: "/calrissian/stderr.log"
+            - name: calrissian-report
+              value: "/calrissian/report.json"
+
+      - - name: feature-collection
+          when: "{{"{{steps.cwl-runner.status}}"}} == Succeeded"
+          template: feature-collection
+          arguments:
+            parameters:
+            - name: stac-catalog
+              value: {{ `"{{steps.get-results.outputs.parameters.stac-catalog}}"` }}
+
+  - name: cwl-prepare
+    # this steps prepares the CWL inputs
+    # needed by Calrissian
+    inputs:
+      parameters:
+      - name: cwl
+      - name: parameters
+
+    script:
+      image: {{ .Values.workflow.argo.cwlwrapperImage }}
+      resources:
+        requests:
+          memory: 1Gi
+          cpu: 1
+      volumeMounts:
+      - name: calrissian-wdir 
+        mountPath: /calrissian
+      - name: cwl-wrapper-config-vol
+        mountPath: /cwl-wrapper-config
+      env: []
+      command: [bash]
+      source: |
+        #!/bin/bash
+        
+        echo {{ `'{{inputs.parameters.cwl}}'` }}  >> /tmp/cwl.json
+
+        cwl-wrapper --stagein /cwl-wrapper-config/stage-in.cwl \
+                    --stageout /cwl-wrapper-config/stage-out.cwl \
+                    --maincwl /cwl-wrapper-config/main.yaml \
+                    --rulez /cwl-wrapper-config/rules.yaml \
+                    /tmp/cwl.json > /calrissian/wrapped.cwl
+
+        echo {{ `'{{inputs.parameters.parameters}}'` }}  >> /calrissian/input.json
+        echo "CWL and input files created"
+        cat /calrissian/wrapped.cwl
+        echo "CWL parameters"
+        cat /calrissian/input.json
+        
+        sleep 1
+
+  - name: calrissian-tmpl
+    # this step creates the Calrissian Job, Argo creates it as a Kubernetes Job
+    metrics:
+        prometheus:
+          - name: duration_gauge_calrissian
+            labels:
+              - key: name
+                value: steps
+            help: "Duration gauge by name"
+            gauge:
+              realtime: true
+              value: {{ `"{{duration}}"` }}
+    resource:
+      action: create
+      setOwnerReference: true
+      successCondition: status.succeeded > 0
+      failureCondition: status.failed > 0
+      manifest: |
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          generateName: calrissian-execution-
+        spec:
+          backoffLimit: 0
+          activeDeadlineSeconds: 86400
+          ttlSecondsAfterFinished: 120
+          template:
+            metadata:
+              name: calrissian_pod
+            spec:
+              serviceAccountName: {{ .Values.workflow.argo.serviceAccount.name }}
+              containers:
+                - name: calrissian
+                  image: ghcr.io/duke-gcb/calrissian/calrissian:0.16.0
+                  imagePullPolicy: IfNotPresent
+                  command:
+                  - calrissian
+                  args:
+                  - --debug
+                  - --pod-serviceaccount
+                  - {{ .Values.workflow.argo.serviceAccount.name }}
+                  - --stdout
+                  - /calrissian/output.json
+                  - --stderr
+                  - /calrissian/stderr.log
+                  - --usage-report
+                  - /calrissian/report.json
+                  - --max-ram
+                  - {{ `'{{inputs.parameters.max_ram}}'` }}
+                  - --max-cores
+                  - {{ `'{{inputs.parameters.max_cores}}'` }}
+                  - --tmp-outdir-prefix
+                  - /calrissian/tmp/
+                  - --outdir
+                  - /calrissian/results/
+                  - --tool-logs-basepath 
+                  - /calrissian/logs
+                  - "/calrissian/wrapped.cwl#wrapped"
+                  - "/calrissian/input.json"
+                  env:
+                    - name: CALRISSIAN_POD_NAME
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: metadata.name
+                    - name: CALRISSIAN_DELETE_PODS
+                      value: "true"
+                  resources:
+                    limits:
+                      cpu: 2000m
+                      memory: 2G
+                    requests:
+                      cpu: 1000m
+                      memory: 1G
+                  volumeMounts:
+                    - mountPath: /calrissian
+                      name: calrissian-wdir
+                      readOnly: false
+              restartPolicy: Never
+              securityContext:
+                fsGroup: 0
+                runAsGroup: 0
+                runAsUser: 0
+              terminationGracePeriodSeconds: 120
+              volumes:
+                - name: calrissian-wdir
+                  persistentVolumeClaim:
+                    claimName: {{"{{workflow.name}}"}}-calrissian-wdir
+                    readOnly: false
+
+    inputs:
+      parameters:
+      - name: max_ram
+      - name: max_cores
+      - name: entry_point
+    outputs:
+      parameters: []
+      artifacts: []
+
+  - name: get-results
+    # reads the files generated by Calrissian
+    inputs:
+      parameters:
+      - name: calrissian-output
+      - name: calrissian-stderr
+      - name: calrissian-report
+    outputs:
+      parameters:
+        - name: calrissian-output
+          valueFrom:
+            path: /tmp/calrissian-output.json
+        - name: calrissian-stderr
+          valueFrom:
+            path: /tmp/calrissian-stderr.txt
+        - name: calrissian-report
+          valueFrom:
+            path: /tmp/calrissian-report.json
+        - name: stac-catalog
+          valueFrom:
+            path: /tmp/stac-catalog.txt
+        - name: outcome
+          valueFrom:
+            path: /tmp/outcome
+      artifacts:
+        - name: tool-logs
+          path: /calrissian/logs
+          archive:
+            none: {}
+          s3:
+            key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/tool-logs"` }}
+        - name: calrissian-output
+          path: /tmp/calrissian-output.json
+          s3:
+            key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/calrissian-output.tgz"` }}
+        - name: calrissian-stderr
+          path: /tmp/calrissian-stderr.txt
+          s3:
+            key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/calrissian-stderr.tgz"` }}
+        - name: calrissian-report 
+          path: /tmp/calrissian-report.json
+          s3:
+            key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/calrissian-report.tgz"` }}
+    script:
+      image: {{ .Values.workflow.argo.stageOutImage }}
+      resources:
+        requests:
+          memory: 1Gi
+          cpu: 1
+      volumeMounts:
+      - name: calrissian-wdir
+        mountPath: /calrissian
+      command: [bash]
+      source: |
+        #!/bin/bash
+        cat "{{"{{inputs.parameters.calrissian-output}}"}}" > /tmp/calrissian-output.json
+        cat "{{"{{inputs.parameters.calrissian-stderr}}"}}" > /tmp/calrissian-stderr.txt
+        cat "{{"{{inputs.parameters.calrissian-report}}"}}" > /tmp/calrissian-report.json
+        cat "{{"{{inputs.parameters.calrissian-output}}"}}" | jq -r .s3_catalog_output - > /tmp/stac-catalog.txt
+        echo "succeeded" > /tmp/outcome
+
+  - name: get-results-on-failure
+    inputs:
+      parameters:
+      - name: calrissian-output
+      - name: calrissian-stderr
+      - name: calrissian-report
+    outputs:
+      parameters:
+        - name: calrissian-stderr
+          valueFrom:
+            path: /tmp/calrissian-stderr.txt
+        - name: calrissian-report
+          valueFrom:
+            path: /tmp/calrissian-report.json
+        - name: outcome
+          valueFrom:
+            path: /tmp/outcome
+      artifacts: 
+        - name: tool-logs
+          path: /calrissian/logs
+          archive:
+            none: {}
+          s3:
+            key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/tool-logs"` }}
+        - name: calrissian-stderr
+          path: /tmp/calrissian-stderr.txt
+          s3:
+            key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/calrissian-stderr.tgz"` }}
+        - name: calrissian-report 
+          path: /tmp/calrissian-report.json
+          s3:
+            key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/calrissian-report.tgz"` }}
+        - name: artifact-null
+          path: /tmp/null
+          s3:
+            key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/null.tgz"` }}
+    script:
+      image: {{ .Values.workflow.argo.stageOutImage }}
+      resources:
+        requests:
+          memory: 1Gi
+          cpu: 1
+      volumeMounts:
+      - name: calrissian-wdir
+        mountPath: /calrissian
+      command: [bash]
+      source: |
+        #!/bin/bash
+
+        set -x 
+        ls -l /calrissian/logs
+
+        mkdir -p /calrissian/logs
+        if [ -z "$( ls -A '/calrissian/logs' )" ]; then
+          echo "null" > /calrissian/logs/null
+        fi
+
+        ls -l /calrissian
+
+        cat "{{"{{inputs.parameters.calrissian-stderr}}"}}" > /tmp/calrissian-stderr.txt
+        
+        if [ -f "{{"{{inputs.parameters.calrissian-report}}"}}" ]; then
+          cat "{{"{{inputs.parameters.calrissian-report}}"}}" > /tmp/calrissian-report.json
+        else
+          echo "null" > /tmp/calrissian-report.json
+        fi 
+        
+        # null artifact
+        echo "null" > /tmp/null
+
+        echo "failure" > /tmp/outcome
+
+  - name: feature-collection
+    inputs: 
+      parameters:
+      - name: stac-catalog
+    outputs:
+      parameters:
+        - name: feature-collection
+          valueFrom:
+            path: /tmp/output
+    script:
+      image: {{ .Values.workflow.argo.stageOutImage }}
+      resources:
+        requests:
+          memory: 1Gi
+          cpu: 1
+      volumeMounts: []
+      command: [python]
+      source: |
+        {{ required "A valid .Values.workflow.argo.featureCollectionScript entry required!" ( tpl ( .Values.workflow.argo.featureCollectionScript | default ( .Files.Get "files/argo-workflows/feature_collection.py")) . | nindent 8 ) }}
+{{ end }}

@@ -1,0 +1,44 @@
+{{- if and .Values.workflow.argo.enabled (hasKey .Values.workflow.argo "ingress") .Values.workflow.argo.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-argo-workflows-ingress
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  {{- with .Values.workflow.argo.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.workflow.argo.ingress.className }}
+  ingressClassName: {{ .Values.workflow.argo.ingress.className }}
+  {{- end }}
+  {{- if .Values.workflow.argo.ingress.tls }}
+  tls:
+    {{- range .Values.workflow.argo.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.workflow.argo.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if .pathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              service:
+                name: {{ include "zoo-project-dru.fullname" $ }}-argo-workflows-server
+                port:
+                  number: 2746
+          {{- end }}
+    {{- end }}
+{{- end }}

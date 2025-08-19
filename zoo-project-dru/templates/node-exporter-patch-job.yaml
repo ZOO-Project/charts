@@ -1,0 +1,64 @@
+{{- if and .Values.monitoring.enabled (index .Values.monitoring "kube-prometheus-stack" "prometheus-node-exporter" "enabled") }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-node-exporter-patch
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "20"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 300  # Delete Job 5 minutes after completion
+  template:
+    metadata:
+      name: {{ include "zoo-project-dru.fullname" . }}-node-exporter-patch
+    spec:
+      serviceAccountName: {{ include "zoo-project-dru.fullname" . }}-node-exporter-patcher
+      restartPolicy: OnFailure
+      containers:
+      - name: patch-node-exporter
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for node-exporter DaemonSet to be created..."
+          for i in {1..60}; do
+            if kubectl get ds/{{ .Release.Name }}-prometheus-node-exporter -n {{ .Release.Namespace }} > /dev/null 2>&1; then
+              echo "DaemonSet found, applying patch immediately..."
+              break
+            fi
+            echo "Waiting for DaemonSet creation... ($i/60)"
+            sleep 5
+          done
+          
+          echo "Applying mountPropagation patch for Docker Desktop compatibility..."
+          kubectl patch ds/{{ .Release.Name }}-prometheus-node-exporter \
+            --type "json" \
+            -p '[{"op": "remove", "path" : "/spec/template/spec/containers/0/volumeMounts/2/mountPropagation"}]' \
+            -n {{ .Release.Namespace }} || echo "Patch already applied or not needed"
+          
+          echo "Applying port 9101 patch for Docker Desktop compatibility..."
+          kubectl patch ds/{{ .Release.Name }}-prometheus-node-exporter \
+            --type "json" \
+            -p '[{"op": "replace", "path": "/spec/template/spec/containers/0/args/4", "value": "--web.listen-address=[$(HOST_IP)]:9101"}]' \
+            -n {{ .Release.Namespace }} || echo "Port patch already applied or not needed"
+          
+          kubectl patch ds/{{ .Release.Name }}-prometheus-node-exporter \
+            --type "json" \
+            -p '[{"op": "replace", "path": "/spec/template/spec/containers/0/ports/0/containerPort", "value": 9101}]' \
+            -n {{ .Release.Namespace }} || echo "Container port patch already applied or not needed"
+          
+          echo "Patch applied, waiting a moment for DaemonSet update..."
+          sleep 10
+          
+          echo "Restarting node-exporter pods..."
+          kubectl rollout restart daemonset/{{ .Release.Name }}-prometheus-node-exporter -n {{ .Release.Namespace }} || true
+          
+          echo "Waiting for patched pods to be ready..."
+          kubectl wait --for=condition=ready --timeout=300s pod -l app.kubernetes.io/name=prometheus-node-exporter -n {{ .Release.Namespace }} || echo "Timeout waiting for pods, but patch applied"
+          
+          echo "Node-exporter patch completed successfully"
+{{- end }}

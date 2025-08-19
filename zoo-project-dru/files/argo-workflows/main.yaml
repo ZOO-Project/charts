@@ -1,0 +1,20 @@
+class: Workflow
+$namespaces:
+  cwltool: http://commonwl.org/cwltool#
+doc: Main stage manager
+id: wrapped
+label: macro-cwl
+hints:
+  "cwltool:Secrets":
+    secrets: []
+inputs: {}
+outputs: {}
+
+requirements:
+  SubworkflowFeatureRequirement: {}
+  ScatterFeatureRequirement: {}
+steps:
+  node_stage_out:
+    in: {}
+    out: []
+    run: ''

@@ -1,0 +1,27 @@
+{{ if and .Values.workflow.argo.enabled .Values.workflow.argo.events.enabled .Values.workflow.argo.events.eventBus.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: EventBus
+metadata:
+  name: {{ .Values.workflow.argo.events.eventBus.name | default "default" }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: argo-events
+spec:
+  {{- if eq (.Values.workflow.argo.events.eventBus.type | default "jetstream") "jetstream" }}
+  jetstream:
+    version: {{ .Values.workflow.argo.events.eventBus.jetstream.version | default "latest" }}
+    replicas: {{ .Values.workflow.argo.events.eventBus.jetstream.replicas | default 3 }}
+    {{- with .Values.workflow.argo.events.eventBus.jetstream.settings }}
+    settings: {{ toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.workflow.argo.events.eventBus.jetstream.streamConfig }}
+    streamConfig: {{ toYaml . | nindent 6 }}
+    {{- end }}
+  {{- else if eq .Values.workflow.argo.events.eventBus.type "nats" }}
+  nats:
+    native:
+      replicas: {{ .Values.workflow.argo.events.eventBus.nats.replicas | default 3 }}
+      auth: {{ .Values.workflow.argo.events.eventBus.nats.auth | default "token" }}
+  {{- end }}
+{{ end }}

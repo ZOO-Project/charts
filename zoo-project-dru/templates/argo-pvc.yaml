@@ -1,0 +1,19 @@
+{{ if .Values.workflow.argo.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: calrissian-wdir
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    component: argo-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.workflow.storageClass }}
+  storageClassName: {{ .Values.workflow.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.workflow.argo.defaultVolumeSize | default "10Gi" }}
+{{ end }}

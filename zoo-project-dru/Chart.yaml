@@ -1,6 +1,6 @@
 apiVersion: v2
 name: zoo-project-dru
-description: A Helm chart for Kubernetes
+description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA with CWL support
 home: https://zoo-project.org/
 icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
 source: https://github.com/ZOO-Project/charts/tree/main/zoo-project-dru
@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.6.1
+version: 0.7.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.28"
+appVersion: "0.2.29"
 
 keywords:
   - workflows
@@ -70,32 +70,61 @@ dependencies:
     repository: https://kyverno.github.io/kyverno/
     condition: keda.kyverno.enabled
 
+  - name: argo-workflows
+    version: "0.45.21"
+    repository: https://argoproj.github.io/argo-helm
+    condition: workflow.argo.enabled
+
+  - name: argo-events
+    version: "2.4.8"
+    repository: https://argoproj.github.io/argo-helm
+    condition: workflow.argo.events.enabled
+
+  - name: kube-prometheus-stack
+    version: ">=45.0.0"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: monitoring.enabled
+
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: "Add KEDA autoscaling support with scale-to-zero functionality and intelligent pod protection."
+      description: "Added ZOO-Project latest version 0.2.29 with Python 3.10"
       links:
-        - name: KEDA documentation
-          url: https://keda.sh/
+        - name: commit
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/c29a1da89d5a2d00a4b34af555bcd52dc987df6f
     - kind: added
-      description: "Implement hybrid scaling logic based on PostgreSQL workers and RabbitMQ queues."
-    - kind: added
-      description: "Add eviction controller with real-time worker tracking and dynamic pod annotation management."
-    - kind: added
-      description: "Integrate Kyverno admission policies ensuring zoofpm pods are never deleted while tasks are running."
+      description: "Integrated Argo Workflows support with real-time monitoring and event-driven automation"
       links:
-        - name: Kyverno documentation
-          url: https://kyverno.io/
+        - name: Helm chart
+          url: https://artifacthub.io/packages/helm/argo/argo-workflows
     - kind: added
-      description: "Implement triple protection system: KEDA minReplicas management, eviction controller monitoring, and Kyverno admission control preventing premature pod termination."
-    - kind: changed
-      description: "Remove the sidecar container from the zoofpm deployment."
+      description: "Added Argo Events integration for real-time workflow event capture and webhook notifications"
+      links:
+        - name: Helm chart
+          url: https://artifacthub.io/packages/helm/argo/argo-events
     - kind: added
-      description: "Add pod-level worker count annotations (zoo-project.org/active-workers) for granular tracking and protection decisions."
+      description: "Integrated kube-prometheus-stack with custom Grafana dashboards for workflow metrics visualization"
+      links:
+        - name: Helm chart
+          url: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
     - kind: added
-      description: "Add KEDA and Kyverno as chart dependencies with versions 2.14.2 and 3.1.4 respectively."
-    - kind: changed
-      description: "Update chart documentation with detailed KEDA autoscaling, worker protection strategies, and troubleshooting instructions."
+      description: "Added prometheus-node-exporter"
+      links:
+        - name: Helm chart
+          url: https://artifacthub.io/packages/helm/prometheus-community/prometheus-node-exporter
+    - kind: added
+      description: "Implemented automatic ServiceMonitor patching to resolve connection refused errors on local environments"
+    - kind: added
+      description: "Added real-time dashboard refresh (5s intervals) for immediate workflow status updates"
+    - kind: added
+      description: "Enhanced RBAC permissions for monitoring components access to ServiceMonitors API"
+    - kind: added
+      description: "Added monitoring.disableProblematicTargets parameter for local development environments"
+    - kind: added
+      description: "Integrated workflow.argo.events configuration with EventBus, EventSource, and Sensor components"
+    - kind: added
+      description: "Added argo profile to skaffold configuration for streamlined development workflows"
+
 
   artifacthub.io/links: |
     - name: source

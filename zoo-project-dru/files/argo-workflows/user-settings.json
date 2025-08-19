@@ -1,0 +1,15 @@
+{
+    "S3": {
+        "Services": {
+            "results": {
+                "UrlPattern": "s3:\\/\\/results\\/.*",
+                "Region": "it-rom",
+                "AuthenticationRegion": "it-rom",
+                "AccessKey": {{ .Values.minio.auth.rootUser | default "minio-admin" | quote }},
+                "SecretKey": {{ .Values.minio.auth.rootPassword | default "minio-secret-password" | quote }},
+                "ServiceURL": "{{ include "argo-workflows.minio.endpoint" . }}",
+                "ForcePathStyle": "true"
+            }
+        }
+    }
+}

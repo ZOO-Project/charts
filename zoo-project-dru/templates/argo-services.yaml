@@ -1,0 +1,41 @@
+{{- if and .Values.workflow.argo.enabled .Values.monitoring.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-argo-workflows-controller-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app: workflow-controller
+spec:
+  type: ClusterIP
+  ports:
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  selector:
+    app: workflow-controller
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+{{- if .Values.workflow.argo.events.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-argo-events-controller-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app: argo-events-controller-manager
+spec:
+  type: ClusterIP
+  ports:
+  - name: metrics
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: argo-events-controller-manager
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+{{- end }}

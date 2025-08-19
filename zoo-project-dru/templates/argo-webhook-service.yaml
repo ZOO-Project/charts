@@ -1,0 +1,99 @@
+{{- if and .Values.workflow.argo.enabled .Values.workflow.argo.events.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-webhook-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
+spec:
+  type: ClusterIP
+  ports:
+  - name: webhook
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    {{- include "zoo-project-dru.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-webhook
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "zoo-project-dru.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: webhook
+  template:
+    metadata:
+      labels:
+        {{- include "zoo-project-dru.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: webhook
+    spec:
+      containers:
+      - name: webhook
+        image: openresty/openresty:alpine
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: webhook-config
+          mountPath: /usr/local/openresty/nginx/conf/nginx.conf
+          subPath: nginx.conf
+        - name: webhook-script
+          mountPath: /usr/share/nginx/html/webhook
+          subPath: webhook.sh
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      volumes:
+      - name: webhook-config
+        configMap:
+          name: {{ include "zoo-project-dru.fullname" . }}-webhook-config
+      - name: webhook-script
+        configMap:
+          name: {{ include "zoo-project-dru.fullname" . }}-webhook-config
+          defaultMode: 0755
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-webhook-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+    http {
+        server {
+            listen 8080;
+            location /webhook/workflow-status {
+                content_by_lua_block {
+                    ngx.log(ngx.ERR, "Workflow event received: ", ngx.var.request_body)
+                    ngx.say('{"status": "received"}')
+                }
+            }
+            location /health {
+                return 200 "OK";
+            }
+        }
+    }
+  webhook.sh: |
+    #!/bin/sh
+    echo "Webhook receiver ready on port 8080"
+    tail -f /var/log/nginx/access.log
+{{- end }}

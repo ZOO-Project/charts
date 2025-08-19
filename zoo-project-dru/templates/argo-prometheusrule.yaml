@@ -1,0 +1,31 @@
+{{- if and .Values.workflow.argo.enabled .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-argo-workflows
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+spec:
+  groups:
+  - name: argo-workflows.rules
+    rules:
+    # Default rules for Argo Workflows monitoring
+    - alert: ArgoWorkflowsControllerDown
+      expr: up{job="argo-workflows-controller"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Argo Workflows Controller is down"
+        description: "Argo Workflows Controller has been down for more than 5 minutes."
+    
+    - alert: ArgoWorkflowsFailed
+      expr: increase(argo_workflows_completed_total{status="Failed"}[5m]) > 0
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Argo Workflow failed"
+        description: "One or more Argo Workflows have failed in the last 5 minutes."
+{{- end }}

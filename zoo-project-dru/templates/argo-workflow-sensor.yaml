@@ -1,0 +1,69 @@
+{{- if and .Values.workflow.argo.enabled (and (hasKey .Values.workflow.argo "events") .Values.workflow.argo.events.enabled) }}
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-workflow-metrics-sensor
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: argo-events
+spec:
+  template:
+    serviceAccountName: {{ .Values.workflow.argo.serviceAccount.name }}
+  dependencies:
+    - name: workflow-events
+      eventSourceName: {{ include "zoo-project-dru.fullname" . }}-workflow-events
+      eventName: workflowEvents
+  triggers:
+    # Trigger 1: Log workflow events pour debugging
+    - template:
+        name: log-workflow-event
+        log:
+          intervalSeconds: 1
+    
+    # Trigger 2: Webhook pour notifier les changements d'état des workflows
+    - template:
+        name: notify-workflow-change
+        http:
+          url: http://{{ include "zoo-project-dru.fullname" . }}-webhook-service.{{ .Release.Namespace }}.svc.cluster.local:8080/webhook/workflow-status
+          method: POST
+          headers:
+            Content-Type: application/json
+          # Payload avec les informations du workflow
+          payload:
+            - src:
+                dependencyName: workflow-events
+                dataKey: body.status.phase
+              dest: phase
+            - src:
+                dependencyName: workflow-events
+                dataKey: body.metadata.name
+              dest: name
+            - src:
+                dependencyName: workflow-events
+                dataKey: body.metadata.namespace
+              dest: namespace
+            - src:
+                dependencyName: workflow-events
+                dataKey: body.status.startedAt
+              dest: startedAt
+            - src:
+                dependencyName: workflow-events
+                dataKey: body.status.finishedAt
+              dest: finishedAt
+          body: |
+            {
+              "workflow": {
+                "name": "{{.name}}",
+                "namespace": "{{.namespace}}",
+                "phase": "{{.phase}}",
+                "startedAt": "{{.startedAt}}",
+                "finishedAt": "{{.finishedAt}}",
+                "timestamp": "{{ now | date "2006-01-02T15:04:05Z07:00" }}"
+              },
+              "event": {
+                "type": "workflow-status-change",
+                "source": "argo-events"
+              }
+            }
+{{- end }}

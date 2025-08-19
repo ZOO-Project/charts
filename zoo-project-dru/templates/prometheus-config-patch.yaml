@@ -1,0 +1,76 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.disableProblematicTargets }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-prometheus-patch
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "30"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: {{ include "zoo-project-dru.fullname" . }}-prometheus-patch
+    spec:
+      serviceAccountName: {{ include "zoo-project-dru.fullname" . }}-node-exporter-patcher
+      restartPolicy: OnFailure
+      containers:
+      - name: patch-prometheus-config
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "🔧 Patching Prometheus configuration to disable problematic targets..."
+          
+          # Wait for ServiceMonitors to be created
+          echo "⏳ Waiting for ServiceMonitors to be created..."
+          for i in {1..60}; do
+            if kubectl get servicemonitor {{ .Release.Name }}-kube-prome-kube-scheduler -n zoo > /dev/null 2>&1; then
+              echo "✅ ServiceMonitors found, applying patches..."
+              break
+            fi
+            echo "   Waiting for ServiceMonitors creation... ($i/60)"
+            sleep 5
+          done
+          
+          # Patch kube-scheduler ServiceMonitor
+          echo "🔧 Disabling kube-scheduler ServiceMonitor..."
+          kubectl patch servicemonitor {{ .Release.Name }}-kube-prome-kube-scheduler \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/selector/matchLabels", "value": {"app.kubernetes.io/name": "non-existent"}}]' \
+            -n {{ .Release.Namespace }} 2>/dev/null && echo "   ✅ kube-scheduler disabled" || echo "   ⚠️  kube-scheduler not found or already patched"
+            
+          # Patch kube-proxy ServiceMonitor
+          echo "🔧 Disabling kube-proxy ServiceMonitor..."
+          kubectl patch servicemonitor {{ .Release.Name }}-kube-prome-kube-proxy \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/selector/matchLabels", "value": {"app.kubernetes.io/name": "non-existent"}}]' \
+            -n {{ .Release.Namespace }} 2>/dev/null && echo "   ✅ kube-proxy disabled" || echo "   ⚠️  kube-proxy not found or already patched"
+            
+          # Patch kube-etcd ServiceMonitor
+          echo "🔧 Disabling kube-etcd ServiceMonitor..."
+          kubectl patch servicemonitor {{ .Release.Name }}-kube-prome-kube-etcd \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/selector/matchLabels", "value": {"app.kubernetes.io/name": "non-existent"}}]' \
+            -n {{ .Release.Namespace }} 2>/dev/null && echo "   ✅ kube-etcd disabled" || echo "   ⚠️  kube-etcd not found or already patched"
+            
+          # Patch kube-controller-manager ServiceMonitor
+          echo "🔧 Disabling kube-controller-manager ServiceMonitor..."
+          kubectl patch servicemonitor {{ .Release.Name }}-kube-prome-kube-controller-manager \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/selector/matchLabels", "value": {"app.kubernetes.io/name": "non-existent"}}]' \
+            -n {{ .Release.Namespace }} 2>/dev/null && echo "   ✅ kube-controller-manager disabled" || echo "   ⚠️  kube-controller-manager not found or already patched"
+          
+          # Fix node-exporter service port
+          echo "🔧 Fixing node-exporter service port..."
+          kubectl patch service {{ .Release.Name }}-prometheus-node-exporter \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/ports/0/port", "value": 9101}, {"op": "replace", "path": "/spec/ports/0/targetPort", "value": 9101}]' \
+            -n {{ .Release.Namespace }} 2>/dev/null && echo "   ✅ node-exporter service port fixed (9101)" || echo "   ⚠️  node-exporter service not found or already patched"
+          
+          echo "✅ Prometheus patches completed - problematic targets disabled"
+{{- end }}

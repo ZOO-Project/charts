@@ -1,0 +1,19 @@
+{{- if and .Values.workflow.argo.enabled .Values.workflow.argo.enabled }}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cwl-wrapper-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    component: argo-cwl-config
+data:
+  rules.yaml: |-
+    {{ required "A valid .Values.wrapper.rules entry required!" ( tpl ( .Values.wrapper.rules | default ( .Files.Get "files/argo-workflows/rules.yaml")) . | nindent 4 ) }}
+  main.yaml: |-
+    {{ required "A valid .Values.wrapper.main entry required!" ( tpl ( .Values.wrapper.main | default ( .Files.Get "files/argo-workflows/main.yaml")) . | nindent 4 ) }}
+  stage-in.cwl: |-
+    {{ required "A valid .Values.wrapper.stageIn entry required!" ( tpl ( .Values.wrapper.stageIn | default ( .Files.Get "files/argo-workflows/stage-in.yaml")) . | nindent 4 ) }}
+  stage-out.cwl: |-
+    {{ required "A valid .Values.wrapper.stageOut entry required!" ( tpl ( .Values.wrapper.stageOut | default ( .Files.Get "files/argo-workflows/stage-out.yaml")) . | nindent 4 ) }}
+{{- end }}

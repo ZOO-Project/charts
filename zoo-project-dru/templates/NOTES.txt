@@ -1,4 +1,7 @@
-1. Get the application URL by running these commands:
+🚀 ZOO-Project DRU deployed successfully!
+=========================================
+
+📍 Main Application Access:
 {{- if .Values.ingress.enabled }}
 {{- range $host := .Values.ingress.hosts }}
   {{- range .paths }}
@@ -25,4 +28,77 @@
   export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+{{- if .Values.workflow.argo.enabled }}
+
+🔧 Argo Workflows Access:
+{{- if .Values.workflow.argo.ingress.enabled }}
+{{- range $host := .Values.workflow.argo.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.workflow.argo.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "zoo-project-dru.fullname" . }}-argo-workflows-official-server 2746:2746
+  Open: http://localhost:2746
+{{- end }}
+
+  # Check workflow status
+  kubectl get workflows -n {{ .Release.Namespace }}
+  
+  # View workflow logs
+  kubectl logs -n {{ .Release.Namespace }} -l workflows.argoproj.io/workflow=<workflow-name>
+
+{{- end }}
+
+{{- if .Values.minio.enabled }}
+📦 MinIO Object Storage:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/s3-service 9001:9001
+  Open: http://localhost:9001
+  Username: {{ .Values.minio.auth.rootUser | default "minio-admin" }}
+  Password: (check secret s3-service)
+
+  # Access MinIO credentials
+  kubectl get secret s3-service -n {{ .Release.Namespace }} -o jsonpath='{.data.root-user}' | base64 --decode
+  kubectl get secret s3-service -n {{ .Release.Namespace }} -o jsonpath='{.data.root-password}' | base64 --decode
+
+{{- end }}
+
+{{- if .Values.monitoring.enabled }}
+
+📊 Monitoring Services Access:
+{{- if index .Values.monitoring "kube-prometheus-stack" "grafana" "enabled" | default true }}
+
+📈 Grafana Dashboard:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "zoo-project-dru.fullname" . }}-grafana 3000:80
+  Open: http://localhost:3000
+  Username: admin
+  Password: kubectl get secret {{ include "zoo-project-dru.fullname" . }}-grafana -n {{ .Release.Namespace }} -o jsonpath='{.data.admin-password}' | base64 --decode
+{{- end }}
+
+{{- if index .Values.monitoring "kube-prometheus-stack" "prometheus" "enabled" | default true }}
+
+🔍 Prometheus Metrics:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "zoo-project-dru.fullname" . }}-kube-prometheus-prometheus 9090:9090
+  Open: http://localhost:9090
+{{- end }}
+
+{{- if index .Values.monitoring "kube-prometheus-stack" "alertmanager" "enabled" | default true }}
+
+🚨 AlertManager:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "zoo-project-dru.fullname" . }}-kube-prometheus-alertmanager 9093:9093
+  Open: http://localhost:9093
+{{- end }}
+
+💡 Monitoring Commands:
+  # Get Grafana admin password
+  kubectl get secret {{ include "zoo-project-dru.fullname" . }}-grafana -n {{ .Release.Namespace }} -o jsonpath='{.data.admin-password}' | base64 --decode
+  
+  # View Prometheus targets
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "zoo-project-dru.fullname" . }}-kube-prometheus-prometheus 9090:9090
+  
+  # Check node exporter metrics
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name=prometheus-node-exporter
+
 {{- end }}

@@ -1,0 +1,13 @@
+{{- if and .Values.workflow.argo.enabled .Values.monitoring.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-argo-workflows-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  argo-workflows-dashboard.json: |-
+{{ tpl (.Files.Get "files/argo-workflows/grafana-dashboard.json") . | indent 4 }}
+{{- end }}

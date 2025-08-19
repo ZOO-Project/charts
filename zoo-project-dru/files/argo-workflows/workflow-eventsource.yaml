@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: workflow-events
+  namespace: zoo
+  labels:
+    app.kubernetes.io/component: argo-events
+spec:
+  resource:
+    workflowEvents:
+      # Écouter les événements des workflows Argo
+      resource:
+        group: argoproj.io
+        version: v1alpha1
+        resource: workflows
+        # Filtrer seulement les workflows dans notre namespace
+        namespace: zoo
+      # Types d'événements à écouter
+      eventTypes:
+        - ADD      # Workflow créé
+        - UPDATE   # Workflow mis à jour
+        - DELETE   # Workflow supprimé
+      # Filtrer les événements intéressants
+      filter:
+        expression: >-
+          (data.type == "ADD" && data.object.status.phase == "Running") ||
+          (data.type == "UPDATE" && data.object.status.phase == "Succeeded") ||
+          (data.type == "UPDATE" && data.object.status.phase == "Failed") ||
+          (data.type == "UPDATE" && data.object.status.phase == "Error")

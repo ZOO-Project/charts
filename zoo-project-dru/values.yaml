@@ -222,7 +222,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-d82f8fdec40599df9f945f72f64a40bc6b861ba5
+    tag: dru-8d2204351e3fe32054bef9322ab62b53924ae1b0
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -234,7 +234,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-d82f8fdec40599df9f945f72f64a40bc6b861ba5
+    tag: dru-8d2204351e3fe32054bef9322ab62b53924ae1b0
   extraMountPoints: []
 
 notifications:
@@ -267,16 +267,22 @@ workflow:
     #name: "my-dedicated-namespace"
     #serviceAccount: "my-dedicated-service-account"
   argo:
-    enabled: true
+    enabled: false
     storageClass: standard
     defaultVolumeSize: "12Gi"
     defaultMaxRam: "2Gi"
-    wfServer: "http://argo-server.ns1.svc.cluster.local:2746"
-    wfToken: "aaaabbbbccccdddd"
-    wfNamespace: "zoo"
+    wfServer: "http://argo-server.zoo.svc.cluster.local:2746"
+    wfToken: "" # Token will be retrieved automatically during deployment
     wfSynchronizationCm: "semaphore-argo-cwl-runner-stage-in-out"
     CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
     CwlRunnerEndpoint: "calrissian-runner"
+    # Options for automatic token management
+    autoTokenManagement: true  # Enable automatic token retrieval
+    restartOnTokenUpdate: false  # Restart pods after token update
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: true
     
 postgresql:
   defineEnvironmentVariables: false
@@ -395,6 +401,71 @@ webui:
     providerTokenEndpointAuth: client_secret_basic
     authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
     scope: "openid email"
+
+
+# Argo Workflows configuration
+argo-workflows:
+  enabled: false
+  global:
+    namespace: zoo
+  cwlRunner:
+    enabled: true
+    defaultResources:
+      maxRam: "8G"
+      maxCores: "8"
+  minio:
+    enabled: false
+    external:
+      enabled: true
+      endpoint: s3-service.zoo.svc.cluster.local:9000
+      secure: false
+      accessKeySecret:
+        name: s3-service
+        key: root-user
+      secretKeySecret:
+        name: s3-service
+        key: root-password
+  stageInOut:
+    enabled: true
+
+# Monitoring configuration
+monitoring:
+  enabled: false
+  # Disable problematic Kubernetes component targets for local development
+  disableProblematicTargets: true
+  kube-prometheus-stack:
+    prometheusOperator:
+      podSecurityPolicy:
+        enabled: false
+    crds:
+      enabled: true
+    prometheus:
+      prometheusSpec:
+        serviceMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelector: {}
+        ruleSelector: {}
+    grafana:
+      defaultDashboardsEnabled: true
+      adminPassword: admin
+    prometheus-node-exporter:
+      enabled: false
+      # Configuration for Docker Desktop when enabled
+      hostRootFsMount:
+        enabled: true
+        mountPropagation: ""  # Empty = None, for Docker Desktop
+      hostProcFsMount:
+        mountPropagation: ""
+      hostSysFsMount:
+        mountPropagation: ""
+    # Disable PodSecurityPolicy everywhere
+    podSecurityPolicy:
+      enabled: false
+    kube-state-metrics:
+      podSecurityPolicy:
+        enabled: false
+    alertmanager:
+      podSecurityPolicy:
+        enabled: false
 
 documentation:
   enabled: false

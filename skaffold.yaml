@@ -16,8 +16,9 @@ build:
 
 deploy:
   helm:
-
     releases:
+
+    # Install ZOO-Project-DRU
     - name: zoo-project-dru
       chartPath: zoo-project-dru
       namespace: zoo
@@ -77,7 +78,87 @@ profiles:
           keda.kyverno.policies.zoofpmProtection.enabled: "true"
           zoofpm.autoscaling.enabled: "false"
 
+  - name: webui
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/setValueTemplates
+        value:
+          webui.enabled: "true"
+    portForward:
+      - resourceType: service
+        resourceName: zoo-project-dru-webui
+        namespace: zoo
+        port: 3000
+        localPort: 3058
+      - resourceType: service
+        resourceName:	zoo-project-dru-service
+        namespace: zoo
+        port: 80
+        localPort: 8080
+      - resourceType: service
+        resourceName:	zoo-project-dru-websocketd
+        namespace: zoo
+        port: 8888
+        localPort: 8888
+      - resourceType: service
+        resourceName: s3-service
+        namespace: zoo
+        port: 9000
+        localPort: 9000
+      - resourceType: service
+        resourceName: s3-service
+        namespace: zoo
+        port: 9001
+        localPort: 9001
+
+  - name: argo
+    patches:
+      - op: replace
+        path: /deploy/helm/releases/0/valuesFiles
+        value: ["zoo-project-dru/values_argo.yaml"]
+    portForward:
+      # Argo Workflows Server
+      - resourceType: service
+        resourceName: zoo-project-dru-argo-workflows-server
+        namespace: zoo
+        port: 2746
+        localPort: 2746
+      # Prometheus
+      - resourceType: service
+        resourceName: zoo-project-dru-kube-prome-prometheus
+        namespace: zoo
+        port: 9090
+        localPort: 9090
+      # Grafana
+      - resourceType: service
+        resourceName: zoo-project-dru-grafana
+        namespace: zoo
+        port: 80
+        localPort: 3000
+      - resourceType: service
+        resourceName:	zoo-project-dru-service
+        namespace: zoo
+        port: 80
+        localPort: 8080
+      - resourceType: service
+        resourceName:	zoo-project-dru-websocketd
+        namespace: zoo
+        port: 8888
+        localPort: 8888
+      - resourceType: service
+        resourceName: s3-service
+        namespace: zoo
+        port: 9000
+        localPort: 9000
+      - resourceType: service
+        resourceName: s3-service
+        namespace: zoo
+        port: 9001
+        localPort: 9001
+
 portForward:
+
+# ZOO-Project services
 # The following port forward is used to access the webui
 # - resourceType: service
 #   resourceName:	zoo-project-dru-webui
@@ -89,13 +170,11 @@ portForward:
   namespace: zoo
   port: 80
   localPort: 8080
-# Websocketd service not available in keda profile  
 - resourceType: service
   resourceName:	zoo-project-dru-websocketd
   namespace: zoo
   port: 8888
   localPort: 8888
-# S3/Minio services not available in keda profile
 - resourceType: service
   resourceName: s3-service
   namespace: zoo 

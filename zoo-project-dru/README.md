@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.6.1
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.0
 ````
 
 ## Parameters
@@ -512,22 +512,645 @@ See [reference documentation](https://zoo-project.github.io/zoo-wes-runner/) for
 | workflow.inputs.WES_PASSWORD                          | The password to authenticate to access the WES | `"$$2y$$12$$ci.4U63YX83CwkyUrjqxAucnmi2xXOIlEF6T/KdP9824f1Rf1iyNG"` |
 
 
-#### Argo support
+#### Argo Workflows Support
 
-ZOO-Project-DRU can execute CWL workflows through Argo Workflow.
-See [reference documentation](https://github.com/EOEPCA/zoo-argowf-runner) for more informations.
+ZOO-Project-DRU can execute CWL workflows through the official Argo Workflows chart (v3.7.1).
+See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-workflows) for more information.
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
 | workflow.argo.enabled                                    | Activate Argo support by setting this to `true` | true |
+| workflow.argo.instanceID                                 | Instance ID for workflow isolation | "zoo" |
 | workflow.argo.storageClass                               | The storage class to use for temporary data | standard |
 | workflow.argo.defaultVolumeSize                          | The default volume size | "12Gi" |
 | workflow.argo.defaultMaxRam                              | The default maximum allocated ram | "2Gi" |
-| workflow.argo.wfServer                                   | The Argo server URL  | "http://argo-server.ns1.svc.cluster.local:2746" |
-| workflow.argo.wfToken                                    | The Argo server token | "aaaabbbbccccdddd" |
-| workflow.argo.wfSynchronizationCm                        | The configmap name | "semaphore-argo-cwl-runner-stage-in-out" |
-| workflow.argo.CwlRunnerTemplare                          | The workflow name (available from the Argo workflow templates) to use as CWL Runner Template  | "argo-cwl-runner-stage-in-out" |
+| workflow.argo.cwlwrapperImage                            | CWL wrapper image version | "eoepca/cwl-wrapper:0.12.1" |
+| workflow.argo.stageOutImage                              | Stage-out image version | "ghcr.io/eoap/mastering-app-package/stage:1.1.0" |
+| workflow.argo.serviceAccount.name                        | ServiceAccount name for workflow execution | "argo-workflow" |
+| workflow.argo.wfServer                                   | The Argo server URL  | "http://zoo-project-dru-argo-workflows-server.zoo.svc.cluster.local:2746" |
+| workflow.argo.wfToken                                    | The Argo server token (auto-retrieved if autoTokenManagement enabled) | "" |
+| workflow.argo.wfNamespace                                | The namespace where Argo workflows will be executed | "zoo" |
+| workflow.argo.wfSynchronizationCm                        | The configmap name for workflow synchronization | "semaphore-argo-cwl-runner-stage-in-out" |
+| workflow.argo.CwlRunnerTemplare                          | The workflow template name to use as CWL Runner | "argo-cwl-runner-stage-in-out" |
 | workflow.argo.CwlRunnerEndpoint                          | The entry point to use from the CWL Runner Template | "calrissian-runner" |
+| workflow.argo.autoTokenManagement                        | Enable automatic token retrieval from ServiceAccount | true |
+| workflow.argo.restartOnTokenUpdate                       | Restart ZOO-Kernel pods when token is updated | false |
+
+**Event Monitoring Configuration**: Enable real-time workflow monitoring with Argo Events integration.
+
+See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-events) for more information.
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| workflow.argo.events.enabled                            | Enable Argo Events integration for real-time monitoring | true |
+| workflow.argo.events.eventBus.enabled                   | Enable EventBus (JetStream backend) for persistent event streaming | true |
+| workflow.argo.events.eventBus.nats.native.replicas      | Number of NATS replicas for EventBus | 1 |
+| workflow.argo.events.eventBus.nats.native.auth          | NATS authentication method | "token" |
+| workflow.argo.events.eventSource.enabled                | Enable EventSource for monitoring Argo Workflows API | true |
+| workflow.argo.events.eventSource.name                   | Name of the EventSource | "workflow-monitor" |
+| workflow.argo.events.eventSource.namespace              | Namespace for EventSource | "zoo" |
+| workflow.argo.events.sensor.enabled                     | Enable Sensor for webhook notifications | true |
+| workflow.argo.events.sensor.name                        | Name of the Sensor | "webhook-sensor" |
+| workflow.argo.events.sensor.namespace                   | Namespace for Sensor | "zoo" |
+| workflow.argo.events.webhook.enabled                    | Enable webhook service for event notifications | true |
+| workflow.argo.events.webhook.port                       | Port for the webhook service | 12000 |
+| workflow.argo.events.webhook.path                       | Path for webhook endpoint | "/workflow-events" |
+| workflow.argo.events.webhook.enabled                    | Enable webhook sensor for notifications | true |
+| workflow.argo.events.webhook.endpoint                   | External webhook endpoint URL | "" |
+| workflow.argo.events.webhook.method                     | HTTP method for webhook calls | "POST" |
+
+**Artifact Storage Configuration**: The chart automatically configures S3-compatible artifact storage using the built-in MinIO service.
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| workflow.argo.s3.bucket                                  | S3 bucket name for artifacts | "eoepca" |
+| workflow.argo.s3.endpoint                                | S3 endpoint URL | "s3-service.zoo.svc.cluster.local:9000" |
+| workflow.argo.s3.insecure                                | Use insecure S3 connection | true |
+| workflow.argo.s3.secretName                              | Secret containing S3 credentials | "s3-service" |
+| workflow.argo.s3.accessKeySecretKey                      | Secret key for S3 access key | "root-user" |
+| workflow.argo.s3.secretKeySecretKey                      | Secret key for S3 secret key | "root-password" |
+
+**Token Management**: When `autoTokenManagement` is enabled, the Argo Workflows token is automatically retrieved from the ServiceAccount and made available to ZOO-Kernel. This eliminates the need to manually configure `wfToken`.
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo-workflows.fullnameOverride                          | Full name override for Argo resources | "zoo-project-dru-argo-workflows" |
+| argo-workflows.singleNamespace                           | Restrict Argo to single namespace operation | true |
+| argo-workflows.images.tag                                | Argo Workflows version | "v3.7.1" |
+| argo-workflows.images.pullPolicy                         | Image pull policy | "IfNotPresent" |
+
+### Artifact Repository Configuration
+
+The chart automatically configures artifact storage using S3-compatible MinIO:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo-workflows.artifactRepository.archiveLogs            | Archive workflow logs as artifacts | true |
+| argo-workflows.artifactRepository.s3.endpoint            | S3 endpoint for artifact storage | "s3-service.zoo.svc.cluster.local:9000" |
+| argo-workflows.artifactRepository.s3.bucket              | S3 bucket name | "eoepca" |
+| argo-workflows.artifactRepository.s3.insecure            | Use insecure S3 connection | true |
+| argo-workflows.artifactRepository.s3.accessKeySecret.name | Secret name for S3 access key | "s3-service" |
+| argo-workflows.artifactRepository.s3.accessKeySecret.key  | Secret key for S3 access key | "root-user" |
+| argo-workflows.artifactRepository.s3.secretKeySecret.name | Secret name for S3 secret key | "s3-service" |
+| argo-workflows.artifactRepository.s3.secretKeySecret.key  | Secret key for S3 secret key | "root-password" |
+
+### Workflow Controller Configuration
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo-workflows.controller.enabled                        | Enable the workflow controller | true |
+| argo-workflows.controller.instanceID.enabled             | Enable instance ID for isolation | true |
+| argo-workflows.controller.instanceID.useReleaseName      | Use release name for instance ID | false |
+| argo-workflows.controller.instanceID.explicitID          | Explicit instance ID | "zoo" |
+| argo-workflows.controller.extraArgs                      | Additional controller arguments | ["--managed-namespace=zoo"] |
+| argo-workflows.controller.clusterWorkflowTemplates.enabled | Enable cluster-wide workflow templates | false |
+| argo-workflows.controller.workflowDefaults.spec.serviceAccountName | Default service account for workflows | "argo-workflow" |
+
+### Server Configuration
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo-workflows.server.enabled                            | Enable the Argo server (UI) | true |
+| argo-workflows.server.serviceType                        | Server service type | "ClusterIP" |
+| argo-workflows.server.servicePort                        | Server service port | 2746 |
+| argo-workflows.server.authModes                          | Authentication modes | ["server"] |
+| argo-workflows.server.secure                             | Enable HTTPS | false |
+| argo-workflows.server.namespaced                         | Run server in namespaced mode | true |
+| argo-workflows.server.extraArgs                          | Additional server arguments | ["--namespaced"] |
+| argo-workflows.server.clusterWorkflowTemplates.enabled   | Enable cluster templates in server | false |
+
+### RBAC and Security
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo-workflows.rbac.create                               | Create RBAC resources | true |
+| argo-workflows.serviceAccount.create                     | Create service account | true |
+| argo-workflows.crds.install                              | Install CRDs (disabled if already present) | false |
+| argo-workflows.crds.keep                                 | Keep CRDs on uninstall | true |
+
+### MinIO Integration
+
+The chart includes integrated MinIO for artifact storage:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| minio.enabled                                            | Enable MinIO for artifact storage | true |
+| minio.auth.rootUser                                      | MinIO root username | "minio-admin" |
+| minio.auth.rootPassword                                  | MinIO root password | "minio-secret-password" |
+| minio.persistence.enabled                                | Enable MinIO persistence | true |
+| minio.persistence.storageClass                           | Storage class for MinIO | "standard" |
+| minio.persistence.size                                   | MinIO storage size | "2Gi" |
+| minio.defaultBuckets                                     | Default buckets to create | "eoepca results" |
+| minio.fullnameOverride                                   | MinIO service name override | "s3-service" |
+
+### Access Configuration
+
+**Access the Argo Workflows UI**:
+```bash
+kubectl port-forward -n zoo svc/zoo-project-dru-argo-workflows-server 2746:2746
+# Open: http://localhost:2746
+```
+
+**Access MinIO Console**:
+```bash
+kubectl port-forward -n zoo svc/s3-service 9001:9001
+# Open: http://localhost:9001
+# Credentials: minio-admin / minio-secret-password
+```
+
+### Deployment Examples
+
+**Basic deployment with official Argo Workflows**:
+```bash
+helm install zoo-project-dru ./zoo-project-dru -f zoo-project-dru/values_argo.yaml -n zoo
+```
+
+**Production deployment with monitoring**:
+```yaml
+workflow:
+  argo:
+    enabled: true
+    instanceID: "production"
+
+monitoring:
+  enabled: true
+  kube-prometheus-stack:
+    grafana:
+      adminPassword: "secure-password"
+
+argo-workflows:
+  artifactRepository:
+    s3:
+      bucket: "production-artifacts"
+```
+
+## Argo Events Integration
+
+The chart includes optional Argo Events integration for real-time workflow monitoring and event-driven automation. This provides reactive capabilities that automatically respond to workflow state changes.
+
+### Overview
+
+Argo Events complements Argo Workflows by providing:
+- **Real-time workflow monitoring**: Automatically capture workflow state changes (Running, Succeeded, Failed)
+- **Event-driven triggers**: Execute actions based on workflow completion or failure
+- **Metrics integration**: Real-time updates to Prometheus metrics and Grafana dashboards
+- **Webhook notifications**: Send notifications to external systems when workflows complete
+
+### Core Configuration
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| workflow.argo.events.enabled                            | Enable Argo Events integration for real-time monitoring | false |
+| workflow.argo.events.webhook.enabled                    | Enable webhook service for receiving event notifications | true |
+| workflow.argo.events.webhook.port                       | Port for the webhook service | 8080 |
+| workflow.argo.events.webhook.path                       | Path for webhook endpoint | "/webhook" |
+
+### Argo Events Chart Configuration
+
+The chart uses the official Argo Events Helm chart (v2.4.8) to provide event-driven capabilities:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo-events.enabled                                      | Enable Argo Events deployment | true |
+| argo-events.crds.install                                 | Install Argo Events CRDs (disable if already present) | false |
+| argo-events.crds.keep                                    | Keep CRDs on chart uninstall | true |
+| argo-events.controller.replicas                          | Number of controller replicas | 1 |
+| argo-events.controller.resources.requests.cpu            | Controller CPU requests | "100m" |
+| argo-events.controller.resources.requests.memory         | Controller memory requests | "128Mi" |
+| argo-events.controller.resources.limits.cpu              | Controller CPU limits | "500m" |
+| argo-events.controller.resources.limits.memory           | Controller memory limits | "256Mi" |
+
+### EventSource Configuration
+
+EventSources define what events to listen for. The chart automatically creates an EventSource for workflow monitoring:
+
+```yaml
+workflow:
+  argo:
+    events:
+      enabled: true
+      eventSource:
+        # Listen to workflow events in the current namespace
+        workflowEvents:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+          eventTypes:
+            - ADD      # Workflow created
+            - UPDATE   # Workflow updated
+            - DELETE   # Workflow deleted
+```
+
+**Event Filtering**: The EventSource automatically filters relevant events:
+- Workflow creation (status: Running)
+- Workflow completion (status: Succeeded)
+- Workflow failure (status: Failed, Error)
+
+### Sensor Configuration
+
+Sensors define what actions to take when events are received. The chart includes a webhook sensor for notifications:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| workflow.argo.events.sensor.webhook.enabled             | Enable webhook sensor for notifications | true |
+| workflow.argo.events.sensor.webhook.endpoint            | Webhook endpoint URL | "http://zoo-project-dru-webhook-service.zoo.svc.cluster.local:8080/webhook" |
+| workflow.argo.events.sensor.webhook.method              | HTTP method for webhook calls | "POST" |
+| workflow.argo.events.sensor.webhook.headers             | Additional HTTP headers | {"Content-Type": "application/json"} |
+
+### EventBus Configuration
+
+The EventBus handles event routing between EventSources and Sensors:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo-events.eventBusConfig.jetstream.versions           | JetStream versions for EventBus | ["latest"] |
+| argo-events.global.image.tag                            | Argo Events image tag | "v1.9.1" |
+
+### Monitoring Integration
+
+When Argo Events is enabled with monitoring, additional metrics and dashboards are available:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo-events.controller.metrics.enabled                  | Enable controller metrics for Prometheus | true |
+| argo-events.controller.metrics.port                     | Metrics port | 8080 |
+| argo-events.controller.serviceMonitor.enabled           | Enable ServiceMonitor for Prometheus discovery | true |
+| argo-events.controller.serviceMonitor.additionalLabels  | Additional labels for ServiceMonitor selection | {"release": "zoo-project-dru"} |
+
+### Real-time Dashboard Updates
+
+With Argo Events enabled, Grafana dashboards receive real-time updates:
+
+1. **Workflow metrics**: Automatically updated when workflows change state
+2. **Event statistics**: Track event processing rates and success/failure ratios
+3. **Latency monitoring**: Monitor time between workflow completion and notification delivery
+
+### Webhook Integration
+
+The chart includes a webhook service that receives event notifications:
+
+```yaml
+# Webhook service configuration
+apiVersion: v1
+kind: Service
+metadata:
+  name: zoo-project-dru-webhook-service
+spec:
+  selector:
+    app.kubernetes.io/name: zoo-project-dru-webhook
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+```
+
+**Webhook Payload**: The webhook receives JSON payloads with workflow information:
+
+```json
+{
+  "eventType": "UPDATE",
+  "workflowName": "sample-workflow-12345",
+  "workflowNamespace": "zoo",
+  "status": "Succeeded",
+  "startTime": "2025-08-19T10:00:00Z",
+  "finishTime": "2025-08-19T10:05:30Z",
+  "message": "Workflow completed successfully"
+}
+```
+
+### RBAC Configuration
+
+Argo Events requires specific permissions to monitor workflows:
+
+| Resource                  | Permissions               | Purpose                           |
+|:--------------------------|:--------------------------|:----------------------------------|
+| workflows.argoproj.io     | get, list, watch          | Monitor workflow state changes    |
+| events                    | create, patch             | Create Kubernetes events          |
+| configmaps                | get, list, create, patch  | EventBus configuration            |
+| secrets                   | get, list                 | EventBus authentication           |
+
+### Deployment Examples
+
+**Basic Argo Events deployment**:
+```yaml
+workflow:
+  argo:
+    enabled: true
+    events:
+      enabled: true
+
+argo-events:
+  enabled: true
+  controller:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: zoo-project-dru
+```
+
+**Production deployment with custom webhook**:
+```yaml
+workflow:
+  argo:
+    events:
+      enabled: true
+      webhook:
+        enabled: true
+        endpoint: "https://my-external-webhook.example.com/notifications"
+      sensor:
+        webhook:
+          headers:
+            Authorization: "Bearer my-api-token"
+            X-Custom-Header: "zoo-project-notifications"
+
+argo-events:
+  enabled: true
+  controller:
+    replicas: 2
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "1000m"
+        memory: "512Mi"
+```
+
+### Troubleshooting
+
+**Check EventSource status**:
+```bash
+kubectl get eventsource -n zoo
+kubectl describe eventsource zoo-project-dru-workflow-events -n zoo
+```
+
+**Check Sensor status**:
+```bash
+kubectl get sensor -n zoo
+kubectl describe sensor zoo-project-dru-webhook-sensor -n zoo
+```
+
+**Check EventBus status**:
+```bash
+kubectl get eventbus -n zoo
+kubectl describe eventbus default -n zoo
+```
+
+**View event logs**:
+```bash
+# EventSource logs
+kubectl logs -l eventsource-name=zoo-project-dru-workflow-events -n zoo
+
+# Sensor logs  
+kubectl logs -l sensor-name=zoo-project-dru-webhook-sensor -n zoo
+
+# Controller logs
+kubectl logs deployment/zoo-project-dru-argo-events-controller-manager -n zoo
+```
+
+**Test webhook manually**:
+```bash
+# Forward webhook port
+kubectl port-forward svc/zoo-project-dru-webhook-service 8080:8080 -n zoo
+
+# Send test event
+curl -X POST http://localhost:8080/webhook \
+  -H "Content-Type: application/json" \
+  -d '{"test": "event", "workflowName": "test-workflow"}'
+```
+
+### Security Considerations
+
+- **Network policies**: Consider restricting EventBus network access
+- **Authentication**: Use secrets for external webhook authentication  
+- **RBAC**: Apply principle of least privilege for service accounts
+- **TLS**: Enable TLS for external webhook endpoints
+
+## Monitoring
+
+The chart includes comprehensive monitoring capabilities using the Prometheus stack (Prometheus, Grafana, Alertmanager, and node-exporter) with real-time Argo Workflows integration.
+See [reference documentation](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack) for more information.
+
+### Core Monitoring Configuration
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| monitoring.enabled                                       | Enable monitoring stack (Prometheus, Grafana, etc.) | true |
+| monitoring.disableProblematicTargets                    | Disable problematic Kubernetes targets for local environments | true |
+| monitoring.kube-prometheus-stack.prometheus.enabled      | Enable Prometheus server | true |
+| monitoring.kube-prometheus-stack.prometheus.retention    | Prometheus data retention period | "15d" |
+| monitoring.kube-prometheus-stack.prometheus.storageSpec.volumeClaimTemplate.spec.storageClassName | Storage class for Prometheus | "standard" |
+| monitoring.kube-prometheus-stack.prometheus.storageSpec.volumeClaimTemplate.spec.resources.requests.storage | Prometheus storage size | "10Gi" |
+| monitoring.kube-prometheus-stack.grafana.enabled         | Enable Grafana dashboard | true |
+| monitoring.kube-prometheus-stack.grafana.adminPassword   | Grafana admin password | "admin" |
+| monitoring.kube-prometheus-stack.grafana.persistence.enabled | Enable Grafana data persistence | true |
+| monitoring.kube-prometheus-stack.grafana.persistence.size | Grafana storage size | "5Gi" |
+| monitoring.kube-prometheus-stack.alertmanager.enabled    | Enable Alertmanager for notifications | true |
+
+### Prometheus Node Exporter Configuration
+
+The node-exporter component is configured for compatibility with Docker Desktop and other development environments:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.enabled | Enable node-exporter for system metrics | true |
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.service.port | Node exporter service port | 9101 |
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.service.targetPort | Node exporter target port | 9101 |
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.extraArgs | Additional node exporter arguments | ["--web.listen-address=0.0.0.0:9101"] |
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.prometheus.monitor.enabled | Enable Prometheus monitoring | true |
+| monitoring.kube-prometheus-stack.kube-state-metrics.enabled | Enable kube-state-metrics for Kubernetes metrics | true |
+
+### Grafana Dashboard Configuration
+
+The chart includes optimized Grafana dashboards with real-time synchronization:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| monitoring.grafana.dashboards.enabled                   | Enable custom Argo Workflows dashboards | true |
+| monitoring.grafana.dashboards.refresh                   | Dashboard auto-refresh interval | "5s" |
+| monitoring.grafana.dashboards.maxDataPoints             | Maximum data points for real-time charts | 300 |
+| monitoring.grafana.dashboards.timeWindows.default       | Default time window for dashboards | "5m" |
+| monitoring.grafana.dashboards.timeWindows.options       | Available time window options | ["5m", "15m", "30m", "1h", "6h"] |
+
+### Local Development Optimizations
+
+For local environments (Docker Desktop, Minikube), the chart automatically applies optimizations:
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| monitoring.disableProblematicTargets                    | Disable inaccessible Kubernetes component targets | true |
+| monitoring.prometheus.nodeExporter.dockerDesktopMode    | Enable Docker Desktop compatibility mode | true |
+| monitoring.prometheus.serviceMonitor.autoPatching       | Enable automatic ServiceMonitor patching | true |
+
+**Docker Desktop Compatibility**: The chart automatically patches problematic targets by:
+- Disabling kube-scheduler, kube-proxy, etcd, and kube-controller-manager targets that cause "connection refused" errors
+- Using port 9101 for node-exporter instead of the default 9100 to avoid conflicts
+- Applying post-install patches to remove unsupported mount configurations
+- Automatic cleanup of completed patch jobs after 5 minutes
+
+**ServiceMonitor Patching**: When `monitoring.disableProblematicTargets` is enabled, a post-install job automatically:
+- Patches kube-prometheus-stack ServiceMonitors to disable problematic endpoints
+- Corrects node-exporter port configuration
+- Ensures clean monitoring stack deployment without connection errors
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.enabled | Enable node-exporter for system metrics | true |
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.service.port | Node exporter service port | 9101 |
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.service.targetPort | Node exporter target port | 9101 |
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.extraArgs | Additional node exporter arguments | ["--web.listen-address=0.0.0.0:9101"] |
+| monitoring.kube-prometheus-stack.prometheus-node-exporter.prometheus.monitor.enabled | Enable Prometheus monitoring | true |
+
+**Docker Desktop Compatibility**: The chart automatically patches node-exporter for Docker Desktop compatibility by:
+- Using port 9101 instead of the default 9100 to avoid conflicts
+- Applying post-install patches to remove unsupported mount configurations
+- Cleaning up completed patch jobs automatically after 5 minutes
+
+**Usage Example**:
+```yaml
+monitoring:
+  enabled: true
+  kube-prometheus-stack:
+    grafana:
+      adminPassword: "my-secure-password"
+    prometheus-node-exporter:
+      enabled: true
+```
+
+**Access Monitoring Services**:
+- **Prometheus**: `kubectl port-forward svc/zoo-project-dru-kube-prome-prometheus 9090:9090 -n zoo`
+- **Grafana**: `kubectl port-forward svc/zoo-project-dru-grafana 3000:80 -n zoo`
+- **Alertmanager**: `kubectl port-forward svc/zoo-project-dru-kube-prome-alertmanager 9093:9093 -n zoo`
+
+### Complete Configuration Examples
+
+**Local Development with Real-time Monitoring**:
+```yaml
+# Complete local development setup
+workflow:
+  argo:
+    enabled: true
+    events:
+      enabled: true
+      eventBus:
+        enabled: true
+      eventSource:
+        enabled: true
+      sensor:
+        enabled: true
+
+monitoring:
+  enabled: true
+  disableProblematicTargets: true
+  grafana:
+    dashboards:
+      enabled: true
+      refresh: "5s"
+    persistence:
+      enabled: true
+
+minio:
+  enabled: true
+  persistence:
+    storageClass: "standard"
+```
+
+**Production Environment**:
+```yaml
+# Production-ready configuration
+workflow:
+  argo:
+    enabled: true
+    instanceID: "production"
+    events:
+      enabled: true
+    s3:
+      bucket: "production-artifacts"
+
+monitoring:
+  enabled: true
+  disableProblematicTargets: false
+  kube-prometheus-stack:
+    prometheus:
+      retention: "30d"
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: "fast-ssd"
+            resources:
+              requests:
+                storage: "50Gi"
+    grafana:
+      adminPassword: "secure-production-password"
+      persistence:
+        enabled: true
+        size: "10Gi"
+
+keda:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 20
+```
+
+**Monitoring-only Deployment**:
+```yaml
+# Only monitoring stack without workflows
+workflow:
+  argo:
+    enabled: false
+
+monitoring:
+  enabled: true
+  kube-prometheus-stack:
+    prometheus:
+      retention: "7d"
+    grafana:
+      dashboards:
+        enabled: false
+```
+
+### Troubleshooting
+
+**Common Issues and Solutions**:
+
+1. **ServiceMonitor Connection Refused Errors**:
+   - Enable `monitoring.disableProblematicTargets: true`
+   - The chart will automatically patch problematic targets
+
+2. **Grafana Dashboard Not Updating**:
+   - Ensure `workflow.argo.events.enabled: true`
+   - Check EventBus, EventSource, and Sensor are running
+   - Verify webhook endpoint is accessible
+
+3. **Node Exporter Port Conflicts**:
+   - Chart automatically uses port 9101 for Docker Desktop compatibility
+   - Check if post-install patch jobs completed successfully
+
+4. **Real-time Monitoring Not Working**:
+   - Verify Argo Events components are deployed and healthy
+   - Check webhook service is accessible on port 12000
+   - Ensure Prometheus is scraping argo_workflows_gauge metrics
+
+5. **Dashboard Value Inconsistencies**:
+   - **Symptom**: "Total Workflows", "Active vs Completed", and "Status Distribution" show different values
+   - **Causes**: 
+     - Temporal differences in metric collection (normal variation ±1-2 workflows)
+     - Different query aggregation methods across panels
+     - Grafana cache synchronization delays
+   - **Solutions**:
+     - Use the "Data Consistency Validation" panel to verify metrics
+     - Focus on trends rather than exact point-in-time values
+     - Allow 30-60 seconds for complete synchronization
+     - Manually verify via Prometheus: `curl -s "http://localhost:9095/api/v1/query?query=argo_workflows_gauge{namespace=\"zoo\"}"`
+   - **When to worry**: Differences > 5 workflows indicate configuration issues
+   - **Reference**: See `DASHBOARD_CONSISTENCY.md` for detailed analysis
+
+6. **Missing Workflow Metrics**:
+   - Ensure workflows are actually running to generate metrics
+   - Check if argo-workflows-controller-metrics service is accessible
+   - Verify ServiceMonitor configuration includes controller metrics endpoint
 
 
 ### ingress

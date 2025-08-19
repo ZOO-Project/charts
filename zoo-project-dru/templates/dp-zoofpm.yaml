@@ -126,15 +126,23 @@ spec:
               value: {{ .Values.workflow.argo.wfNamespace }}
             - name: ARGO_WF_ENDPOINT
               value: {{ .Values.workflow.argo.wfServer }}
+            {{- if or (not .Values.workflow.argo.wfToken) (eq .Values.workflow.argo.wfToken "") }}
+            - name: ARGO_WF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "zoo-project-dru.fullname" . }}-argo-workflows.service-account-token
+                  key: token
+            {{- else }}
             - name: ARGO_WF_TOKEN
               value: {{ .Values.workflow.argo.wfToken }}
+            {{- end }}
             - name: ARGO_WF_SYNCHRONIZATION_CM
               value: {{ .Values.workflow.argo.wfSynchronizationCm }}
             - name: ARGO_CWL_RUNNER_TEMPLATE
               value: {{ .Values.workflow.argo.CwlRunnerTemplare }}
             - name: ARGO_CWL_RUNNER_ENTRYPOINT
               value: {{ .Values.workflow.argo.CwlRunnerEndpoint }}
-            {{- end}}
+            {{- end }}
 
             {{- if (.Values.global.postgresql.auth.existingSecret) }}
             - name: PGPASSWORD

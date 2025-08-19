@@ -1,0 +1,40 @@
+{{ if .Values.workflow.argo.enabled }}
+# Main token for ZOO-Project (used by dp-zoofpm.yaml)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-argo-workflows.service-account-token
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: argo-workflow-token
+  annotations:
+    kubernetes.io/service-account.name: {{ .Values.workflow.argo.serviceAccount.name }}
+type: kubernetes.io/service-account-token
+---
+# Token for Argo Workflows server ServiceAccount
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-argo-workflows-server-token
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: argo-server-token
+  annotations:
+    kubernetes.io/service-account.name: {{ .Release.Name }}-argo-workflows-server
+type: kubernetes.io/service-account-token
+---
+# Token for Argo Workflows controller ServiceAccount
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-argo-workflows-workflow-controller-token
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: argo-controller-token
+  annotations:
+    kubernetes.io/service-account.name: {{ .Release.Name }}-argo-workflows-workflow-controller
+type: kubernetes.io/service-account-token
+{{ end }}

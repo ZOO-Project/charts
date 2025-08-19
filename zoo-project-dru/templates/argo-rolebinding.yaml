@@ -1,0 +1,17 @@
+{{ if .Values.workflow.argo.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Values.workflow.argo.serviceAccount.name }}-rolebinding
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: argo-rbac
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.workflow.argo.serviceAccount.name }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ .Values.workflow.argo.serviceAccount.name }}-role
+  apiGroup: rbac.authorization.k8s.io
+{{ end }}

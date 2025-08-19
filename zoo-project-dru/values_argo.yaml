@@ -1,0 +1,364 @@
+# ZOO-Project-DRU Helm Chart Configuration with Argo Workflows support
+
+workflow:
+  argo:
+    # Argo Workflows mode selection
+    enabled: true
+    instanceID: "zoo"
+    
+    # Images configuration
+    cwlwrapperImage: "eoepca/cwl-wrapper:0.12.1"
+    stageOutImage: "ghcr.io/eoap/mastering-app-package/stage:1.1.0"
+    
+    # Service Account
+    serviceAccount:
+      name: "argo-workflow"
+      
+    # Feature collection script
+    featureCollectionScript: ""
+    
+    # Argo Events configuration
+    events:
+      enabled: false
+      eventBus:
+        enabled: false
+        name: "default"
+        type: "jetstream"  # or "nats"
+        jetstream:
+          version: "latest"
+          replicas: 1  # Reduced for minikube
+          settings: |
+            max_memory_store: 256MB
+            max_file_store: 1GB
+          streamConfig: |
+            maxMsgs: 10000
+            maxAge: 24h
+            maxBytes: -1
+            replicas: 1
+            duplicates: 300s
+    
+    # Common configuration
+    defaultVolumeSize: "12Gi"
+    defaultMaxRam: "2Gi"
+    wfServer: "http://zoo-project-dru-argo-workflows-server.zoo.svc.cluster.local:2746"
+    wfToken: "" # Token will be retrieved automatically during deployment
+    wfNamespace: "zoo"
+    wfSynchronizationCm: "semaphore-argo-cwl-runner-stage-in-out"
+    CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
+    CwlRunnerEndpoint: "calrissian-runner"
+    # Options for automatic token management
+    autoTokenManagement: true  # Enable automatic token retrieval
+    restartOnTokenUpdate: false  # Restart pods after token update
+    
+    # S3 configuration for artifact repository
+    s3:
+      bucket: "eoepca"
+      endpoint: "s3-service.zoo.svc.cluster.local:9000"
+      insecure: true
+      # MinIO secret configuration
+      secretName: "s3-service"
+      accessKeySecretKey: "root-user"
+      secretKeySecretKey: "root-password"
+      
+    # Ingress configuration for Argo Workflows UI
+    ingress:
+      enabled: false
+      className: ""
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: argo-workflows.local
+          paths:
+            - path: /
+              pathType: Prefix
+      tls: []
+      #  - secretName: argo-workflows-tls
+      #    hosts:
+      #      - argo-workflows.local
+      
+  additionalInputs:
+    s3_bucket: results
+    region_name: us-east-1
+    aws_secret_access_key: minio-secret-password
+    aws_access_key_id: minio-admin
+    endpoint_url: http://s3-service.zoo.svc.cluster.local:9000
+
+minio:
+  # minio chart value parameters description can be found here:
+  # https://github.com/bitnami/charts/tree/main/bitnami/minio
+  enabled: true
+  auth:
+    rootUser: minio-admin
+    rootPassword: minio-secret-password
+    # to access the dashboard from browser run the following port-forward command:
+    # kubectl port-forward svc/s3-service 9001:9001 -n zoo
+  persistence:
+    enabled: true
+    size: 2Gi
+    accessMode: ReadWriteOnce
+  defaultBuckets: "eoepca results"
+  fullnameOverride: "s3-service"
+
+cookiecutter:
+  templateUrl: https://github.com/gfenoy/zoo-argo-wf-proc-service-template.git
+  templateBranch: feature/use-argo-wf-namespace
+
+# CWL Wrapper configuration for official Argo Workflows
+wrapper:
+  # Rules configuration (will be templated from files/argo-workflows/rules.yaml if not provided)
+  rules: ""
+  # Main CWL configuration (will be templated from files/argo-workflows/main.yaml if not provided)
+  main: ""
+  # Stage-in CWL configuration (will be templated from files/argo-workflows/stage-in.yaml if not provided)
+  stageIn: ""
+  # Stage-out CWL configuration (will be templated from files/argo-workflows/stage-out.yaml if not provided)
+  stageOut: ""
+
+iam:
+  enabled: false
+  openeoAuth:
+    enabled: false
+
+webui:
+  enabled: false
+
+websocketd:
+  enabled: true
+
+redis:
+  enabled: true
+
+postgresql:
+  enabled: true
+  auth:
+    database: zoo
+    username: zoo
+    password: zoo-password
+  external:
+    enabled: false
+
+# Configuration for official Argo Workflows chart
+argo-workflows:
+  # Global configuration
+  fullnameOverride: "zoo-project-dru-argo-workflows"
+  singleNamespace: true
+  
+  # Image versions
+  images:
+    tag: "v3.7.1"
+    pullPolicy: IfNotPresent
+  
+  # Global artifact repository configuration
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      endpoint: s3-service.zoo.svc.cluster.local:9000
+      bucket: eoepca
+      insecure: true
+      accessKeySecret:
+        name: s3-service
+        key: root-user
+      secretKeySecret:
+        name: s3-service
+        key: root-password
+  
+  # Workflow Controller Configuration
+  controller:
+    enabled: true
+    instanceID:
+      enabled: true
+      useReleaseName: false
+      explicitID: "zoo"
+    
+    # Metrics configuration
+    metricsConfig:
+      enabled: true
+      path: /metrics
+      port: 9090
+      bindAddress: "0.0.0.0"
+    
+    # ServiceMonitor configuration for controller metrics
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: zoo-project-dru
+    
+    # Enable detection of artifact-repositories ConfigMaps
+    extraArgs:
+      - --managed-namespace=zoo
+      - --namespaced
+    
+    # Disable ClusterWorkflowTemplates in namespaced mode
+    clusterWorkflowTemplates:
+      enabled: false
+    
+    # Basic configuration to avoid RBAC issues
+    workflowDefaults:
+      spec:
+        serviceAccountName: argo-workflow
+        # TTL configuration for automatic workflow and pod cleanup
+        ttlStrategy:
+          secondsAfterCompletion: 3600  # Delete workflows after 1h of completion
+          secondsAfterSuccess: 300      # Delete successful workflows after 5 minutes  
+          secondsAfterFailure: 3600     # Keep failed workflows for 1h for debugging
+        # Configuration for automatic pod cleanup
+        podGC:
+          strategy: OnPodCompletion     # Delete pods as soon as they complete
+          deleteDelayDuration: 60s     # Wait 60s before deletion (to retrieve logs)
+    
+    # Worker configuration for TTL and pod cleanup management
+    workflowTTLWorkers: 4    # Number of workers to handle TTL
+    podCleanupWorkers: 4     # Number of workers to clean up pods
+    
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  # Argo Server Configuration
+  server:
+    enabled: true
+    serviceType: ClusterIP
+    servicePort: 2746
+    authModes:
+      - server
+    secure: false
+    
+    # Namespace configuration - IMPORTANT to avoid RBAC issues
+    namespaced: true
+    
+    # Disable ClusterWorkflowTemplates for the server too
+    clusterWorkflowTemplates:
+      enabled: false
+    
+    # Additional configuration to force namespaced mode and disable cluster-wide features
+    extraArgs:
+      - --namespaced
+      - --managed-namespace=zoo
+    
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  # ServiceMonitor configuration for metrics collection by Prometheus
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: zoo-project-dru
+  
+  # RBAC Configuration
+  rbac:
+    create: true
+  
+  # Service Account Configuration
+  serviceAccount:
+    create: true
+  
+  # Disable CRD installation as they already exist
+  crds:
+    install: false
+    keep: true
+
+monitoring:
+  enabled: true
+  disableProblematicTargets: true
+  kube-prometheus-stack:
+    # Configuration for Docker Desktop
+    prometheusOperator:
+      enabled: true
+      podSecurityPolicy:
+        enabled: false
+    crds:
+      enabled: true
+    prometheus-node-exporter:
+      enabled: true  # Enabled - will be automatically patched by the post-install Job    
+      hostNetwork: false
+      hostPID: false
+      service:
+        port: 9101
+        targetPort: 9101
+      prometheus:
+        monitor:
+          enabled: true
+      extraArgs:
+        web.listen-address: "0.0.0.0:9101"
+    
+    # Prometheus configuration
+    prometheus:
+      enabled: true
+      prometheusSpec:
+        serviceMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelector: {}
+        ruleSelector: {}
+    
+    # Grafana
+    grafana:
+      enabled: true
+      defaultDashboardsEnabled: true
+      adminPassword: admin
+    
+    # Kube-state-metrics
+    kube-state-metrics:
+      enabled: true
+      podSecurityPolicy:
+        enabled: false
+    
+    # Alertmanager
+    alertmanager:
+      enabled: true
+      podSecurityPolicy:
+        enabled: false
+    
+    # Disable PodSecurityPolicy globalement
+    podSecurityPolicy:
+      enabled: false
+
+# Argo Events Chart Configuration
+argo-events:
+  enabled: true
+  
+  # Désactiver l'installation des CRDs (ils sont déjà installés)
+  crds:
+    install: false
+    keep: true
+  
+  # Controller configuration
+  controller:
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+    
+    # Metrics
+    metrics:
+      enabled: true
+      port: 8080
+      
+    # Service Monitor for Prometheus
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: zoo-project-dru
+  
+  # Event Bus configuration (will use our custom one)
+  eventBusConfig:
+    jetstream:
+      versions:
+        - version: latest
+          
+  # Global configuration
+  global:
+    image:
+      tag: "v1.9.1"
