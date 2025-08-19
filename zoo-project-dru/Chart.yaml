@@ -109,9 +109,6 @@ annotations:
           url: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
     - kind: added
       description: "Added prometheus-node-exporter"
-      links:
-        - name: Helm chart
-          url: https://artifacthub.io/packages/helm/prometheus-community/prometheus-node-exporter
     - kind: added
       description: "Implemented automatic ServiceMonitor patching to resolve connection refused errors on local environments"
     - kind: added
