@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.7.1
+version: 0.7.2
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -87,16 +87,8 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: "Added support for optional promotion in the OpenAPI of the HEAD HTTP method for every endpoints using the GET method"
-    - kind: changed
-      description: "Move options specific to the argo-workflows deployment from workflows.argo to argo"
-    - kind: changed
-      description: "Update the Helm chart documentation"
-    - kind: removed
-      description: "Don't use the crds subdirectory to avoid creating CRD that are not required"
     - kind: fixed
-      description: "Fix the subscriber.py script"
+      description: "Typo in subscriber.py"
 
   artifacthub.io/links: |
     - name: source
