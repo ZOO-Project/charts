@@ -56,6 +56,8 @@ try:
         r = redis.Redis(host='{{ .Release.Name }}-redis-master', port=6379, db=0)
     print(params,file=sys.stderr)
     r.publish(params["jobid"][0],data)
+    print(data,file=sys.stderr)
+    print("PUBLISHED!",file=sys.stderr)
 except Exception as e:
 	print(e,file=sys.stderr)
 {{- end }}

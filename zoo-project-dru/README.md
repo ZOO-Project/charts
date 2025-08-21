@@ -519,22 +519,27 @@ See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-wor
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| argo.enabled                                    | Activate Argo support by setting this to `true` | true |
+| argo.instanceID                                 | Instance ID for workflow isolation | "zoo" |
+| argo.cwlwrapperImage                            | CWL wrapper image version | "eoepca/cwl-wrapper:0.12.1" |
+| argo.stageOutImage                              | Stage-out image version | "ghcr.io/eoap/mastering-app-package/stage:1.1.0" |
+| argo.serviceAccount.name                        | ServiceAccount name for workflow execution | "argo-workflow" |
+| argo.autoTokenManagement                        | Enable automatic token retrieval from ServiceAccount | true |
+| restartOnTokenUpdate                       | Restart ZOO-Kernel pods when token is updated | false |
+
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
 | workflow.argo.enabled                                    | Activate Argo support by setting this to `true` | true |
-| workflow.argo.instanceID                                 | Instance ID for workflow isolation | "zoo" |
 | workflow.argo.storageClass                               | The storage class to use for temporary data | standard |
 | workflow.argo.defaultVolumeSize                          | The default volume size | "12Gi" |
 | workflow.argo.defaultMaxRam                              | The default maximum allocated ram | "2Gi" |
-| workflow.argo.cwlwrapperImage                            | CWL wrapper image version | "eoepca/cwl-wrapper:0.12.1" |
-| workflow.argo.stageOutImage                              | Stage-out image version | "ghcr.io/eoap/mastering-app-package/stage:1.1.0" |
-| workflow.argo.serviceAccount.name                        | ServiceAccount name for workflow execution | "argo-workflow" |
 | workflow.argo.wfServer                                   | The Argo server URL  | "http://zoo-project-dru-argo-workflows-server.zoo.svc.cluster.local:2746" |
 | workflow.argo.wfToken                                    | The Argo server token (auto-retrieved if autoTokenManagement enabled) | "" |
 | workflow.argo.wfNamespace                                | The namespace where Argo workflows will be executed | "zoo" |
 | workflow.argo.wfSynchronizationCm                        | The configmap name for workflow synchronization | "semaphore-argo-cwl-runner-stage-in-out" |
 | workflow.argo.CwlRunnerTemplare                          | The workflow template name to use as CWL Runner | "argo-cwl-runner-stage-in-out" |
 | workflow.argo.CwlRunnerEndpoint                          | The entry point to use from the CWL Runner Template | "calrissian-runner" |
-| workflow.argo.autoTokenManagement                        | Enable automatic token retrieval from ServiceAccount | true |
-| workflow.argo.restartOnTokenUpdate                       | Restart ZOO-Kernel pods when token is updated | false |
 
 **Event Monitoring Configuration**: Enable real-time workflow monitoring with Argo Events integration.
 
@@ -542,33 +547,33 @@ See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-eve
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| workflow.argo.events.enabled                            | Enable Argo Events integration for real-time monitoring | true |
-| workflow.argo.events.eventBus.enabled                   | Enable EventBus (JetStream backend) for persistent event streaming | true |
-| workflow.argo.events.eventBus.nats.native.replicas      | Number of NATS replicas for EventBus | 1 |
-| workflow.argo.events.eventBus.nats.native.auth          | NATS authentication method | "token" |
-| workflow.argo.events.eventSource.enabled                | Enable EventSource for monitoring Argo Workflows API | true |
-| workflow.argo.events.eventSource.name                   | Name of the EventSource | "workflow-monitor" |
-| workflow.argo.events.eventSource.namespace              | Namespace for EventSource | "zoo" |
-| workflow.argo.events.sensor.enabled                     | Enable Sensor for webhook notifications | true |
-| workflow.argo.events.sensor.name                        | Name of the Sensor | "webhook-sensor" |
-| workflow.argo.events.sensor.namespace                   | Namespace for Sensor | "zoo" |
-| workflow.argo.events.webhook.enabled                    | Enable webhook service for event notifications | true |
-| workflow.argo.events.webhook.port                       | Port for the webhook service | 12000 |
-| workflow.argo.events.webhook.path                       | Path for webhook endpoint | "/workflow-events" |
-| workflow.argo.events.webhook.enabled                    | Enable webhook sensor for notifications | true |
-| workflow.argo.events.webhook.endpoint                   | External webhook endpoint URL | "" |
-| workflow.argo.events.webhook.method                     | HTTP method for webhook calls | "POST" |
+| argo.events.enabled                            | Enable Argo Events integration for real-time monitoring | true |
+| argo.events.eventBus.enabled                   | Enable EventBus (JetStream backend) for persistent event streaming | true |
+| argo.events.eventBus.nats.native.replicas      | Number of NATS replicas for EventBus | 1 |
+| argo.events.eventBus.nats.native.auth          | NATS authentication method | "token" |
+| argo.events.eventSource.enabled                | Enable EventSource for monitoring Argo Workflows API | true |
+| argo.events.eventSource.name                   | Name of the EventSource | "workflow-monitor" |
+| argo.events.eventSource.namespace              | Namespace for EventSource | "zoo" |
+| argo.events.sensor.enabled                     | Enable Sensor for webhook notifications | true |
+| argo.events.sensor.name                        | Name of the Sensor | "webhook-sensor" |
+| argo.events.sensor.namespace                   | Namespace for Sensor | "zoo" |
+| argo.events.webhook.enabled                    | Enable webhook service for event notifications | true |
+| argo.events.webhook.port                       | Port for the webhook service | 12000 |
+| argo.events.webhook.path                       | Path for webhook endpoint | "/workflow-events" |
+| argo.events.webhook.enabled                    | Enable webhook sensor for notifications | true |
+| argo.events.webhook.endpoint                   | External webhook endpoint URL | "" |
+| argo.events.webhook.method                     | HTTP method for webhook calls | "POST" |
 
 **Artifact Storage Configuration**: The chart automatically configures S3-compatible artifact storage using the built-in MinIO service.
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| workflow.argo.s3.bucket                                  | S3 bucket name for artifacts | "eoepca" |
-| workflow.argo.s3.endpoint                                | S3 endpoint URL | "s3-service.zoo.svc.cluster.local:9000" |
-| workflow.argo.s3.insecure                                | Use insecure S3 connection | true |
-| workflow.argo.s3.secretName                              | Secret containing S3 credentials | "s3-service" |
-| workflow.argo.s3.accessKeySecretKey                      | Secret key for S3 access key | "root-user" |
-| workflow.argo.s3.secretKeySecretKey                      | Secret key for S3 secret key | "root-password" |
+| argo.s3.bucket                                  | S3 bucket name for artifacts | "eoepca" |
+| argo.s3.endpoint                                | S3 endpoint URL | "s3-service.zoo.svc.cluster.local:9000" |
+| argo.s3.insecure                                | Use insecure S3 connection | true |
+| argo.s3.secretName                              | Secret containing S3 credentials | "s3-service" |
+| argo.s3.accessKeySecretKey                      | Secret key for S3 access key | "root-user" |
+| argo.s3.secretKeySecretKey                      | Secret key for S3 secret key | "root-password" |
 
 **Token Management**: When `autoTokenManagement` is enabled, the Argo Workflows token is automatically retrieved from the ServiceAccount and made available to ZOO-Kernel. This eliminates the need to manually configure `wfToken`.
 
@@ -752,10 +757,10 @@ Sensors define what actions to take when events are received. The chart includes
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| workflow.argo.events.sensor.webhook.enabled             | Enable webhook sensor for notifications | true |
-| workflow.argo.events.sensor.webhook.endpoint            | Webhook endpoint URL | "http://zoo-project-dru-webhook-service.zoo.svc.cluster.local:8080/webhook" |
-| workflow.argo.events.sensor.webhook.method              | HTTP method for webhook calls | "POST" |
-| workflow.argo.events.sensor.webhook.headers             | Additional HTTP headers | {"Content-Type": "application/json"} |
+| argo.events.sensor.webhook.enabled             | Enable webhook sensor for notifications | true |
+| argo.events.sensor.webhook.endpoint            | Webhook endpoint URL | "http://zoo-project-dru-webhook-service.zoo.svc.cluster.local:8080/webhook" |
+| argo.events.sensor.webhook.method              | HTTP method for webhook calls | "POST" |
+| argo.events.sensor.webhook.headers             | Additional HTTP headers | {"Content-Type": "application/json"} |
 
 ### EventBus Configuration
 

@@ -1,4 +1,4 @@
-{{- if and .Values.workflow.argo.enabled .Values.workflow.argo.enabled }}
+{{- if .Values.argo.enabled }}
 kind: ConfigMap
 apiVersion: v1
 metadata:

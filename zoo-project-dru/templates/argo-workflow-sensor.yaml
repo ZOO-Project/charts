@@ -1,4 +1,4 @@
-{{- if and .Values.workflow.argo.enabled (and (hasKey .Values.workflow.argo "events") .Values.workflow.argo.events.enabled) }}
+{{- if and .Values.argo.enabled .Values.argo.events.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Sensor
 metadata:
@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/component: argo-events
 spec:
   template:
-    serviceAccountName: {{ .Values.workflow.argo.serviceAccount.name }}
+    serviceAccountName: {{ .Values.argo.serviceAccount.name }}
   dependencies:
     - name: workflow-events
       eventSourceName: {{ include "zoo-project-dru.fullname" . }}-workflow-events

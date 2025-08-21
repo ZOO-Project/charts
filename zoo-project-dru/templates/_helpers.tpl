@@ -109,7 +109,7 @@ Create the name of the service account to use
 Argo Workflows MinIO endpoint helper
 */}}
 {{- define "zoo-project-dru.argo.minio.endpoint" -}}
-{{- $endpoint := .Values.workflow.argo.s3.endpoint | default "s3-service:9000" -}}
+{{- $endpoint := .Values.argo.s3.endpoint | default "s3-service:9000" -}}
 {{- if and (not (hasPrefix "http://" $endpoint)) (not (hasPrefix "https://" $endpoint)) -}}
 {{- printf "http://%s" $endpoint -}}
 {{- else -}}

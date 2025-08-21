@@ -30,13 +30,13 @@
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
 {{- end }}
 
-{{- if .Values.workflow.argo.enabled }}
+{{- if .Values.argo.enabled }}
 
 🔧 Argo Workflows Access:
-{{- if .Values.workflow.argo.ingress.enabled }}
-{{- range $host := .Values.workflow.argo.ingress.hosts }}
+{{- if .Values.argo.ingress.enabled }}
+{{- range $host := .Values.argo.ingress.hosts }}
   {{- range .paths }}
-  http{{ if $.Values.workflow.argo.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  http{{ if $.Values.argo.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
   {{- end }}
 {{- end }}
 {{- else }}

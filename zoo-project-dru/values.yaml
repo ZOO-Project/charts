@@ -229,6 +229,7 @@ zoofpm:
   extraMountPoints: []
 
 zookernel:
+  promoteHead: true
   env: {}
     # ZOO_OUTPUT_FORMAT: stac-collection
   image:
@@ -276,14 +277,7 @@ workflow:
     wfSynchronizationCm: "semaphore-argo-cwl-runner-stage-in-out"
     CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
     CwlRunnerEndpoint: "calrissian-runner"
-    # Options for automatic token management
-    autoTokenManagement: true  # Enable automatic token retrieval
-    restartOnTokenUpdate: false  # Restart pods after token update
-    prometheus:
-      enabled: true
-      serviceMonitor:
-        enabled: true
-    
+
 postgresql:
   defineEnvironmentVariables: false
   enabled: true
@@ -402,6 +396,46 @@ webui:
     authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
     scope: "openid email"
 
+argo:
+  enabled: false
+  # Control whether to install CRDs or assume they are already installed
+  installCRDs: true
+  # Options for automatic token management
+  autoTokenManagement: true  # Enable automatic token retrieval
+  restartOnTokenUpdate: false  # Restart pods after token update
+  # Ingress configuration for Argo Workflows UI
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hosts:
+      - host: argo-workflows.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+      # - secretName: argo-workflows-tls
+      #   hosts:
+      #     - argo-workflows.local
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  # Argo Events configuration for workflow monitoring
+  events:
+    enabled: false
+    eventBus:
+      enabled: false
+      name: "default"
+      type: "jetstream"  # or "nats"
+      jetstream:
+        version: "latest"
+        replicas: 1
+      nats:
+        replicas: 1
+        auth: "token"
 
 # Argo Workflows configuration
 argo-workflows:
@@ -432,7 +466,9 @@ argo-workflows:
 monitoring:
   enabled: false
   # Disable problematic Kubernetes component targets for local development
-  disableProblematicTargets: true
+  disableProblematicTargets: false
+  # Disable node-exporter patch when port is already configured in values
+  nodeExporterPatchEnabled: false
   kube-prometheus-stack:
     prometheusOperator:
       podSecurityPolicy:

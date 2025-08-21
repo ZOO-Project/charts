@@ -1,16 +1,18 @@
-{{ if .Values.workflow.argo.enabled }}
+{{ if .Values.argo.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
   name: argo-cwl-runner-stage-in-out
   labels:
-    workflows.argoproj.io/controller-instanceid: {{ .Values.workflow.argo.instanceID | default "argo" }}
+    workflows.argoproj.io/controller-instanceid: {{ .Values.argo.instanceID | default "argo" }}
   annotations:
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "1"
     workflows.argoproj.io/version: ">= v3.3.0"
     workflows.argoproj.io/description: |
       This workflow template is a CWL runner for Argo Workflows with stage-in/stage-out capabilities.
 spec:
-  serviceAccountName: {{ .Values.workflow.argo.serviceAccount.name | default "argo-workflow" }}
+  serviceAccountName: {{ .Values.argo.serviceAccount.name | default "argo-workflow" }}
   entrypoint: calrissian-runner
   parameters:
   - name: parameters
@@ -164,7 +166,7 @@ spec:
       - name: parameters
 
     script:
-      image: {{ .Values.workflow.argo.cwlwrapperImage }}
+      image: {{ .Values.argo.cwlwrapperImage }}
       resources:
         requests:
           memory: 1Gi
@@ -225,7 +227,7 @@ spec:
             metadata:
               name: calrissian_pod
             spec:
-              serviceAccountName: {{ .Values.workflow.argo.serviceAccount.name }}
+              serviceAccountName: {{ .Values.argo.serviceAccount.name }}
               containers:
                 - name: calrissian
                   image: ghcr.io/duke-gcb/calrissian/calrissian:0.16.0
@@ -235,7 +237,7 @@ spec:
                   args:
                   - --debug
                   - --pod-serviceaccount
-                  - {{ .Values.workflow.argo.serviceAccount.name }}
+                  - {{ .Values.argo.serviceAccount.name }}
                   - --stdout
                   - /calrissian/output.json
                   - --stderr
@@ -337,7 +339,7 @@ spec:
           s3:
             key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/calrissian-report.tgz"` }}
     script:
-      image: {{ .Values.workflow.argo.stageOutImage }}
+      image: {{ .Values.argo.stageOutImage }}
       resources:
         requests:
           memory: 1Gi
@@ -391,7 +393,7 @@ spec:
           s3:
             key: {{ `"{{workflow.name}}-{{workflow.uid}}-artifacts/null.tgz"` }}
     script:
-      image: {{ .Values.workflow.argo.stageOutImage }}
+      image: {{ .Values.argo.stageOutImage }}
       resources:
         requests:
           memory: 1Gi
@@ -436,7 +438,7 @@ spec:
           valueFrom:
             path: /tmp/output
     script:
-      image: {{ .Values.workflow.argo.stageOutImage }}
+      image: {{ .Values.argo.stageOutImage }}
       resources:
         requests:
           memory: 1Gi
@@ -444,5 +446,5 @@ spec:
       volumeMounts: []
       command: [python]
       source: |
-        {{ required "A valid .Values.workflow.argo.featureCollectionScript entry required!" ( tpl ( .Values.workflow.argo.featureCollectionScript | default ( .Files.Get "files/argo-workflows/feature_collection.py")) . | nindent 8 ) }}
+        {{ required "A valid .Values.argo.featureCollectionScript entry required!" ( tpl ( .Values.argo.featureCollectionScript | default ( .Files.Get "files/argo-workflows/feature_collection.py")) . | nindent 8 ) }}
 {{ end }}

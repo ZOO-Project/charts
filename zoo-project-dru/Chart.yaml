@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.7.0
+version: 0.7.1
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -71,14 +71,14 @@ dependencies:
     condition: keda.kyverno.enabled
 
   - name: argo-workflows
-    version: "0.45.21"
+    version: "0.45.22"
     repository: https://argoproj.github.io/argo-helm
-    condition: workflow.argo.enabled
+    condition: argo.enabled
 
   - name: argo-events
     version: "2.4.8"
     repository: https://argoproj.github.io/argo-helm
-    condition: workflow.argo.events.enabled
+    condition: argo.events.enabled
 
   - name: kube-prometheus-stack
     version: ">=45.0.0"
@@ -88,40 +88,15 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: "Added ZOO-Project latest version 0.2.29 with Python 3.10"
-      links:
-        - name: commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/c29a1da89d5a2d00a4b34af555bcd52dc987df6f
-    - kind: added
-      description: "Integrated Argo Workflows support with real-time monitoring and event-driven automation"
-      links:
-        - name: Helm chart
-          url: https://artifacthub.io/packages/helm/argo/argo-workflows
-    - kind: added
-      description: "Added Argo Events integration for real-time workflow event capture and webhook notifications"
-      links:
-        - name: Helm chart
-          url: https://artifacthub.io/packages/helm/argo/argo-events
-    - kind: added
-      description: "Integrated kube-prometheus-stack with custom Grafana dashboards for workflow metrics visualization"
-      links:
-        - name: Helm chart
-          url: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
-    - kind: added
-      description: "Added prometheus-node-exporter"
-    - kind: added
-      description: "Implemented automatic ServiceMonitor patching to resolve connection refused errors on local environments"
-    - kind: added
-      description: "Added real-time dashboard refresh (5s intervals) for immediate workflow status updates"
-    - kind: added
-      description: "Enhanced RBAC permissions for monitoring components access to ServiceMonitors API"
-    - kind: added
-      description: "Added monitoring.disableProblematicTargets parameter for local development environments"
-    - kind: added
-      description: "Integrated workflow.argo.events configuration with EventBus, EventSource, and Sensor components"
-    - kind: added
-      description: "Added argo profile to skaffold configuration for streamlined development workflows"
-
+      description: "Added support for optional promotion in the OpenAPI of the HEAD HTTP method for every endpoints using the GET method"
+    - kind: changed
+      description: "Move options specific to the argo-workflows deployment from workflows.argo to argo"
+    - kind: changed
+      description: "Update the Helm chart documentation"
+    - kind: removed
+      description: "Don't use the crds subdirectory to avoid creating CRD that are not required"
+    - kind: fixed
+      description: "Fix the subscriber.py script"
 
   artifacthub.io/links: |
     - name: source

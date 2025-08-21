@@ -1,4 +1,4 @@
-{{- if and .Values.monitoring.enabled (index .Values.monitoring "kube-prometheus-stack" "prometheus-node-exporter" "enabled") }}
+{{- if and .Values.monitoring.enabled (index .Values.monitoring "kube-prometheus-stack" "prometheus-node-exporter" "enabled") .Values.monitoring.nodeExporterPatchEnabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
   annotations:
-    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook": post-install
     "helm.sh/hook-weight": "20"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:

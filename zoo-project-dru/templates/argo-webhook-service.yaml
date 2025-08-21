@@ -1,4 +1,4 @@
-{{- if and .Values.workflow.argo.enabled .Values.workflow.argo.events.enabled }}
+{{- if and .Values.argo.enabled .Values.argo.events.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

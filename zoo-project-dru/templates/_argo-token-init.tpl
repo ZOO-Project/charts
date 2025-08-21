@@ -1,4 +1,4 @@
-{{- if and .Values.workflow.argo.enabled .Values.workflow.argo.autoTokenManagement }}
+{{- if and .Values.argo.enabled .Values.argo.autoTokenManagement }}
 # Template to inject an initContainer that retrieves the Argo token
 # To be used in the main zoo-kernel deployment
 

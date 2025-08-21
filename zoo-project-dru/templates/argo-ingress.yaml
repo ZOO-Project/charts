@@ -1,4 +1,4 @@
-{{- if and .Values.workflow.argo.enabled (hasKey .Values.workflow.argo "ingress") .Values.workflow.argo.ingress.enabled -}}
+{{- if and .Values.argo.enabled .Values.argo.ingress .Values.argo.ingress.enabled -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -6,17 +6,17 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
-  {{- with .Values.workflow.argo.ingress.annotations }}
+  {{- with .Values.argo.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.workflow.argo.ingress.className }}
-  ingressClassName: {{ .Values.workflow.argo.ingress.className }}
+  {{- if .Values.argo.ingress.className }}
+  ingressClassName: {{ .Values.argo.ingress.className }}
   {{- end }}
-  {{- if .Values.workflow.argo.ingress.tls }}
+  {{- if .Values.argo.ingress.tls }}
   tls:
-    {{- range .Values.workflow.argo.ingress.tls }}
+    {{- range .Values.argo.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -25,7 +25,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.workflow.argo.ingress.hosts }}
+    {{- range .Values.argo.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:

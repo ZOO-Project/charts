@@ -1,4 +1,4 @@
-{{ if .Values.workflow.argo.enabled }}
+{{ if .Values.argo.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -20,7 +20,7 @@ spec:
         app.kubernetes.io/component: argo-post-install
     spec:
       restartPolicy: Never
-      serviceAccountName: {{ .Values.workflow.argo.serviceAccount.name }}
+      serviceAccountName: {{ .Values.argo.serviceAccount.name }}
       containers:
       - name: post-install
         image: bitnami/kubectl:1.28

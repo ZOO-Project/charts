@@ -1,4 +1,4 @@
-{{- if and .Values.workflow.argo.enabled .Values.monitoring.enabled }}
+{{- if and .Values.argo.enabled .Values.monitoring.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -18,7 +18,7 @@ spec:
     app: workflow-controller
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
-{{- if .Values.workflow.argo.events.enabled }}
+{{- if .Values.argo.events.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

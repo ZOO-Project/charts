@@ -1,41 +1,80 @@
 # ZOO-Project-DRU Helm Chart Configuration with Argo Workflows support
+argo:
+  enabled: true
+  installCRDs: true  # Install CRDs automatically
+  instanceID: "zoo"
+
+  # Images configuration
+  cwlwrapperImage: "eoepca/cwl-wrapper:0.12.1"
+  stageOutImage: "ghcr.io/eoap/mastering-app-package/stage:1.1.0"
+  
+  # Service Account
+  serviceAccount:
+    name: "argo-workflow"
+    
+  # Feature collection script
+  featureCollectionScript: ""
+  
+  # Argo Events configuration
+  events:
+    enabled: false
+    eventBus:
+      enabled: false
+      name: "default"
+      type: "jetstream"  # or "nats"
+      jetstream:
+        version: "latest"
+        replicas: 1  # Reduced for minikube
+        settings: |
+          max_memory_store: 256MB
+          max_file_store: 1GB
+        streamConfig: |
+          maxMsgs: 10000
+          maxAge: 24h
+          maxBytes: -1
+          replicas: 1
+          duplicates: 300s
+
+  autoTokenManagement: true  # Enable automatic token retrieval
+  restartOnTokenUpdate: false  # Restart pods after token update
+  
+  # S3 configuration for artifact repository
+  s3:
+    bucket: "eoepca"
+    endpoint: "s3-service.zoo.svc.cluster.local:9000"
+    insecure: true
+    # MinIO secret configuration
+    secretName: "s3-service"
+    accessKeySecretKey: "root-user"
+    secretKeySecretKey: "root-password"
+    
+  # Ingress configuration for Argo Workflows UI
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: argo-workflows.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+    #  - secretName: argo-workflows-tls
+    #    hosts:
+    #      - argo-workflows.local
+
 
 workflow:
   argo:
+    # Deploy Argo workflows using the Helm chart
+    internal: true
+
     # Argo Workflows mode selection
     enabled: true
     instanceID: "zoo"
     
-    # Images configuration
-    cwlwrapperImage: "eoepca/cwl-wrapper:0.12.1"
-    stageOutImage: "ghcr.io/eoap/mastering-app-package/stage:1.1.0"
-    
-    # Service Account
-    serviceAccount:
-      name: "argo-workflow"
-      
-    # Feature collection script
-    featureCollectionScript: ""
-    
-    # Argo Events configuration
-    events:
-      enabled: false
-      eventBus:
-        enabled: false
-        name: "default"
-        type: "jetstream"  # or "nats"
-        jetstream:
-          version: "latest"
-          replicas: 1  # Reduced for minikube
-          settings: |
-            max_memory_store: 256MB
-            max_file_store: 1GB
-          streamConfig: |
-            maxMsgs: 10000
-            maxAge: 24h
-            maxBytes: -1
-            replicas: 1
-            duplicates: 300s
     
     # Common configuration
     defaultVolumeSize: "12Gi"
@@ -47,35 +86,6 @@ workflow:
     CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
     CwlRunnerEndpoint: "calrissian-runner"
     # Options for automatic token management
-    autoTokenManagement: true  # Enable automatic token retrieval
-    restartOnTokenUpdate: false  # Restart pods after token update
-    
-    # S3 configuration for artifact repository
-    s3:
-      bucket: "eoepca"
-      endpoint: "s3-service.zoo.svc.cluster.local:9000"
-      insecure: true
-      # MinIO secret configuration
-      secretName: "s3-service"
-      accessKeySecretKey: "root-user"
-      secretKeySecretKey: "root-password"
-      
-    # Ingress configuration for Argo Workflows UI
-    ingress:
-      enabled: false
-      className: ""
-      annotations: {}
-        # kubernetes.io/ingress.class: nginx
-        # kubernetes.io/tls-acme: "true"
-      hosts:
-        - host: argo-workflows.local
-          paths:
-            - path: /
-              pathType: Prefix
-      tls: []
-      #  - secretName: argo-workflows-tls
-      #    hosts:
-      #      - argo-workflows.local
       
   additionalInputs:
     s3_bucket: results
@@ -269,7 +279,9 @@ argo-workflows:
 
 monitoring:
   enabled: true
-  disableProblematicTargets: true
+  disableProblematicTargets: true  # Disable patch since node-exporter is correctly configured
+  # Disable patch since node-exporter is already correctly configured below
+  nodeExporterPatchEnabled: true
   kube-prometheus-stack:
     # Configuration for Docker Desktop
     prometheusOperator:
@@ -279,7 +291,7 @@ monitoring:
     crds:
       enabled: true
     prometheus-node-exporter:
-      enabled: true  # Enabled - will be automatically patched by the post-install Job    
+      enabled: true  # Enabled with correct port configuration
       hostNetwork: false
       hostPID: false
       service:
@@ -288,8 +300,13 @@ monitoring:
       prometheus:
         monitor:
           enabled: true
+      # Override the default arguments completely
       extraArgs:
-        web.listen-address: "0.0.0.0:9101"
+        - --web.listen-address=0.0.0.0:9101
+      # Configure container port
+      containerPorts:
+        http-metrics:
+          containerPort: 9101
     
     # Prometheus configuration
     prometheus:

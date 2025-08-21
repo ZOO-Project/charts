@@ -17,8 +17,7 @@ r=None
 
 if "ZOO_REDIS_HOST" in os.environ:
     r = redis.Redis(host=os.environ["ZOO_REDIS_HOST"], port=6379, db=0)
-else:
-
+else:x
     r = redis.Redis(host='{{ .Release.Name }}-redis-master', port=6379, db=0)
 
 def send(t):
@@ -57,6 +56,7 @@ def receive():
         t1 = t.split(" ")
         if t1[0]=="SUB":
             mThreads += [threading.Thread(target=listenMessages,kwargs={"jobID":t1[1]})]
+            mThreads[len(mThreads)-1].daemon = True
             mThreads[len(mThreads)-1].start()
         else:
             send(t)

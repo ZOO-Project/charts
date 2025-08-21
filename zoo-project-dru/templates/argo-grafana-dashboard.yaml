@@ -1,4 +1,4 @@
-{{- if and .Values.workflow.argo.enabled .Values.monitoring.enabled }}
+{{- if and .Values.argo.enabled .Values.monitoring.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

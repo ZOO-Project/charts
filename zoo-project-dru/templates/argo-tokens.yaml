@@ -1,4 +1,4 @@
-{{ if .Values.workflow.argo.enabled }}
+{{ if .Values.argo.enabled }}
 # Main token for ZOO-Project (used by dp-zoofpm.yaml)
 apiVersion: v1
 kind: Secret
@@ -9,7 +9,7 @@ metadata:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
     app.kubernetes.io/component: argo-workflow-token
   annotations:
-    kubernetes.io/service-account.name: {{ .Values.workflow.argo.serviceAccount.name }}
+    kubernetes.io/service-account.name: {{ .Values.argo.serviceAccount.name }}
 type: kubernetes.io/service-account-token
 ---
 # Token for Argo Workflows server ServiceAccount

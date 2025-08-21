@@ -1,4 +1,4 @@
-{{- if and .Values.workflow.argo.enabled .Values.monitoring.enabled }}
+{{- if and .Values.argo.enabled .Values.monitoring.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
