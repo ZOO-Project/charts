@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.7.2
+version: 0.7.3
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.29"
+appVersion: "0.2.30"
 
 keywords:
   - workflows
@@ -87,8 +87,15 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
+    - kind: added
+      description: "Expose endpoints using the HEAD HTTP method in the OpenAPI, if zoo.promoteHead is set to true"
+    - kind: changed
+      description: "Update to the latest ZOO-Project version"
+      links:
+        - name: GitHub
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/300654720d52272e4f40b96556d5a6d5487447e7
     - kind: fixed
-      description: "Typo in subscriber.py"
+      description: "Access the content of the examples"
 
   artifacthub.io/links: |
     - name: source

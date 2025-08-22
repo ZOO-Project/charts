@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.0
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.3
 ````
 
 ## Parameters
@@ -150,6 +150,7 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | Name                             | Description                                                        | Value                                                |
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
 | zoo.rabbitmq.definitions         | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
+| zookernel.promoteHead            | Expose endpoints using the HEAD HTTP method in the OpenAPI    | true                    |
 | zookernel.env                    | The environment variables defined in the main.cfg `env` section    | {}                    |
 | zookernel.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
 | zoofpm.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
@@ -525,7 +526,7 @@ See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-wor
 | argo.stageOutImage                              | Stage-out image version | "ghcr.io/eoap/mastering-app-package/stage:1.1.0" |
 | argo.serviceAccount.name                        | ServiceAccount name for workflow execution | "argo-workflow" |
 | argo.autoTokenManagement                        | Enable automatic token retrieval from ServiceAccount | true |
-| restartOnTokenUpdate                       | Restart ZOO-Kernel pods when token is updated | false |
+| argo.restartOnTokenUpdate                       | Restart ZOO-Kernel pods when token is updated | false |
 
 
 | Name                                                     | Description                        | Value                                                                 |
@@ -705,10 +706,10 @@ Argo Events complements Argo Workflows by providing:
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| workflow.argo.events.enabled                            | Enable Argo Events integration for real-time monitoring | false |
-| workflow.argo.events.webhook.enabled                    | Enable webhook service for receiving event notifications | true |
-| workflow.argo.events.webhook.port                       | Port for the webhook service | 8080 |
-| workflow.argo.events.webhook.path                       | Path for webhook endpoint | "/webhook" |
+| argo.events.enabled                            | Enable Argo Events integration for real-time monitoring | false |
+| argo.events.webhook.enabled                    | Enable webhook service for receiving event notifications | true |
+| argo.events.webhook.port                       | Port for the webhook service | 8080 |
+| argo.events.webhook.path                       | Path for webhook endpoint | "/webhook" |
 
 ### Argo Events Chart Configuration
 
@@ -833,55 +834,6 @@ Argo Events requires specific permissions to monitor workflows:
 | events                    | create, patch             | Create Kubernetes events          |
 | configmaps                | get, list, create, patch  | EventBus configuration            |
 | secrets                   | get, list                 | EventBus authentication           |
-
-### Deployment Examples
-
-**Basic Argo Events deployment**:
-```yaml
-workflow:
-  argo:
-    enabled: true
-    events:
-      enabled: true
-
-argo-events:
-  enabled: true
-  controller:
-    metrics:
-      enabled: true
-      serviceMonitor:
-        enabled: true
-        additionalLabels:
-          release: zoo-project-dru
-```
-
-**Production deployment with custom webhook**:
-```yaml
-workflow:
-  argo:
-    events:
-      enabled: true
-      webhook:
-        enabled: true
-        endpoint: "https://my-external-webhook.example.com/notifications"
-      sensor:
-        webhook:
-          headers:
-            Authorization: "Bearer my-api-token"
-            X-Custom-Header: "zoo-project-notifications"
-
-argo-events:
-  enabled: true
-  controller:
-    replicas: 2
-    resources:
-      requests:
-        cpu: "200m"
-        memory: "256Mi"
-      limits:
-        cpu: "1000m"
-        memory: "512Mi"
-```
 
 ### Troubleshooting
 
@@ -1012,150 +964,6 @@ For local environments (Docker Desktop, Minikube), the chart automatically appli
 - Using port 9101 instead of the default 9100 to avoid conflicts
 - Applying post-install patches to remove unsupported mount configurations
 - Cleaning up completed patch jobs automatically after 5 minutes
-
-**Usage Example**:
-```yaml
-monitoring:
-  enabled: true
-  kube-prometheus-stack:
-    grafana:
-      adminPassword: "my-secure-password"
-    prometheus-node-exporter:
-      enabled: true
-```
-
-**Access Monitoring Services**:
-- **Prometheus**: `kubectl port-forward svc/zoo-project-dru-kube-prome-prometheus 9090:9090 -n zoo`
-- **Grafana**: `kubectl port-forward svc/zoo-project-dru-grafana 3000:80 -n zoo`
-- **Alertmanager**: `kubectl port-forward svc/zoo-project-dru-kube-prome-alertmanager 9093:9093 -n zoo`
-
-### Complete Configuration Examples
-
-**Local Development with Real-time Monitoring**:
-```yaml
-# Complete local development setup
-workflow:
-  argo:
-    enabled: true
-    events:
-      enabled: true
-      eventBus:
-        enabled: true
-      eventSource:
-        enabled: true
-      sensor:
-        enabled: true
-
-monitoring:
-  enabled: true
-  disableProblematicTargets: true
-  grafana:
-    dashboards:
-      enabled: true
-      refresh: "5s"
-    persistence:
-      enabled: true
-
-minio:
-  enabled: true
-  persistence:
-    storageClass: "standard"
-```
-
-**Production Environment**:
-```yaml
-# Production-ready configuration
-workflow:
-  argo:
-    enabled: true
-    instanceID: "production"
-    events:
-      enabled: true
-    s3:
-      bucket: "production-artifacts"
-
-monitoring:
-  enabled: true
-  disableProblematicTargets: false
-  kube-prometheus-stack:
-    prometheus:
-      retention: "30d"
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            storageClassName: "fast-ssd"
-            resources:
-              requests:
-                storage: "50Gi"
-    grafana:
-      adminPassword: "secure-production-password"
-      persistence:
-        enabled: true
-        size: "10Gi"
-
-keda:
-  enabled: true
-  minReplicas: 1
-  maxReplicas: 20
-```
-
-**Monitoring-only Deployment**:
-```yaml
-# Only monitoring stack without workflows
-workflow:
-  argo:
-    enabled: false
-
-monitoring:
-  enabled: true
-  kube-prometheus-stack:
-    prometheus:
-      retention: "7d"
-    grafana:
-      dashboards:
-        enabled: false
-```
-
-### Troubleshooting
-
-**Common Issues and Solutions**:
-
-1. **ServiceMonitor Connection Refused Errors**:
-   - Enable `monitoring.disableProblematicTargets: true`
-   - The chart will automatically patch problematic targets
-
-2. **Grafana Dashboard Not Updating**:
-   - Ensure `workflow.argo.events.enabled: true`
-   - Check EventBus, EventSource, and Sensor are running
-   - Verify webhook endpoint is accessible
-
-3. **Node Exporter Port Conflicts**:
-   - Chart automatically uses port 9101 for Docker Desktop compatibility
-   - Check if post-install patch jobs completed successfully
-
-4. **Real-time Monitoring Not Working**:
-   - Verify Argo Events components are deployed and healthy
-   - Check webhook service is accessible on port 12000
-   - Ensure Prometheus is scraping argo_workflows_gauge metrics
-
-5. **Dashboard Value Inconsistencies**:
-   - **Symptom**: "Total Workflows", "Active vs Completed", and "Status Distribution" show different values
-   - **Causes**: 
-     - Temporal differences in metric collection (normal variation ±1-2 workflows)
-     - Different query aggregation methods across panels
-     - Grafana cache synchronization delays
-   - **Solutions**:
-     - Use the "Data Consistency Validation" panel to verify metrics
-     - Focus on trends rather than exact point-in-time values
-     - Allow 30-60 seconds for complete synchronization
-     - Manually verify via Prometheus: `curl -s "http://localhost:9095/api/v1/query?query=argo_workflows_gauge{namespace=\"zoo\"}"`
-   - **When to worry**: Differences > 5 workflows indicate configuration issues
-   - **Reference**: See `DASHBOARD_CONSISTENCY.md` for detailed analysis
-
-6. **Missing Workflow Metrics**:
-   - Ensure workflows are actually running to generate metrics
-   - Check if argo-workflows-controller-metrics service is accessible
-   - Verify ServiceMonitor configuration includes controller metrics endpoint
 
 
 ### ingress
