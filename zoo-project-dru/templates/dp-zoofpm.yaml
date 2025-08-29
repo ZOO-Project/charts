@@ -92,6 +92,10 @@ spec:
               value: "/assets/rules.yaml"
             - name: WRAPPER_MAIN
               value: "/assets/main.yaml"
+            {{- if .Values.zoo.detectEntrypoint }}
+            - name: ZOOFPM_DETECT_ENTRYPOINT
+              value: "true"
+            {{- end }}
             {{- if .Values.useKubeProxy }}
             - name: HTTP_PROXY
               value: "http://{{ .Release.Name }}-kubeproxy.{{ .Release.Namespace }}.svc.cluster.local:8001"

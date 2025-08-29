@@ -216,6 +216,7 @@ affinity: {}
 
 zoo:
   promoteHead: true
+  detectEntrypoint: false
   rabbitmq:
     definitions: "files/rabbitmq/definitions.json"
 
@@ -223,7 +224,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-300654720d52272e4f40b96556d5a6d5487447e7
+    tag: dru-d4b07ce3d7e12a0d3a56d1a3627052a9babe85d7
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -235,7 +236,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-300654720d52272e4f40b96556d5a6d5487447e7
+    tag: dru-d4b07ce3d7e12a0d3a56d1a3627052a9babe85d7
   extraMountPoints: []
 
 notifications:

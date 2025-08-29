@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.3
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.4
 ````
 
 ## Parameters
@@ -149,8 +149,9 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 
 | Name                             | Description                                                        | Value                                                |
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| zoo.promoteHead            | Expose endpoints using the HEAD HTTP method in the OpenAPI    | true                    |
+| zoo.detectEntrypoint         | Dynamically deploy a pod and its associated service to detect docker `ENTRYPOINT` to prepend to existing baseCommand   | false                   |
 | zoo.rabbitmq.definitions         | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
-| zookernel.promoteHead            | Expose endpoints using the HEAD HTTP method in the OpenAPI    | true                    |
 | zookernel.env                    | The environment variables defined in the main.cfg `env` section    | {}                    |
 | zookernel.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
 | zoofpm.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
