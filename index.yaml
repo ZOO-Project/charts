@@ -4,6 +4,83 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: added
+          description: "Add support for detecting entry points from the DeployProcess service"
+        - kind: changed
+          description: "Update to the latest ZOO-Project version"
+          links:
+            - name: GitHub Commit
+              url: https://github.com/ZOO-Project/ZOO-Project/commit/d4b07ce3d7e12a0d3a56d1a3627052a9babe85d7
+        - kind: fixed
+          description: "Update documentation to set the correct location of the promoteHead parameter"
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.31
+    created: "2025-08-29T16:25:18.90133683Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.1.4
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 1f5102195a7987c7165c77b019c8783682f46a5780bbc7037022b85491256373
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.7.4/zoo-project-dru-0.7.4.tgz
+    version: 0.7.4
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: added
           description: "Expose endpoints using the HEAD HTTP method in the OpenAPI, if zoo.promoteHead is set to true"
         - kind: changed
           description: "Update to the latest ZOO-Project version"
@@ -3434,4 +3511,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-08-22T12:58:05.95036069Z"
+generated: "2025-08-29T16:25:18.901656758Z"
