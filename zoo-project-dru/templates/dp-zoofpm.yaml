@@ -50,14 +50,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Release.Name }}-processing-manager
       initContainers:
-        - name: init-wait-for-dependencies-zoofpm
-          image: docker.io/wshihadeh/wait_for:latest
-          imagePullPolicy: IfNotPresent
-          command: [ "/docker-entrypoint.sh" ]
-          args: [ "wait_for", "rabbitmq:{{ .Release.Name }}-rabbitmq"]
-          env:
-            - name: ZOO_RABBITMQ_HOST
-              value: {{ .Release.Name }}-rabbitmq
+        {{- include "zoo-project-dru.rabbitmq.initContainer" (dict "Values" .Values "Release" .Release "componentName" "zoofpm") | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -180,16 +173,20 @@ spec:
                   key: database
                   optional: true
             {{- else }}
-            {{- if .Values.postgresql.defineEnvironmentVariables }}
+            {{- if .Values.postgresql.enabled }}
             - name: PGHOST
-              value: "{{ .Release.Name}}-postgresql-hl"
+              value: "{{ .Values.postgresql.serviceName }}"
             - name: PGDATABASE
               value: {{ .Values.global.postgresql.auth.database | quote}}
             - name: PGPASSWORD
+              {{- if .Values.postgresql.useSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-postgresql
+                  name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql-secret" (include "zoo-project-dru.fullname" .)) }}
                   key: password
+              {{- else }}
+              value: {{ .Values.global.postgresql.auth.password | quote}}
+              {{- end }}
             - name: PGUSER
               value: {{ .Values.global.postgresql.auth.username | quote}}
             - name: PGPORT

@@ -1,0 +1,22 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.postgresql.name }}
+    chart: {{ include "zoo-project-dru.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ .Values.postgresql.serviceName }}
+spec:
+  ports:
+  - name: postgresql
+    port: {{ .Values.global.postgresql.service.ports.postgresql }}
+    protocol: TCP
+    targetPort: postgresql
+  selector:
+    app: {{ .Values.postgresql.name }}
+    release: {{ .Release.Name }}
+  type: ClusterIP
+{{- end }}

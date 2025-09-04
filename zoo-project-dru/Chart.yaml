@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.7.4
+version: 0.8.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -40,24 +40,9 @@ keywords:
   - stac
 
 dependencies:
-  - name: postgresql
-    version: "16.6.0"
-    repository: https://charts.bitnami.com/bitnami
-    condition: postgresql.enabled
-
-  - name: rabbitmq
-    version: "15.4.1"
-    repository: https://charts.bitnami.com/bitnami
-    condition: broker.enabled
-
-  - name: redis
-    version: "20.11.4"
-    repository: https://charts.bitnami.com/bitnami
-    condition: redis.enabled
-
   - name: minio
-    version: "16.0.0"
-    repository: https://charts.bitnami.com/bitnami
+    version: 5.4.0
+    repository: https://charts.min.io/
     condition: minio.enabled
 
   - name: keda
@@ -87,15 +72,28 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: "Add support for detecting entry points from the DeployProcess service"
-    - kind: changed
-      description: "Update to the latest ZOO-Project version"
+    - kind: removed
+      description: "Remove bitnami/rabbitmq dependency and integrate the official rabbitmq Docker image"
       links:
-        - name: GitHub Commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/d4b07ce3d7e12a0d3a56d1a3627052a9babe85d7
+        - name: RabbitMQ Docker Hub
+          url: https://hub.docker.com/_/rabbitmq
+    - kind: removed
+      description: "Remove bitnami/postgresql dependency and integrate the official PostgreSQL Docker image"
+      links:
+        - name: PostgreSQL Docker Hub
+          url: https://hub.docker.com/_/postgres
+    - kind: removed
+      description: "Remove bitnami/redis dependency and integrate the official Redis Docker image"
+      links:
+        - name: Redis Docker Hub
+          url: https://hub.docker.com/_/redis
+    - kind: changed
+      description: "Migrate from bitnami/minio to the official one from https://charts.min.io/"
+      links:
+        - name: Artifact Hub
+          url: https://artifacthub.io/packages/helm/minio-official/minio
     - kind: fixed
-      description: "Update documentation to set the correct location of the promoteHead parameter"
+      description: "Update documentation to reflect new dependencies and official Docker images integration"
 
   artifacthub.io/links: |
     - name: source

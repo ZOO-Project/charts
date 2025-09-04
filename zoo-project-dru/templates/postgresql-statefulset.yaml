@@ -1,0 +1,101 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.postgresql.name }}
+    chart: {{ include "zoo-project-dru.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ .Values.postgresql.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.postgresql.name }}
+      release: {{ .Release.Name }}
+  serviceName: {{ .Values.postgresql.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.postgresql.name }}
+        release: {{ .Release.Name }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: postgresql
+        image: {{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}
+        imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+        env:
+        - name: PGDATA
+          value: {{ .Values.postgresql.persistence.mountPath }}/pgdata
+        {{- if .Values.global.postgresql.auth.existingSecret }}
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.postgresql.auth.existingSecret }}
+              key: database
+              optional: true
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.postgresql.auth.existingSecret }}
+              key: password
+              optional: false
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.postgresql.auth.existingSecret }}
+              key: username
+              optional: true
+        {{- else }}
+        - name: POSTGRES_DB
+          value: {{ .Values.global.postgresql.auth.database }}
+        - name: POSTGRES_PASSWORD
+          {{- if .Values.postgresql.useSecret }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql-secret" (include "zoo-project-dru.fullname" .)) }}
+              key: password
+          {{- else }}
+          value: {{ .Values.global.postgresql.auth.password }}
+          {{- end }}
+        - name: POSTGRES_USER
+          value: {{ .Values.global.postgresql.auth.username }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.global.postgresql.service.ports.postgresql }}
+          name: postgresql
+        resources:
+          {{- toYaml .Values.postgresql.resources | nindent 10 }}
+        volumeMounts:
+        - name: {{ .Values.postgresql.persistence.volumeName }}
+          mountPath: {{ .Values.postgresql.persistence.mountPath }}
+        {{- if .Values.postgresql.primary.initdb.scriptsConfigMap }}
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        {{- end }}
+      restartPolicy: Always
+      volumes:
+      {{- if .Values.postgresql.primary.initdb.scriptsConfigMap }}
+      - name: init-scripts
+        configMap:
+          name: {{ .Values.postgresql.primary.initdb.scriptsConfigMap }}
+      {{- end }}
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.postgresql.persistence.volumeName }}
+    spec:
+      {{- if .Values.postgresql.persistence.storageClass }}
+      storageClassName: {{ .Values.postgresql.persistence.storageClass }}
+      {{- end }}
+      accessModes:
+      - {{ .Values.postgresql.persistence.accessMode }}
+      resources:
+        requests:
+          storage: {{ .Values.postgresql.persistence.size }}
+{{- end }}

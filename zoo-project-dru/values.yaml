@@ -218,7 +218,7 @@ zoo:
   promoteHead: true
   detectEntrypoint: false
   rabbitmq:
-    definitions: "files/rabbitmq/definitions.json"
+    definitions: "files/rabbitmq/definitions.json.tpl"
 
 zoofpm:
   image:
@@ -280,8 +280,39 @@ workflow:
     CwlRunnerEndpoint: "calrissian-runner"
 
 postgresql:
-  defineEnvironmentVariables: false
+  # Configuration for official PostgreSQL Docker image
   enabled: true
+  name: postgresql-db
+  serviceName: postgresql-db-service
+
+  # Security configuration
+  useSecret: false  # Set to true to store credentials in a Kubernetes Secret
+  secretName: ""    # Optional: specify an existing secret name, otherwise auto-generated
+
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+
+  # Resources configuration
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  # Persistence configuration
+  persistence:
+    enabled: true
+    volumeName: postgresql-data
+    mountPath: /var/lib/postgresql/data
+    accessMode: ReadWriteOnce
+    size: 8Gi
+    storageClass: ""
+
+  # Init scripts configuration (keep existing ConfigMap)
   primary:
     initdb:
       scriptsConfigMap: "postgresql-primary-init-scripts"
@@ -299,14 +330,59 @@ global:
 
 # rabbitmq
 rabbitmq:
-  auth:
-    username: RABBITMQ_USERNAME
-    password: CHANGEME
-  loadDefinition:
+  enabled: true
+  image:
+    repository: rabbitmq
+    tag: "4.1.4-alpine"
+    pullPolicy: IfNotPresent
+
+  replicas: 1
+
+  # Auto-setup: automatically enable management plugin and import definitions
+  autoSetup:
     enabled: true
-    existingSecret: load-definition
-  extraConfiguration: |
-    load_definitions = /app/load_definition.json
+
+  auth:
+    username: "zoo"
+    password: "CHANGEME"
+    vhost: "/"
+
+  clustering:
+    enabled: false
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: ""
+
+  # RabbitMQ configuration
+  config: |
+    ## Management plugin
+    management.tcp.port = 15672
+
+    ## Disable disk free limit (for development)
+    disk_free_limit.absolute = 1GB
+
+    ## Enable logging
+    log.console = true
+    log.console.level = info
+
+    ## Default user configuration
+    default_user = zoo
+    default_pass = CHANGEME
+    default_vhost = /
+    default_user_tags.administrator = true
+    default_permissions.configure = .*
+    default_permissions.read = .*
+    default_permissions.write = .*
 
 persistence:
   enabled: true
@@ -348,6 +424,62 @@ cookiecutter:
 
 minio:
   enabled: false
+  # Configuration for official MinIO chart (https://charts.min.io/)
+  mode: standalone  # or 'distributed' for production
+  replicas: 1
+
+  # Authentication
+  rootUser: minio-admin
+  rootPassword: minio-secret-password
+
+  # Backward compatibility: keep s3-service name
+  fullnameOverride: "s3-service"
+
+  # Create default buckets after install
+  buckets:
+    - name: eoepca
+      policy: none
+      purge: false
+    - name: results
+      policy: none
+      purge: false
+
+  # Resources
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+  # Persistence
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""  # Use default storage class
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 9000
+
+  # Console (web UI)
+  consoleService:
+    type: ClusterIP
+    port: 9001
+
+  # Environment variables
+  environment:
+    MINIO_BROWSER: "on"
+    MINIO_DOMAIN: ""
+
+  # Security context
+  securityContext:
+    enabled: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
 
 websocketd:
   enabled: false
@@ -358,11 +490,38 @@ websocketd:
     tag: 67449315857b54bbc970f02c7aa4fd10a94721f0
 
 redis: 
+  # Configuration for official Redis Docker image
   enabled: false
-  replica:
-    replicaCount: 1
+  name: redis-db
+  serviceName: redis-db-service
+  port: 6379
+
+  image:
+    repository: redis
+    tag: "alpine3.22"
+    pullPolicy: IfNotPresent
+
+  # Authentication configuration
   auth:
     enabled: false
+    password: ""
+
+  # Resources configuration
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Persistence configuration
+  persistence:
+    enabled: true
+    volumeName: redis-data
+    accessMode: ReadWriteOnce
+    size: 4Gi
+    storageClass: ""
 
 iam: 
   enabled: true
@@ -404,6 +563,9 @@ argo:
   # Options for automatic token management
   autoTokenManagement: true  # Enable automatic token retrieval
   restartOnTokenUpdate: false  # Restart pods after token update
+  # Service account configuration for Argo workflows
+  serviceAccount:
+    name: "argo-workflow"
   # Ingress configuration for Argo Workflows UI
   ingress:
     enabled: false
@@ -458,10 +620,10 @@ argo-workflows:
       secure: false
       accessKeySecret:
         name: s3-service
-        key: root-user
+        key: rootUser
       secretKeySecret:
         name: s3-service
-        key: root-password
+        key: rootPassword
   stageInOut:
     enabled: true
 
