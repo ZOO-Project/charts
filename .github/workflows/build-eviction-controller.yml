@@ -52,6 +52,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Sanitize branch name for Docker tag
+        id: sanitize
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          # Replace any character that's not alphanumeric, dot, underscore, or hyphen with a hyphen
+          SANITIZED_BRANCH=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g' | sed 's/--*/-/g' | sed 's/^-*\|-*$//g')
+          # Ensure it's not empty and doesn't start with a dot or hyphen
+          if [[ -z "$SANITIZED_BRANCH" || "$SANITIZED_BRANCH" =~ ^[.-] ]]; then
+            SANITIZED_BRANCH="branch-$SANITIZED_BRANCH"
+          fi
+          echo "branch_name=$SANITIZED_BRANCH" >> $GITHUB_OUTPUT
+          echo "Original branch: $BRANCH_NAME"
+          echo "Sanitized branch: $SANITIZED_BRANCH"
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -67,8 +81,11 @@ jobs:
             type=semver,pattern={{major}}
             # Latest tag for main branch
             type=raw,value=latest,enable={{is_default_branch}}
-            # SHA-based tag
-            type=sha,prefix={{branch}}-
+            # SHA-based tag (sanitized branch name)
+            type=sha,prefix=${{ steps.sanitize.outputs.branch_name }}-
+          flavor: |
+            suffix=
+            latest=auto
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
