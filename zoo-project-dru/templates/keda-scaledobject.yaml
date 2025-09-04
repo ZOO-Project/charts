@@ -7,7 +7,7 @@ metadata:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-weight": "10"  # Execute after RabbitMQ and PostgreSQL are ready
+    "helm.sh/hook-weight": "5"  # Execute after KEDA is ready but before other components
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -62,7 +62,7 @@ spec:
       # Use values from configuration since no existing secret is defined
       {{- $pgHost := .Values.keda.triggers.postgresql.host }}
       {{- if not $pgHost }}
-      {{- $pgHost = printf "%s-postgresql.%s.svc.cluster.local" (include "zoo-project-dru.fullname" .) .Release.Namespace }}
+      {{- $pgHost = printf "%s.%s.svc.cluster.local" .Values.postgresql.serviceName .Release.Namespace }}
       {{- end }}
       host: {{ $pgHost | quote }}
       {{- $pgPort := .Values.keda.triggers.postgresql.port }}

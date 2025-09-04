@@ -1,6 +1,6 @@
 {{- $hosturl := include "zoo-project-dru.localhosturl" . -}}
 RewriteEngine On
-{{- if or (.Values.global.postgresql.auth.existingSecret) (.Values.postgresql.defineEnvironmentVariables) }}
+{{- if or (.Values.global.postgresql.auth.existingSecret) (.Values.postgresql.enabled) }}
 PassEnv PGUSER
 PassEnv PGPASSWORD
 PassEnv PGHOST

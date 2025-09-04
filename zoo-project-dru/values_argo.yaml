@@ -45,8 +45,8 @@ argo:
     insecure: true
     # MinIO secret configuration
     secretName: "s3-service"
-    accessKeySecretKey: "root-user"
-    secretKeySecretKey: "root-password"
+    accessKeySecretKey: "rootUser"
+    secretKeySecretKey: "rootPassword"
     
   # Ingress configuration for Argo Workflows UI
   ingress:
@@ -90,24 +90,31 @@ workflow:
   additionalInputs:
     s3_bucket: results
     region_name: us-east-1
-    aws_secret_access_key: minio-secret-password
-    aws_access_key_id: minio-admin
+    # Use template helpers to get credentials dynamically
+    aws_secret_access_key: "minio-secret-password"
+    aws_access_key_id: "minio-admin"
     endpoint_url: http://s3-service.zoo.svc.cluster.local:9000
 
 minio:
   # minio chart value parameters description can be found here:
   # https://github.com/bitnami/charts/tree/main/bitnami/minio
   enabled: true
-  auth:
-    rootUser: minio-admin
-    rootPassword: minio-secret-password
-    # to access the dashboard from browser run the following port-forward command:
-    # kubectl port-forward svc/s3-service 9001:9001 -n zoo
+  # Authentication
+  rootUser: minio-admin
+  rootPassword: minio-secret-password
   persistence:
     enabled: true
+    storageClass: hostpath
     size: 2Gi
     accessMode: ReadWriteOnce
-  defaultBuckets: "eoepca results"
+  defaultBuckets: "eoepca"
+  buckets:
+    - name: eoepca
+      policy: none
+      purge: false
+    - name: results
+      policy: none
+      purge: false
   fullnameOverride: "s3-service"
 
 cookiecutter:
@@ -168,10 +175,10 @@ argo-workflows:
       insecure: true
       accessKeySecret:
         name: s3-service
-        key: root-user
+        key: rootUser
       secretKeySecret:
         name: s3-service
-        key: root-password
+        key: rootPassword
   
   # Workflow Controller Configuration
   controller:

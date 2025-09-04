@@ -1,0 +1,12 @@
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-plugins
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+data:
+  enabled_plugins: |
+    [rabbitmq_management,rabbitmq_prometheus,rabbitmq_web_dispatch,rabbitmq_management_agent].
+{{- end }}

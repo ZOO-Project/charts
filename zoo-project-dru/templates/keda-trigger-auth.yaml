@@ -9,7 +9,7 @@ metadata:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-weight": "3"  # Execute after KEDA is ready
 spec:
   secretTargetRef:
     - parameter: host
@@ -33,6 +33,7 @@ metadata:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "3"  # Execute after KEDA is ready
     "helm.sh/hook-weight": "0"
 spec:
   secretTargetRef:

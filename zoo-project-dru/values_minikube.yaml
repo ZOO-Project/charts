@@ -4,17 +4,18 @@ minio:
   # minio chart value parameters description can be found here:
   # https://github.com/bitnami/charts/tree/main/bitnami/minio
   enabled: true
-  auth:
-    rootUser: minio-admin
-    rootPassword: minio-secret-password
-    # to access the dashboard from browser run the following port-forward command:
-    # kubectl port-forward svc/zoo-project-dru-minio 9001:9001 -n zp
   persistence:
     enabled: true
     storageClass: standard
     size: 2Gi
     accessMode: ReadWriteOnce
   defaultBuckets: "eoepca"
+  # Create default buckets using official MinIO chart format
+  buckets:
+    - name: eoepca
+      policy: none
+      purge: false
+  # Keep backward compatibility with s3-service name
   fullnameOverride: "s3-service"
 
 cookiecutter:
@@ -35,3 +36,37 @@ websocketd:
 
 redis:
   enabled: true
+
+redis-ha:
+  enabled: true
+  replicas: 1
+  hardAntiAffinity: false
+  auth: false
+  redisPassword: null
+  existingSecret: null
+  exporter:
+    enabled: false
+
+rabbitmq:
+  enabled: true
+  persistence:
+    storageClass: standard
+    size: 1Gi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+keda:
+  enabled: true
+  operator:
+    replicaCount: 1
+  metricsServer:
+    replicaCount: 1
+  
+  # Enable eviction controller for minikube
+  evictionController:
+    enabled: true

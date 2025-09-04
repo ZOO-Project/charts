@@ -10,7 +10,12 @@ RUN apk --no-cache add \
     postgresql-client
 
 # Install kubectl
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/$(uname -m)/kubectl" && \
+RUN echo "Build timestamp: $(date)" && \
+    ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ]; then ARCH="arm64"; fi && \
+    if [ "$ARCH" = "x86_64" ]; then ARCH="amd64"; fi && \
+    echo "Downloading kubectl for architecture: $ARCH" && \
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/$ARCH/kubectl" && \
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
     rm kubectl
 

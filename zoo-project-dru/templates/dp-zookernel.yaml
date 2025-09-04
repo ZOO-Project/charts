@@ -29,14 +29,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       initContainers:
-        - name: init-wait-for-dependencies-zookernel
-          image: docker.io/wshihadeh/wait_for:latest
-          imagePullPolicy: IfNotPresent
-          command: [ "/docker-entrypoint.sh" ]
-          args: [ "wait_for", "rabbitmq:{{ .Release.Name }}-rabbitmq" ]
-          env:
-            - name: ZOO_RABBITMQ_HOST
-              value: {{ .Release.Name }}-rabbitmq
+        {{- include "zoo-project-dru.rabbitmq.initContainer" (dict "Values" .Values "Release" .Release "componentName" "zookernel") | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -47,7 +40,7 @@ spec:
           args: [ "-D", "FOREGROUND" ]
           env:
             - name: ZOO_REDIS_HOST
-              value: {{ .Release.Name }}-redis-master
+              value: {{ .Values.redis.serviceName }}
 
             {{- if (.Values.global.postgresql.auth.existingSecret) }}
             - name: PGPASSWORD
@@ -81,16 +74,20 @@ spec:
                   key: database
                   optional: true
             {{- else }}
-            {{- if .Values.postgresql.defineEnvironmentVariables }}
+            {{- if .Values.postgresql.enabled }}
             - name: PGHOST
-              value: "{{ .Release.Name}}-postgresql-hl"
+              value: "{{ .Values.postgresql.serviceName }}"
             - name: PGDATABASE
               value: {{ .Values.global.postgresql.auth.database | quote}}
             - name: PGPASSWORD
+              {{- if .Values.postgresql.useSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-postgresql
+                  name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql-secret" (include "zoo-project-dru.fullname" .)) }}
                   key: password
+              {{- else }}
+              value: {{ .Values.global.postgresql.auth.password | quote}}
+              {{- end }}
             - name: PGUSER
               value: {{ .Values.global.postgresql.auth.username | quote}}
             - name: PGPORT

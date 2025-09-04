@@ -121,12 +121,51 @@ Argo Workflows MinIO endpoint helper
 Argo Workflows MinIO access key helper
 */}}
 {{- define "zoo-project-dru.argo.minio.accessKey" -}}
-{{- .Values.minio.auth.rootUser | default "minio-admin" }}
+{{- .Values.minio.rootUser | default "minio-admin" }}
 {{- end }}
 
 {{/*
 Argo Workflows MinIO secret key helper
 */}}
 {{- define "zoo-project-dru.argo.minio.secretKey" -}}
-{{- .Values.minio.auth.rootPassword | default "minio-secret-password" }}
+{{- .Values.minio.rootPassword | default "minio-secret-password" }}
+{{- end }}
+
+{{/*
+RabbitMQ readiness init container
+This template creates an init container that waits for RabbitMQ to be ready
+with management API and definitions loaded.
+*/}}
+{{- define "zoo-project-dru.rabbitmq.initContainer" -}}
+- name: init-wait-for-dependencies-{{ .componentName }}
+  image: curlimages/curl:latest
+  imagePullPolicy: IfNotPresent
+  command: [ "/bin/sh" ]
+  args:
+    - -c
+    - |
+      set -e
+      echo "Waiting for RabbitMQ to be ready with management API and definitions loaded..."
+
+      while true; do
+        # Check if RabbitMQ management API is accessible
+        if curl -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
+          http://{{ .Release.Name }}-rabbitmq:15672/api/overview >/dev/null 2>&1; then
+
+          # Check if our custom exchange exists
+          if curl -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
+            http://{{ .Release.Name }}-rabbitmq:15672/api/exchanges/%2F/main_exchange >/dev/null 2>&1; then
+            echo "RabbitMQ is ready with definitions loaded!"
+            break
+          else
+            echo "RabbitMQ is up but definitions not loaded yet..."
+          fi
+        else
+          echo "Waiting for RabbitMQ management API..."
+        fi
+        sleep 5
+      done
+  env:
+    - name: ZOO_RABBITMQ_HOST
+      value: {{ .Release.Name }}-rabbitmq
 {{- end }}

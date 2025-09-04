@@ -14,17 +14,16 @@ minio:
   # minio chart value parameters description can be found here:
   # https://github.com/bitnami/charts/tree/main/bitnami/minio
   enabled: true
-  auth:
-    rootUser: minio-admin
-    rootPassword: minio-secret-password
-    # to access the dashboard from browser run the following port-forward command:
-    # kubectl port-forward svc/zoo-project-dru-minio 9001:9001 -n zp
   persistence:
     enabled: true
     storageClass: hostpath
     size: 2Gi
     accessMode: ReadWriteOnce
   defaultBuckets: "eoepca"
+  buckets:
+    - name: eoepca
+      policy: none
+      purge: false
   fullnameOverride: "s3-service"
 
 cookiecutter:

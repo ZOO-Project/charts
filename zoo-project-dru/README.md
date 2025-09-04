@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.4
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.0
 ````
 
 ## Parameters
@@ -48,7 +48,7 @@ There are two persistent storage: `procServices` and `tmp`. The ZOO-Project uses
 
 ### Global parameters
 
-See the reference [PostgreSQL chart documentation](https://artifacthub.io/packages/helm/bitnami/postgresql#global-parameters) for other options.
+See the configuration parameters below for the official PostgreSQL Docker image integration.
 
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
@@ -88,55 +88,89 @@ global.postgresql.auth.existingSecret: postgresql-secret
 
 If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
-### Dependencies
+## Chart Architecture
 
-#### PostgreSQL
+This chart has been updated to reduce external dependencies and provide more direct control over database and messaging components:
 
-See the reference [PostgreSQL chart documentation](https://artifacthub.io/packages/helm/bitnami/postgresql) for more parameters.
+- **MinIO**: Uses official MinIO chart instead of Bitnami
+- **PostgreSQL**: Migrated from Bitnami chart dependency to direct deployment using official PostgreSQL Docker image
+- **Redis**: Migrated from Bitnami chart dependency to direct deployment using official Redis Docker image
+- **RabbitMQ**: Migrated from Bitnami chart dependency to direct deployment using official RabbitMQ Docker image
 
-| Name                                       | Description                                                     | Value                    |
-|:-------------------------------------------|:----------------------------------------------------------------|:-------------------------|
-| postgresql.defineEnvironmentVariables      | Set it to true to get PostgreSQL environment variables defined  | false                    |
-| postgresql.enabled                         | Is database used to store process execution status              | true                     |
-| postgresql.primary.initdb.scriptsConfigMap | The init script config map                                      | true                     |
-
-When `postgresql.defineEnvironmentVariables` is set to true, the environment variables for PostgreSQL (`PGHOST`,`PGPORT`,`PGUSER`,`PGPASSWORD`,`PGDATABASE`) will be defined for the ZOO-Kernel and the ZOO-FPM pods.
-
-If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
-
-#### RabbitMQ
-
-See the reference [RabbitMQ chart documentation](https://artifacthub.io/packages/helm/bitnami/rabbitmq) for more parameters.
-
-| Name                                       | Description                                              | Value                                        |
-|:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
-| rabbitmq.auth.username                     | User that will be used to connect to RabbitMQ            | RABBITMQ_USERNAME                            |
-| rabbitmq.auth.password                     | Password for the user                                    | CHANGEME                                     |
-| rabbitmq.loadDefinition.enabled            | Enable loading a RabbitMQ definitions file to configure RabbitMQ                               | true                                         |
-| rabbitmq.loadDefinition.existingSecret     | Existing secret with the load definitions file                              | load-definition                              |
-| rabbitmq.extraConfiguration                | Configuration file content: extra configuration to be appended to RabbitMQ configuration                              | load_definitions = /app/load_definition.json |
+### Dependency
 
 #### MinIO
 
-See the reference [MinIO chart documentation](https://artifacthub.io/packages/helm/bitnami/minio) for more parameters.
+See the reference [MinIO chart documentation](https://artifacthub.io/packages/helm/minio-official/minio) for more informations.
 
-| Name          | Description                                          | Value |
-|:--------------|:-----------------------------------------------------|:------|
-| minio.enabled | Is MinIO used for storage in place of AWS            | false |
-| minio.defaultBuckets | Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)            | "processingresults" |
-| minio.fullnameOverride | String to fully override the MinIO's common.names.fullname template            | "s3-service" |
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| minio.enabled                                            | Enable MinIO for storage | false |
+| minio.mode                                               | MinIO deployment mode | "standalone" |
+| minio.replicas                                           | Number of MinIO replicas | 1 |
+| minio.rootUser                                           | MinIO root username | "minio-admin" |
+| minio.rootPassword                                       | MinIO root password | "minio-secret-password" |
+| minio.fullnameOverride                                   | MinIO service name override | "s3-service" |
+| minio.buckets                                            | Default buckets to create | [{"name": "eoepca", "policy": "none"}, {"name": "results", "policy": "none"}] |
+| minio.persistence.enabled                                | Enable MinIO persistence | true |
+| minio.persistence.size                                   | MinIO storage size | "10Gi" |
+| minio.persistence.storageClass                           | Storage class for MinIO | "" |
+| minio.service.type                                       | MinIO service type | "ClusterIP" |
+| minio.service.port                                       | MinIO service port | 9000 |
+| minio.consoleService.port                                | MinIO console port | 9001 |
 
+### PostgreSQL
 
-#### Redis
+This chart deploys PostgreSQL using the official PostgreSQL Docker image instead of the Bitnami chart dependency.
 
-See the reference [Redis chart documentation](https://artifacthub.io/packages/helm/bitnami/redis) for more parameters.
+| Name                                       | Description                                                     | Value                    |
+|:-------------------------------------------|:----------------------------------------------------------------|:-------------------------|
+| postgresql.enabled                         | Enable PostgreSQL deployment                                   | true                     |
+| postgresql.name                           | Name of the PostgreSQL deployment                              | postgresql-db            |
+| postgresql.serviceName                    | Name of the PostgreSQL service                                 | postgresql-db-service    |
+| postgresql.image.repository               | PostgreSQL Docker image repository                             | postgres                 |
+| postgresql.image.tag                      | PostgreSQL Docker image tag                                    | 16-alpine                |
+| postgresql.image.pullPolicy               | Image pull policy                                              | IfNotPresent             |
+| postgresql.resources.limits.cpu           | CPU limit for PostgreSQL                                       | 1000m                    |
+| postgresql.resources.limits.memory        | Memory limit for PostgreSQL                                    | 1Gi                      |
+| postgresql.resources.requests.cpu         | CPU request for PostgreSQL                                     | 250m                     |
+| postgresql.resources.requests.memory      | Memory request for PostgreSQL                                  | 256Mi                    |
+| postgresql.persistence.enabled            | Enable persistent storage                                       | true                     |
+| postgresql.persistence.size               | Size of the persistent volume                                   | 8Gi                      |
+| postgresql.persistence.accessMode         | Access mode for the persistent volume                          | ReadWriteOnce            |
+| postgresql.persistence.storageClass       | Storage class for the persistent volume                        | ""                       |
+| postgresql.auth.createSecret              | Automatically create a secret for PostgreSQL credentials       | false                    |
+| postgresql.primary.initdb.scriptsConfigMap | ConfigMap containing initialization scripts                     | postgresql-primary-init-scripts |
 
-| Name          | Description                                          | Value |
-|:--------------|:-----------------------------------------------------|:------|
-| redis.enabled | Is Redis used by the current deployment              | false |
-| redis.replica.replicaCount | Number of Redis replica                 | 1     |
-| redis.auth.enabled | Number of Redis replica                         | false |
+When `postgresql.enabled` is set to true, the environment variables for PostgreSQL (`PGHOST`,`PGPORT`,`PGUSER`,`PGPASSWORD`,`PGDATABASE`) will be defined for the ZOO-Kernel and the ZOO-FPM pods.
 
+If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
+
+### Redis
+
+This chart deploys Redis using the official Redis Docker image instead of the redis-ha chart dependency.
+
+| Name                                       | Description                                              | Value                    |
+|:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
+| redis.enabled                              | Enable Redis deployment                                 | true                     |
+| redis.name                                 | Name of the Redis deployment                            | redis-db                 |
+| redis.serviceName                          | Name of the Redis service                               | redis-db-service         |
+| redis.port                                 | Redis port                                              | 6379                     |
+| redis.image.repository                     | Redis Docker image repository                           | redis                    |
+| redis.image.tag                            | Redis Docker image tag                                  | 7-alpine                 |
+| redis.image.pullPolicy                     | Image pull policy                                       | IfNotPresent             |
+| redis.auth.enabled                         | Enable Redis authentication                             | false                    |
+| redis.auth.password                        | Redis password (if auth enabled)                        | ""                       |
+| redis.resources.limits.cpu                 | CPU limit for Redis                                     | 500m                     |
+| redis.resources.limits.memory              | Memory limit for Redis                                  | 512Mi                    |
+| redis.resources.requests.cpu               | CPU request for Redis                                   | 100m                     |
+| redis.resources.requests.memory            | Memory request for Redis                                | 128Mi                    |
+| redis.persistence.enabled                  | Enable persistent storage                               | true                     |
+| redis.persistence.size                     | Size of the persistent volume                           | 4Gi                      |
+| redis.persistence.accessMode               | Access mode for the persistent volume                   | ReadWriteOnce            |
+| redis.persistence.storageClass             | Storage class for the persistent volume                 | ""                       |
+
+For high-availability requirements, consider external Redis cluster solutions
 
 ### CookieCutter
 
@@ -144,6 +178,21 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 |:-------------------------|:-----------------------------------------------------|:----------------------------------------------------|
 | cookiecutter.templateUrl | Where to download the cookiecutter from              | https://github.com/EOEPCA/proc-service-template.git |
 | cookiecutter.templateBranch         | The branch to fetch the cookiecutter (optional)    | undefined                    |
+
+### RabbitMQ
+
+This chart now integrates RabbitMQ using the official `rabbitmq:4.1.4-alpine` Docker image with automatic configuration and management plugin activation.
+
+| Name                                       | Description                                              | Value                                        |
+|:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
+| rabbitmq.enabled                           | Enable integrated RabbitMQ deployment                    | true                                         |
+| rabbitmq.image.repository                  | RabbitMQ image repository                                | rabbitmq                                     |
+| rabbitmq.image.tag                         | RabbitMQ image tag                                       | 4.1.4-alpine                                 |
+| rabbitmq.auth.username                     | RabbitMQ default user                                    | zoo                                          |
+| rabbitmq.auth.password                     | RabbitMQ default password                                | CHANGEME                                     |
+| rabbitmq.autoSetup.enabled                 | Enable automatic RabbitMQ configuration via HTTP API     | true                                         |
+| rabbitmq.autoSetup.ttlSecondsAfterFinished | Cleanup setup job after completion (seconds)             | 30                                           |
+| rabbitmq.definitions                        | RabbitMQ definitions for queues, exchanges, bindings    | Automatically templated                      |
 
 ### ZOO-Project
 
@@ -156,13 +205,11 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | zookernel.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
 | zoofpm.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
 
-#### KEDA
+### KEDA
 
-KEDA (Kubernetes Event-driven Autoscaler) is used to provide event-driven autoscaling based on PostgreSQL and RabbitMQ metrics. 
+KEDA (Kubernetes Event-driven Autoscaler) provides intelligent event-driven autoscaling with worker protection and scale-to-zero capabilities.
 
-##### KEDA Autoscaling
-
-KEDA provides event-driven autoscaling with intelligent worker protection and scale-to-zero capabilities.
+#### KEDA Autoscaling Configuration
 
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
@@ -171,16 +218,10 @@ KEDA provides event-driven autoscaling with intelligent worker protection and sc
 | keda.maxReplicas                           | Maximum number of replicas                               | 10                       |
 | keda.pollingInterval                       | Interval for checking metrics (seconds)                 | 10                       |
 | keda.cooldownPeriod                        | Cooldown period after scaling (seconds)                 | 60                       |
-| keda.triggers.postgresql.enabled           | Enable PostgreSQL worker count trigger                  | true                     |
-| keda.triggers.postgresql.targetQueryValue  | Target value for PostgreSQL query                       | 0.5                      |
-| keda.triggers.postgresql.activationTargetQueryValue | Activation threshold for PostgreSQL query     | 0.1                      |
-| keda.triggers.rabbitmq.enabled             | Enable RabbitMQ queue length trigger                    | true                     |
-| keda.triggers.rabbitmq.queueName           | RabbitMQ queue name to monitor                          | zoo_service_queue        |
-| keda.triggers.rabbitmq.value               | Target queue length for scaling                         | 1                        |
 
-#### PostgreSQL Trigger Configuration
+#### PostgreSQL Trigger
 
-The PostgreSQL trigger monitors both active services and workers using an intelligent query:
+Monitors active processing jobs and workers for intelligent scaling:
 
 | Name                                        | Description                                                    | Value                    |
 |:--------------------------------------------|:---------------------------------------------------------------|:-------------------------|
@@ -192,21 +233,19 @@ The PostgreSQL trigger monitors both active services and workers using an intell
 | keda.triggers.postgresql.dbName             | Database name (uses global.postgresql.auth.database if empty) | ""                       |
 | keda.triggers.postgresql.userName           | Username (uses global.postgresql.auth.username if empty)      | ""                       |
 | keda.triggers.postgresql.sslmode            | SSL mode for connection                                        | "disable"                |
-| keda.triggers.postgresql.query              | Custom PostgreSQL query for scaling metrics                   | See below                |
 
+#### RabbitMQ Trigger
 
-#### RabbitMQ Trigger Configuration
+Monitors queue length for immediate scaling response:
 
-The RabbitMQ trigger monitors queue length for immediate scaling:
-
-| Name                                        | Description                                                    | Value                    |
-|:--------------------------------------------|:---------------------------------------------------------------|:-------------------------|
-| keda.triggers.rabbitmq.enabled              | Enable RabbitMQ trigger for scaling                           | true                     |
-| keda.triggers.rabbitmq.protocol             | RabbitMQ protocol                                              | "amqp"                   |
-| keda.triggers.rabbitmq.queueName            | Queue name to monitor                                          | "zoo_service_queue"      |
-| keda.triggers.rabbitmq.mode                 | Scaling mode                                                   | "QueueLength"            |
-| keda.triggers.rabbitmq.value                | Target messages per replica                                    | "1"                      |
-| keda.triggers.rabbitmq.host                 | RabbitMQ host (auto-generated if empty)                       | ""                       |
+| Name                                       | Description                                              | Value                    |
+|:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
+| keda.triggers.rabbitmq.enabled             | Enable RabbitMQ queue length trigger                    | true                     |
+| keda.triggers.rabbitmq.queueName           | RabbitMQ queue name to monitor                          | zoo_service_queue        |
+| keda.triggers.rabbitmq.value               | Target queue length for scaling                         | 1                        |
+| keda.triggers.rabbitmq.host                | RabbitMQ host (auto-generated if empty)                 | ""                       |
+| keda.triggers.rabbitmq.username            | RabbitMQ username for trigger auth                      | zoo                      |
+| keda.triggers.rabbitmq.password            | RabbitMQ password for trigger auth                      | CHANGEME                 |
 
 #### KEDA Authentication
 
@@ -228,7 +267,7 @@ global:
 When no existing secret is configured, KEDA uses values from `global.postgresql.auth.*` and creates a dedicated secret.
 
 
-##### KEDA Eviction Controller
+#### KEDA Eviction Controller
 
 The eviction controller provides intelligent worker protection and pod annotation management.
 
@@ -243,7 +282,7 @@ The eviction controller provides intelligent worker protection and pod annotatio
 | keda.evictionController.resources.limits.cpu     | CPU resource limits                               | 200m                     |
 | keda.evictionController.resources.limits.memory  | Memory resource limits                            | 128Mi                    |
 
-##### Kyverno Integration
+#### Kyverno Integration
 
 Kyverno provides admission-level protection for pods with active workers.
 
@@ -635,20 +674,6 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.crds.install                              | Install CRDs (disabled if already present) | false |
 | argo-workflows.crds.keep                                 | Keep CRDs on uninstall | true |
 
-### MinIO Integration
-
-The chart includes integrated MinIO for artifact storage:
-
-| Name                                                     | Description                        | Value                                                                 |
-|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| minio.enabled                                            | Enable MinIO for artifact storage | true |
-| minio.auth.rootUser                                      | MinIO root username | "minio-admin" |
-| minio.auth.rootPassword                                  | MinIO root password | "minio-secret-password" |
-| minio.persistence.enabled                                | Enable MinIO persistence | true |
-| minio.persistence.storageClass                           | Storage class for MinIO | "standard" |
-| minio.persistence.size                                   | MinIO storage size | "2Gi" |
-| minio.defaultBuckets                                     | Default buckets to create | "eoepca results" |
-| minio.fullnameOverride                                   | MinIO service name override | "s3-service" |
 
 ### Access Configuration
 
