@@ -94,8 +94,8 @@ This chart has been updated to reduce external dependencies and provide more dir
 
 - **MinIO**: Uses official MinIO chart instead of Bitnami
 - **PostgreSQL**: Migrated from Bitnami chart dependency to direct deployment using official PostgreSQL Docker image
-- **Redis**: Migrated from Bitnami chart dependency to direct deployment using official Redis Docker image
 - **RabbitMQ**: Migrated from Bitnami chart dependency to direct deployment using official RabbitMQ Docker image
+- **Redis**: Migrated from Bitnami chart dependency to direct deployment using official Redis Docker image
 
 ### Dependency
 
@@ -121,7 +121,7 @@ See the reference [MinIO chart documentation](https://artifacthub.io/packages/he
 
 ### PostgreSQL
 
-This chart deploys PostgreSQL using the official PostgreSQL Docker image instead of the Bitnami chart dependency.
+This chart deploys PostgreSQL using the official [PostgreSQL Docker image](https://hub.docker.com/_/postgres) instead of the Bitnami chart dependency.
 
 | Name                                       | Description                                                     | Value                    |
 |:-------------------------------------------|:----------------------------------------------------------------|:-------------------------|
@@ -146,9 +146,24 @@ When `postgresql.enabled` is set to true, the environment variables for PostgreS
 
 If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
+### RabbitMQ
+
+This chart now integrates RabbitMQ using the [official `rabbitmq:4.1.4-alpine` Docker image](https://hub.docker.com/_/rabbitmq) with automatic configuration and management plugin activation.
+
+| Name                                       | Description                                              | Value                                        |
+|:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
+| rabbitmq.enabled                           | Enable integrated RabbitMQ deployment                    | true                                         |
+| rabbitmq.image.repository                  | RabbitMQ image repository                                | rabbitmq                                     |
+| rabbitmq.image.tag                         | RabbitMQ image tag                                       | 4.1.4-alpine                                 |
+| rabbitmq.auth.username                     | RabbitMQ default user                                    | zoo                                          |
+| rabbitmq.auth.password                     | RabbitMQ default password                                | CHANGEME                                     |
+| rabbitmq.autoSetup.enabled                 | Enable automatic RabbitMQ configuration via HTTP API     | true                                         |
+| rabbitmq.autoSetup.ttlSecondsAfterFinished | Cleanup setup job after completion (seconds)             | 30                                           |
+| rabbitmq.definitions                        | RabbitMQ definitions for queues, exchanges, bindings    | Automatically templated                      |
+
 ### Redis
 
-This chart deploys Redis using the official Redis Docker image instead of the redis-ha chart dependency.
+This chart deploys Redis using the official [Redis Docker](https://hub.docker.com/_/redis).
 
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
@@ -178,21 +193,6 @@ For high-availability requirements, consider external Redis cluster solutions
 |:-------------------------|:-----------------------------------------------------|:----------------------------------------------------|
 | cookiecutter.templateUrl | Where to download the cookiecutter from              | https://github.com/EOEPCA/proc-service-template.git |
 | cookiecutter.templateBranch         | The branch to fetch the cookiecutter (optional)    | undefined                    |
-
-### RabbitMQ
-
-This chart now integrates RabbitMQ using the official `rabbitmq:4.1.4-alpine` Docker image with automatic configuration and management plugin activation.
-
-| Name                                       | Description                                              | Value                                        |
-|:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
-| rabbitmq.enabled                           | Enable integrated RabbitMQ deployment                    | true                                         |
-| rabbitmq.image.repository                  | RabbitMQ image repository                                | rabbitmq                                     |
-| rabbitmq.image.tag                         | RabbitMQ image tag                                       | 4.1.4-alpine                                 |
-| rabbitmq.auth.username                     | RabbitMQ default user                                    | zoo                                          |
-| rabbitmq.auth.password                     | RabbitMQ default password                                | CHANGEME                                     |
-| rabbitmq.autoSetup.enabled                 | Enable automatic RabbitMQ configuration via HTTP API     | true                                         |
-| rabbitmq.autoSetup.ttlSecondsAfterFinished | Cleanup setup job after completion (seconds)             | 30                                           |
-| rabbitmq.definitions                        | RabbitMQ definitions for queues, exchanges, bindings    | Automatically templated                      |
 
 ### ZOO-Project
 

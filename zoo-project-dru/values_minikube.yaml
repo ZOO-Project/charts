@@ -37,16 +37,6 @@ websocketd:
 redis:
   enabled: true
 
-redis-ha:
-  enabled: true
-  replicas: 1
-  hardAntiAffinity: false
-  auth: false
-  redisPassword: null
-  existingSecret: null
-  exporter:
-    enabled: false
-
 rabbitmq:
   enabled: true
   persistence:

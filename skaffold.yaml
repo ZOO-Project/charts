@@ -115,7 +115,7 @@ profiles:
     patches:
       - op: replace
         path: /deploy/helm/releases/0/valuesFiles
-        value: ["zoo-project-dru/values_apple.yaml","zoo-project-dru/values_argo.yaml"]
+        value: ["zoo-project-dru/values_argo.yaml"]
     portForward:
       # Argo Workflows Server
       - resourceType: service
