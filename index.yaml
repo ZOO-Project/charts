@@ -3,6 +3,92 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: changed
+          description: "Update to the latest ZOO-Project version with eoap-cwlwrap and cwl2ogc support"
+          links:
+            - name: GitHub Commit
+              url: https://github.com/ZOO-Project/ZOO-Project/commit/39b6fc74b6592b4584be5a0b2740dde11a1ffafc
+        - kind: changed
+          description: "Update the cwlwrapper-assets templates for stagein and stageout"
+        - kind: added
+          description: "Add stagein-file.yaml to the ConfigMap"
+        - kind: changed
+          description: "Update the postgresql scripts to add support for cwl2ogc schema definition"
+        - kind: added
+          description: "Add processes_profiles section to support profile links in the response headers"
+        - kind: changed
+          description: "Update the webui to use the latest nuxt-client image (0.0.3)"
+          links:
+            - name: DockerHub
+              url: https://hub.docker.com/r/zooproject/nuxt-client/tags?name=0.0.3
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.32
+    created: "2025-09-29T13:48:02.612785149Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.6.0
+    - condition: broker.enabled
+      name: rabbitmq
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.4.1
+    - condition: redis.enabled
+      name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 20.11.4
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.0.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.1.4
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 130b9b8758f9aab2dbc0d3c103ea76bed27cb8f835b25ce4d1f3233f92b5c4a9
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.7.5/zoo-project-dru-0.7.5.tgz
+    version: 0.7.5
+  - annotations:
+      artifacthub.io/changes: |
         - kind: added
           description: "Add support for detecting entry points from the DeployProcess service"
         - kind: changed
@@ -3511,4 +3597,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-08-29T16:25:18.901656758Z"
+generated: "2025-09-29T13:48:02.613133461Z"
