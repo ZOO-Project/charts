@@ -18,8 +18,8 @@ minio:
   fullnameOverride: "s3-service"
 
 cookiecutter:
-  templateUrl: https://github.com/EOEPCA/eoepca-proc-service-template.git
-  templateBranch: feature/python3.8
+  templateUrl: https://github.com/gfenoy/eoepca-proc-service-template.git
+  templateBranch: feature/output-handling
 
 iam:
   enabled: false

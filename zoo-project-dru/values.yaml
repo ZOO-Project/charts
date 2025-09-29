@@ -224,7 +224,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-d4b07ce3d7e12a0d3a56d1a3627052a9babe85d7
+    tag: dru-39b6fc74b6592b4584be5a0b2740dde11a1ffafc
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -236,7 +236,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-d4b07ce3d7e12a0d3a56d1a3627052a9babe85d7
+    tag: dru-39b6fc74b6592b4584be5a0b2740dde11a1ffafc
   extraMountPoints: []
 
 notifications:
@@ -343,8 +343,8 @@ persistence:
   tmpPath: /tmp/zTmp
 
 cookiecutter:
-  templateUrl: https://github.com/EOEPCA/eoepca-proc-service-template.git
-  templateBranch: feature/python3.8
+  templateUrl: https://github.com/gfenoy/eoepca-proc-service-template.git
+  templateBranch: feature/output-handling
 
 minio:
   enabled: false
@@ -388,11 +388,13 @@ webui:
   image:
     repository: zooproject/nuxt-client
     pullPolicy: IfNotPresent
-    tag: 0.0.2
+    tag: 0.0.3
   enforce: false
   oidc:
     issuer: https://auth.geolabs.fr/realms/zooproject
     remoteUserClaim: email
+    clientId: webapp
+    clientSecret: onKWPIoKeRAThAkLjSINJZ6gd1qVzhXs
     providerTokenEndpointAuth: client_secret_basic
     authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
     scope: "openid email"

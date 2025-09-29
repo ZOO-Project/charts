@@ -22,7 +22,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.4
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.5
 ````
 
 ## Parameters
@@ -323,6 +323,9 @@ The WebUI lets you interact with the ZOO-Project-DRU when authentication is requ
 | webui.enabled | Activate the webui service                        | false |
 | webui.url | The fully defined URL to access the WebUI                        | http://localhost:3058 |
 | webui.port | Port                         | 3000 |
+| webui.image.repository | WebUI container image repository | zooproject/nuxt-client |
+| webui.image.tag | WebUI container image tag | 0.0.3 |
+| webui.image.pullPolicy | WebUI image pull policy | Always |
 | webui.enforce | Should apache handle security before the requests are sent to the ZOO-Project?                         | false |
 | webui.oidc | The specific OpenIDConnect configuration                         | {"issuer":https://auth.geolabs.fr/realms/zooproject,"remoteUserClaim": email, "providerTokenEndpointAuth": client_secret_basic, "authVerifyJwksUri": https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs, "scope": "openid email"} |
 

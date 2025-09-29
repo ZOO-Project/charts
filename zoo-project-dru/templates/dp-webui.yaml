@@ -49,7 +49,7 @@ spec:
         - name: webui
           command: [ "/bin/sh","-c" ]
           # Run npm run build and then npm run start everytime the container starts
-          args: [ "npm run build ; npm run start" ]            
+          args: [ "npm run build ; npm run start" ]
           image: "{{ .Values.webui.image.repository }}:{{ .Values.webui.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.webui.image.pullPolicy }}
           ports:
@@ -60,10 +60,18 @@ spec:
             httpGet:
               path: /
               port: webui-http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /
               port: webui-http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           resources: {}
           volumeMounts:
             - name: bin-config

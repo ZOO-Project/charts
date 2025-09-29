@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.7.4
+version: 0.7.5
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.31"
+appVersion: "0.2.32"
 
 keywords:
   - workflows
@@ -87,15 +87,24 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: "Add support for detecting entry points from the DeployProcess service"
     - kind: changed
-      description: "Update to the latest ZOO-Project version"
+      description: "Update to the latest ZOO-Project version with eoap-cwlwrap and cwl2ogc support"
       links:
         - name: GitHub Commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/d4b07ce3d7e12a0d3a56d1a3627052a9babe85d7
-    - kind: fixed
-      description: "Update documentation to set the correct location of the promoteHead parameter"
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/39b6fc74b6592b4584be5a0b2740dde11a1ffafc
+    - kind: changed
+      description: "Update the cwlwrapper-assets templates for stagein and stageout"
+    - kind: added
+      description: "Add stagein-file.yaml to the ConfigMap"
+    - kind: changed
+      description: "Update the postgresql scripts to add support for cwl2ogc schema definition"
+    - kind: added
+      description: "Add processes_profiles section to support profile links in the response headers"
+    - kind: changed
+      description: "Update the webui to use the latest nuxt-client image (0.0.3)"
+      links:
+        - name: DockerHub
+          url: https://hub.docker.com/r/zooproject/nuxt-client/tags?name=0.0.3
 
   artifacthub.io/links: |
     - name: source
