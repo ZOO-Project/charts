@@ -244,6 +244,10 @@ spec:
               mountPath: /assets/stageout.yaml
               subPath: stageout.yaml
 
+            - name: cwlwrapper-config
+              mountPath: /assets/stagein-file.yaml
+              subPath: stagein-file.yaml
+
             - name: ades-processing-services
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
 
