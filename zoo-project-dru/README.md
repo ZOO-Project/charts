@@ -20,31 +20,12 @@ This chart bootstraps a [ZOO-Project](http://zoo-project.org) deployment on a cl
 
 ## Installing the Chart
 
-### Quick Start
-
 To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
 helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.0
 ````
-
-### Development with Skaffold
-
-For development environments with enhanced capabilities:
-
-````bash
-# Basic deployment
-skaffold dev
-
-# With KEDA autoscaling and monitoring
-skaffold dev -p keda
-
-# With Argo Workflows support (optimized to avoid Helm secret size limit)
-skaffold dev -p argo
-````
-
-**⚠️ Important Note for Argo Profile**: The `argo` profile uses an optimized configuration (`values_argo.yaml`) with `monitoring.enabled=false` to stay under the 1MB Helm secret size limit. For full monitoring capabilities, deploy the monitoring stack separately after Skaffold deployment. See the [Monitoring Deployment Strategies](#helm-secret-size-limitations-and-monitoring-deployment-strategies) section for details.
 
 ## Parameters
 
