@@ -122,11 +122,11 @@ This chart has been **completely redesigned** to eliminate external dependencies
 
 ### Key Benefits of Migration
 
-- ✅ **Reduced Complexity**: Eliminated chart dependencies and version conflicts
-- ✅ **Better Control**: Direct template management for all database components
-- ✅ **Smaller Deployments**: Helm secret size reduced from >1MB to ~820KB
-- ✅ **Faster Updates**: No dependency on external chart release cycles
-- ✅ **Enhanced Security**: Direct control over image sources and security policies
+- **Reduced Complexity**: Eliminated chart dependencies and version conflicts
+- **Better Control**: Direct template management for all database components
+- **Smaller Deployments**: Helm secret size reduced from >1MB to ~820KB
+- **Faster Updates**: No dependency on external chart release cycles
+- **Enhanced Security**: Direct control over image sources and security policies
 
 ### Performance Optimizations
 
@@ -179,11 +179,11 @@ See the reference [MinIO chart documentation](https://artifacthub.io/packages/he
 **Migration from Bitnami**: This chart now deploys PostgreSQL using the official [PostgreSQL Docker image](https://hub.docker.com/_/postgres), eliminating the Bitnami chart dependency and providing direct template control.
 
 **Key Changes**:
-- ✅ **Official Image**: `postgres:16-alpine` (was `bitnami/postgresql`)
-- ✅ **Direct Templates**: Custom Kubernetes manifests (was subchart dependency)
-- ✅ **Enhanced Init**: Automatic database and table creation with proper sequencing
-- ✅ **KEDA Integration**: Worker tracking tables for intelligent autoscaling
-- ✅ **Backward Compatibility**: Same connection parameters and secret structure
+- **Official Image**: `postgres:16-alpine` (was `bitnami/postgresql`)
+- **Direct Templates**: Custom Kubernetes manifests (was subchart dependency)
+- **Enhanced Init**: Automatic database and table creation with proper sequencing
+- **KEDA Integration**: Worker tracking tables for intelligent autoscaling
+- **Backward Compatibility**: Same connection parameters and secret structure
 
 | Name                                       | Description                                                     | Value                    |
 |:-------------------------------------------|:----------------------------------------------------------------|:-------------------------|
@@ -213,11 +213,11 @@ If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZO
 **Migration from Bitnami**: This chart now integrates RabbitMQ using the [official `rabbitmq:4.1.4-alpine` Docker image](https://hub.docker.com/_/rabbitmq), replacing the Bitnami chart dependency with direct template management.
 
 **Key Changes**:
-- ✅ **Official Image**: `rabbitmq:4.1.4-alpine` (was `bitnami/rabbitmq`)
-- ✅ **Auto-Setup**: HTTP API-based queue and exchange configuration
-- ✅ **Management Plugin**: Automatically enabled with web console access
-- ✅ **KEDA Integration**: Queue length monitoring for responsive autoscaling
-- ✅ **Simplified Configuration**: Direct JSON definitions instead of complex subchart values
+- **Official Image**: `rabbitmq:4.1.4-alpine` (was `bitnami/rabbitmq`)
+- **Auto-Setup**: HTTP API-based queue and exchange configuration
+- **Management Plugin**: Automatically enabled with web console access
+- **KEDA Integration**: Queue length monitoring for responsive autoscaling
+- **Simplified Configuration**: Direct JSON definitions instead of complex subchart values
 
 | Name                                       | Description                                              | Value                                        |
 |:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
@@ -231,122 +231,16 @@ If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZO
 | rabbitmq.autoSetup.ttlSecondsAfterFinished | Cleanup setup job after completion (seconds)             | 30                                           |
 | rabbitmq.definitions                        | RabbitMQ definitions for queues, exchanges, bindings    | Automatically templated                      |
 
-#### Advanced RabbitMQ Configuration
-
-The RabbitMQ deployment supports flexible configuration management through two approaches:
-
-**1. File-Based Configuration (Recommended)**
-The default configuration is managed through `files/rabbitmq/rabbitmq.conf`. This approach provides:
-- ✅ Better maintainability and version control
-- ✅ Extensive documentation with production recommendations
-- ✅ Easy customization without cluttering values.yaml
-
-**2. Inline Configuration Override**
-You can override the file-based configuration by setting `rabbitmq.config` in `values.yaml`:
-
-```yaml
-rabbitmq:
-  # If config is set, it overrides the file-based configuration
-  # If empty or not set, uses files/rabbitmq/rabbitmq.conf
-  config: |
-    ## Your custom RabbitMQ configuration
-    management.tcp.port = 15672
-    # ... additional settings
-```
-
-**Default Configuration** (from `files/rabbitmq/rabbitmq.conf`):
-```
-# Management plugin - enables the web UI and HTTP API
-management.tcp.port = 15672
-
-# Disable disk free limit for development environments
-disk_free_limit.absolute = 1GB
-
-# Enable console logging for better debugging
-log.console = true
-log.console.level = info
-
-# Default user configuration for ZOO-Project
-default_user = zoo
-default_pass = CHANGEME
-default_vhost = /
-default_user_tags.administrator = true
-default_permissions.configure = .*
-default_permissions.read = .*
-default_permissions.write = .*
-```
-
-**Configuration Details**:
-
-| Configuration Parameter | Description | Default Value | Production Recommendation |
-|:------------------------|:------------|:--------------|:--------------------------|
-| `management.tcp.port` | Management UI port | 15672 | Keep default |
-| `disk_free_limit.absolute` | Minimum disk space before RabbitMQ stops accepting messages | 1GB | Set to 5GB+ for production |
-| `log.console` | Enable console logging | true | Keep enabled |
-| `log.console.level` | Console log level | info | Use `warning` for production |
-| `default_user` | Default administrator username | zoo | Change for production |
-| `default_pass` | Default administrator password | CHANGEME | **Must change for production** |
-| `default_vhost` | Default virtual host | / | Keep default or customize |
-| `default_user_tags.administrator` | Grant admin privileges to default user | true | Keep for ZOO-Project functionality |
-
-**Production Configuration Example**:
-```yaml
-rabbitmq:
-  config: |
-    ## Management plugin
-    management.tcp.port = 15672
-    
-    ## Production disk limits
-    disk_free_limit.absolute = 5GB
-    vm_memory_high_watermark.absolute = 2GB
-    
-    ## Production logging
-    log.console = true
-    log.console.level = warning
-    log.file = /var/log/rabbitmq/rabbit.log
-    log.file.level = info
-    
-    ## Security configurations
-    default_user = zoo-admin
-    default_pass = your-secure-password
-    default_vhost = /
-    default_user_tags.administrator = true
-    
-    ## Performance tuning
-    heartbeat = 600
-    frame_max = 131072
-    channel_max = 2047
-    
-    ## Clustering (if using multiple replicas)
-    cluster_formation.peer_discovery_backend = k8s
-    cluster_formation.k8s.host = kubernetes.default
-```
-
-**Accessing RabbitMQ Management Console**:
-```bash
-# Port forward to access the management UI
-kubectl port-forward -n zoo svc/zoo-project-dru-rabbitmq 15672:15672
-
-# Open browser to http://localhost:15672
-# Default credentials: zoo/CHANGEME (change in production!)
-```
-
-**Security Considerations**:
-- ⚠️ **Always change the default password** in production environments
-- 🔒 Use Kubernetes secrets for sensitive configuration values
-- 🌐 Restrict network access to management console in production
-- 📊 Monitor disk usage and memory consumption regularly
-
 ### Redis
 
 **Migration from Bitnami**: This chart deploys Redis using the official [Redis Docker image](https://hub.docker.com/_/redis), eliminating the Bitnami subchart dependency.
 
 **Key Changes**:
-- ✅ **Official Image**: `redis:7-alpine` (was `bitnami/redis`)
-- ✅ **Simplified Deployment**: Direct StatefulSet instead of subchart complexity
-- ✅ **Persistent Storage**: Optional persistence with configurable storage classes
-- ✅ **Resource Optimization**: Lighter Alpine image with reduced memory footprint
-- ✅ **Enhanced Security**: Optional authentication with flexible password management
+- **Official Image**: `redis:7-alpine` (was `bitnami/redis`)
+- **Simplified Deployment**: Direct StatefulSet instead of subchart complexity
+- **Persistent Storage**: Optional persistence with configurable storage classes
+- **Resource Optimization**: Lighter Alpine image with reduced memory footprint
+- **Enhanced Security**: Optional authentication with flexible password management
 
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
@@ -532,54 +426,6 @@ kubectl get events -n <namespace> --sort-by='.lastTimestamp'
 # Check worker protection status
 kubectl get pods -n <namespace> -o jsonpath='{range .items[*]}{.metadata.name}{": safe-to-evict="}{.metadata.annotations.cluster-autoscaler\.kubernetes\.io/safe-to-evict}{", workers="}{.metadata.annotations.zoo-project\.org/has-active-workers}{"\n"}{end}'
 ```
-
-### Enhanced Monitoring Capabilities
-
-The new architecture provides comprehensive monitoring with real-time dashboards:
-
-#### Key Metrics Available
-
-**Database Metrics** (from official images):
-- PostgreSQL: Connection count, query performance, worker table statistics
-- RabbitMQ: Queue lengths, message rates, memory usage  
-- Redis: Memory usage, key statistics, connection count
-
-**KEDA Metrics** (when enabled):
-- ScaledObject status and scaling events
-- Trigger activation thresholds and current values
-- Pod protection status and worker counts
-- Scale-to-zero events and timing
-
-**ZOO-Project Metrics**:
-- Job execution times and success rates
-- Active worker distribution across pods  
-- API request metrics and response times
-- CWL workflow execution statistics
-
-#### Grafana Dashboard Access
-
-```bash
-# Forward Grafana port (when monitoring.enabled=true)
-kubectl port-forward -n zoo svc/zoo-project-dru-kube-prometheus-stack-grafana 3000:80
-
-# Default credentials: admin / admin
-# Dashboards include:
-# - ZOO-Project Overview
-# - KEDA Autoscaling Status  
-# - PostgreSQL Performance
-# - RabbitMQ Monitoring
-# - Argo Workflows (if enabled)
-```
-
-#### Custom Alerts Configuration
-
-The monitoring stack includes pre-configured alerts for:
-- High job failure rates
-- PostgreSQL connection exhaustion  
-- RabbitMQ queue backlog
-- KEDA scaling failures
-- Pod eviction protection violations
- 
 
 ### Identity and Access Management
 
@@ -1276,21 +1122,11 @@ Add Grafana dashboards after the initial deployment:
 # 1. Deploy with minimal monitoring (Solution 2)
 # 2. Add custom dashboards via ConfigMaps
 kubectl create configmap argo-workflows-dashboard \
-  --from-file=dashboard.json=path/to/argo-dashboard.json \
+  --from-file=dashboard.json=files/argo-workflows/grafana-dashboard.json \
   --namespace zoo
 kubectl label configmap argo-workflows-dashboard grafana_dashboard=1
 
 # Grafana will automatically detect and load the dashboard
-```
-
-**Solution 4: Use values_argo_minimal.yaml**
-
-For development, use the pre-optimized minimal configuration:
-
-```bash
-# This configuration is guaranteed to stay under 1MB
-skaffold dev -p argo --filename=skaffold.yaml \
-  --set-value-template releases[0].valuesFiles[0]=zoo-project-dru/values_argo_minimal.yaml
 ```
 
 #### Size Optimization Summary
@@ -1421,149 +1257,6 @@ customConfig.main.mySection: |-
 ````
 
 All these sections will be added to the `sections_list` from the `servicesNamespace` section.
-
-## Recommended Configurations
-
-### Production Environment
-
-For production deployments with high availability and monitoring:
-
-```yaml
-# values-production.yaml
-global:
-  postgresql:
-    auth:
-      existingSecret: postgresql-production-secret
-
-# Enable all production features  
-minio:
-  enabled: true
-  persistence:
-    size: 100Gi
-    storageClass: fast-ssd
-    
-postgresql:
-  enabled: true
-  persistence:
-    size: 50Gi
-    storageClass: fast-ssd
-  resources:
-    limits:
-      cpu: 2000m
-      memory: 4Gi
-
-rabbitmq:
-  enabled: true
-  persistence:
-    size: 10Gi
-    storageClass: fast-ssd
-
-# Production-grade autoscaling
-keda:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 20
-  triggers:
-    postgresql:
-      enabled: true
-      targetQueryValue: "0.8"  # Higher capacity utilization
-    rabbitmq:
-      enabled: true
-      value: 5  # More aggressive scaling
-
-# Comprehensive monitoring
-monitoring:
-  enabled: true
-  kube-prometheus-stack:
-    prometheus:
-      retention: "30d"
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            resources:
-              requests:
-                storage: 50Gi
-    grafana:
-      persistence:
-        enabled: true
-        size: 10Gi
-```
-
-### Development Environment (Minikube/Kind)
-
-Optimized for local development with resource constraints:
-
-```yaml
-# values-development.yaml (similar to values_minikube.yaml)
-# Use official values_minikube.yaml as base
-useKubeProxy: true
-
-# Minimal resource allocation
-postgresql:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-
-rabbitmq:
-  resources:
-    limits:
-      cpu: 200m
-      memory: 256Mi
-
-# Fast scaling for development
-keda:
-  enabled: true
-  minReplicas: 0  # Scale-to-zero for resource saving
-  pollingInterval: 5  # Faster response
-  
-# Disable resource-intensive features
-zoo:
-  openapi:
-    enabled: false  # Saves ~29KB in Helm secret
-  security:
-    enabled: false  # Saves ~11KB in Helm secret
-```
-
-### Argo Workflows Integration
-
-Complete workflow orchestration with event monitoring:
-
-```yaml  
-# values-argo.yaml
-workflow:
-  argo:
-    enabled: true
-    defaultMaxRam: "4Gi"
-    defaultMaxCores: 4
-
-argo:
-  enabled: true
-  events:
-    enabled: true  # Real-time workflow monitoring
-  s3:
-    bucket: "workflow-artifacts"
-    
-argo-workflows:
-  controller:
-    resources:
-      limits:
-        cpu: 1000m
-        memory: 1Gi
-  server:
-    enabled: true
-    
-# Enhanced monitoring for workflows
-monitoring:
-  enabled: true
-  grafana:
-    dashboards:
-      enabled: true
-      refresh: "10s"  # Real-time workflow updates
-```
 
 ## Advanced Usage
 
