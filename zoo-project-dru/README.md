@@ -131,7 +131,7 @@ See the reference [MinIO chart documentation](https://artifacthub.io/packages/he
 | minio.service.port                                       | MinIO service port | 9000 |
 | minio.consoleService.port                                | MinIO console port | 9001 |
 
-### PostgreSQL
+#### PostgreSQL
 
 This chart deploys PostgreSQL using the official [PostgreSQL Docker image](https://hub.docker.com/_/postgres).
 
@@ -159,7 +159,7 @@ When `postgresql.enabled` is set to true, the environment variables for PostgreS
 
 If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
-### RabbitMQ
+#### RabbitMQ
 
 This chart now integrates RabbitMQ using the [official Docker image](https://hub.docker.com/_/rabbitmq).
 
@@ -176,7 +176,7 @@ This chart now integrates RabbitMQ using the [official Docker image](https://hub
 | rabbitmq.autoSetup.ttlSecondsAfterFinished | Cleanup setup job after completion (seconds)             | 30                                           |
 | rabbitmq.definitions                        | RabbitMQ definitions for queues, exchanges, bindings    | Automatically templated                      |
 
-### Redis
+#### Redis
 
 This chart deploys Redis using the official [Redis Docker image](https://hub.docker.com/_/redis).
 
@@ -580,7 +580,7 @@ workflow:
   - name: my-secret
 ````
 
-#### WES support
+### WES support
 
 ZOO-Project-DRU can execute CWL workflows through the toil Workflow Execution Service (WES).
 See [reference documentation](https://zoo-project.github.io/zoo-wes-runner/) for more informations.
@@ -592,7 +592,7 @@ See [reference documentation](https://zoo-project.github.io/zoo-wes-runner/) for
 | workflow.inputs.WES_PASSWORD                          | The password to authenticate to access the WES | `"$$2y$$12$$ci.4U63YX83CwkyUrjqxAucnmi2xXOIlEF6T/KdP9824f1Rf1iyNG"` |
 
 
-#### Argo Workflows Support
+### Argo Workflows Support
 
 ZOO-Project-DRU can execute CWL workflows through the official Argo Workflows chart (v3.7.1).
 See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-workflows) for more information.
@@ -664,7 +664,7 @@ See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-eve
 | argo-workflows.images.tag                                | Argo Workflows version | "v3.7.1" |
 | argo-workflows.images.pullPolicy                         | Image pull policy | "IfNotPresent" |
 
-### Artifact Repository Configuration
+#### Artifact Repository Configuration
 
 The chart automatically configures artifact storage using S3-compatible MinIO:
 
@@ -679,7 +679,7 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.artifactRepository.s3.secretKeySecret.name | Secret name for S3 secret key | "s3-service" |
 | argo-workflows.artifactRepository.s3.secretKeySecret.key  | Secret key for S3 secret key | "root-password" |
 
-### Workflow Controller Configuration
+#### Workflow Controller Configuration
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -691,7 +691,7 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.controller.clusterWorkflowTemplates.enabled | Enable cluster-wide workflow templates | false |
 | argo-workflows.controller.workflowDefaults.spec.serviceAccountName | Default service account for workflows | "argo-workflow" |
 
-### Server Configuration
+#### Server Configuration
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -704,7 +704,7 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.server.extraArgs                          | Additional server arguments | ["--namespaced"] |
 | argo-workflows.server.clusterWorkflowTemplates.enabled   | Enable cluster templates in server | false |
 
-### RBAC and Security
+#### RBAC and Security
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -714,7 +714,7 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.crds.keep                                 | Keep CRDs on uninstall | true |
 
 
-### Access Configuration
+#### Access Configuration
 
 **Access the Argo Workflows UI**:
 ```bash
@@ -729,7 +729,7 @@ kubectl port-forward -n zoo svc/s3-service 9001:9001
 # Credentials: minio-admin / minio-secret-password
 ```
 
-### Deployment Examples
+#### Deployment Examples
 
 **Basic deployment with official Argo Workflows**:
 ```bash
@@ -755,11 +755,11 @@ argo-workflows:
       bucket: "production-artifacts"
 ```
 
-## Argo Events Integration
+### Argo Events Integration
 
 The chart includes optional Argo Events integration for real-time workflow monitoring and event-driven automation. This provides reactive capabilities that automatically respond to workflow state changes.
 
-### Overview
+#### Overview
 
 Argo Events complements Argo Workflows by providing:
 - **Real-time workflow monitoring**: Automatically capture workflow state changes (Running, Succeeded, Failed)
@@ -767,7 +767,7 @@ Argo Events complements Argo Workflows by providing:
 - **Metrics integration**: Real-time updates to Prometheus metrics and Grafana dashboards
 - **Webhook notifications**: Send notifications to external systems when workflows complete
 
-### Core Configuration
+#### Core Configuration
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -776,7 +776,7 @@ Argo Events complements Argo Workflows by providing:
 | argo.events.webhook.port                       | Port for the webhook service | 8080 |
 | argo.events.webhook.path                       | Path for webhook endpoint | "/webhook" |
 
-### Argo Events Chart Configuration
+#### Argo Events Chart Configuration
 
 The chart uses the official Argo Events Helm chart (v2.4.8) to provide event-driven capabilities:
 
@@ -791,7 +791,7 @@ The chart uses the official Argo Events Helm chart (v2.4.8) to provide event-dri
 | argo-events.controller.resources.limits.cpu              | Controller CPU limits | "500m" |
 | argo-events.controller.resources.limits.memory           | Controller memory limits | "256Mi" |
 
-### EventSource Configuration
+#### EventSource Configuration
 
 EventSources define what events to listen for. The chart automatically creates an EventSource for workflow monitoring:
 
@@ -817,7 +817,7 @@ workflow:
 - Workflow completion (status: Succeeded)
 - Workflow failure (status: Failed, Error)
 
-### Sensor Configuration
+#### Sensor Configuration
 
 Sensors define what actions to take when events are received. The chart includes a webhook sensor for notifications:
 
@@ -828,7 +828,7 @@ Sensors define what actions to take when events are received. The chart includes
 | argo.events.sensor.webhook.method              | HTTP method for webhook calls | "POST" |
 | argo.events.sensor.webhook.headers             | Additional HTTP headers | {"Content-Type": "application/json"} |
 
-### EventBus Configuration
+#### EventBus Configuration
 
 The EventBus handles event routing between EventSources and Sensors:
 
@@ -837,7 +837,7 @@ The EventBus handles event routing between EventSources and Sensors:
 | argo-events.eventBusConfig.jetstream.versions           | JetStream versions for EventBus | ["latest"] |
 | argo-events.global.image.tag                            | Argo Events image tag | "v1.9.1" |
 
-### Monitoring Integration
+#### Monitoring Integration
 
 When Argo Events is enabled with monitoring, additional metrics and dashboards are available:
 
@@ -848,7 +848,7 @@ When Argo Events is enabled with monitoring, additional metrics and dashboards a
 | argo-events.controller.serviceMonitor.enabled           | Enable ServiceMonitor for Prometheus discovery | true |
 | argo-events.controller.serviceMonitor.additionalLabels  | Additional labels for ServiceMonitor selection | {"release": "zoo-project-dru"} |
 
-### Real-time Dashboard Updates
+#### Real-time Dashboard Updates
 
 With Argo Events enabled, Grafana dashboards receive real-time updates:
 
@@ -856,7 +856,7 @@ With Argo Events enabled, Grafana dashboards receive real-time updates:
 2. **Event statistics**: Track event processing rates and success/failure ratios
 3. **Latency monitoring**: Monitor time between workflow completion and notification delivery
 
-### Webhook Integration
+#### Webhook Integration
 
 The chart includes a webhook service that receives event notifications:
 
@@ -889,7 +889,7 @@ spec:
 }
 ```
 
-### RBAC Configuration
+#### RBAC Configuration
 
 Argo Events requires specific permissions to monitor workflows:
 
@@ -900,7 +900,7 @@ Argo Events requires specific permissions to monitor workflows:
 | configmaps                | get, list, create, patch  | EventBus configuration            |
 | secrets                   | get, list                 | EventBus authentication           |
 
-### Troubleshooting
+#### Troubleshooting
 
 **Check EventSource status**:
 ```bash
@@ -943,19 +943,19 @@ curl -X POST http://localhost:8080/webhook \
   -d '{"test": "event", "workflowName": "test-workflow"}'
 ```
 
-### Security Considerations
+#### Security Considerations
 
 - **Network policies**: Consider restricting EventBus network access
 - **Authentication**: Use secrets for external webhook authentication  
 - **RBAC**: Apply principle of least privilege for service accounts
 - **TLS**: Enable TLS for external webhook endpoints
 
-## Monitoring
+### Monitoring
 
 The chart includes comprehensive monitoring capabilities using the Prometheus stack (Prometheus, Grafana, Alertmanager, and node-exporter) with real-time Argo Workflows integration.
 See [reference documentation](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack) for more information.
 
-### Core Monitoring Configuration
+#### Core Monitoring Configuration
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -971,11 +971,11 @@ See [reference documentation](https://artifacthub.io/packages/helm/prometheus-co
 | monitoring.kube-prometheus-stack.grafana.persistence.size | Grafana storage size | "5Gi" |
 | monitoring.kube-prometheus-stack.alertmanager.enabled    | Enable Alertmanager for notifications | true |
 
-### Helm Secret Size Limitations and Monitoring Deployment Strategies
+#### Helm Secret Size Limitations and Monitoring Deployment Strategies
 
 ⚠️ **Important**: The complete monitoring stack (kube-prometheus-stack) adds ~670KB to the Helm secret, which can cause deployments to exceed Kubernetes' 1MB secret size limit, resulting in installation failures.
 
-#### Problem Description
+##### Problem Description
 
 When deploying with full monitoring enabled (especially with Argo profiles), you may encounter this error:
 ```
@@ -987,7 +987,7 @@ This happens because the monitoring stack includes:
 - **Prometheus Rules**: ~200KB of alerting and recording rules  
 - **CRDs and Templates**: ~70KB of additional Kubernetes resources
 
-#### Recommended Solutions
+##### Recommended Solutions
 
 **Solution 1: Separate Monitoring Deployment (Recommended)**
 
@@ -1067,7 +1067,7 @@ kubectl label configmap argo-workflows-dashboard grafana_dashboard=1
 # Grafana will automatically detect and load the dashboard
 ```
 
-#### Size Optimization Summary
+##### Size Optimization Summary
 
 | Configuration | Helm Secret Size | Monitoring Level | Recommended Use |
 |:-------------|:-----------------|:-----------------|:----------------|
@@ -1076,7 +1076,7 @@ kubectl label configmap argo-workflows-dashboard grafana_dashboard=1
 | No monitoring | ~240KB | None | Development only |
 | Separate deployment | ~240KB + separate | Complete | **Production** |
 
-#### Troubleshooting Size Issues
+##### Troubleshooting Size Issues
 
 Check your deployment size before installing:
 ```bash
@@ -1196,13 +1196,13 @@ customConfig.main.mySection: |-
 
 All these sections will be added to the `sections_list` from the `servicesNamespace` section.
 
-## Advanced Usage
+### Advanced Usage
 
-### Working with KEDA and Worker Protection
+#### Working with KEDA and Worker Protection
 
 When KEDA is enabled, the system provides intelligent protection for running jobs:
 
-#### Monitoring Worker Status
+##### Monitoring Worker Status
 
 Check the status of pods and their associated workers:
 
@@ -1217,7 +1217,7 @@ kubectl get scaledobjects -n zoo
 kubectl logs -n zoo deployment/zoo-project-dru-eviction-controller --tail=50
 ```
 
-#### Understanding Protection Annotations
+##### Understanding Protection Annotations
 
 The system uses several annotations to manage pod protection:
 
@@ -1226,7 +1226,7 @@ The system uses several annotations to manage pod protection:
 - `zoo-project.org/last-check`: Timestamp of last worker status check
 - `zoo-project.org/emergency-delete`: Emergency override for forced deletion
 
-#### Emergency Pod Deletion
+##### Emergency Pod Deletion
 
 If you need to force delete a protected pod:
 
@@ -1238,7 +1238,7 @@ kubectl annotate pod <pod-name> -n zoo zoo-project.org/emergency-delete=true
 kubectl delete pod <pod-name> -n zoo
 ```
 
-#### Scaling Behavior
+##### Scaling Behavior
 
 The system implements intelligent scaling:
 
@@ -1247,78 +1247,6 @@ The system implements intelligent scaling:
 3. **Scale-down**: Only pods without active workers can be terminated
 4. **Scale-to-zero**: When no workers are active, all pods can be terminated after grace period
 
-## Troubleshooting
-
-### Common Migration Issues
-
-**Helm secret size limit exceeded**:
-```bash
-# Error: Secret "sh.helm.release.v1.zoo-project-dru.v1" is invalid: 
-# data: Too long: must have at most 1048576 bytes
-
-# Common causes: Full monitoring stack (~670KB), Large dashboards, Complex configurations
-
-# Solution 1: Use optimized values with disabled optional components
-helm install zoo-project-dru ./zoo-project-dru \
-  --values ./zoo-project-dru/values_minikube.yaml \
-  --namespace zoo --create-namespace
-
-# Solution 2: Deploy monitoring separately (recommended for full features)
-# See "Helm Secret Size Limitations and Monitoring Deployment Strategies" section above
-```
-
-**PostgreSQL connection issues after migration**:
-```bash
-# Check if PostgreSQL is running with new image
-kubectl get pods -n zoo -l app.kubernetes.io/name=zoo-project-dru-postgresql
-
-# Check initialization logs
-kubectl logs -n zoo deployment/zoo-project-dru-postgresql --tail=50
-
-# Verify database creation
-kubectl exec -it -n zoo deployment/zoo-project-dru-postgresql -- psql -U zoo -d zoo -c "\dt"
-```
-
-**RabbitMQ setup issues**:
-```bash
-# Check auto-setup job completion
-kubectl get jobs -n zoo -l app.kubernetes.io/component=rabbitmq-setup
-
-# Check management plugin status
-kubectl port-forward -n zoo svc/zoo-project-dru-rabbitmq 15672:15672
-# Access: http://localhost:15672 (zoo/CHANGEME)
-
-# Verify queue creation
-kubectl logs -n zoo -l app.kubernetes.io/component=rabbitmq-setup
-```
-
-### KEDA-Specific Issues
-
-#### Common KEDA Issues
-
-**Pods not scaling to zero:**
-```bash
-# Check if pods have active workers
-kubectl describe pods -n zoo -l app.kubernetes.io/name=zoo-project-dru-zoofpm
-
-# Check ScaledObject configuration
-kubectl describe scaledobject -n zoo
-
-# Verify eviction controller is running
-kubectl get pods -n zoo -l app.kubernetes.io/component=eviction-controller
-```
-
-**Protection not working:**
-```bash
-# Check Kyverno policies (if enabled)
-kubectl get clusterpolicy
-
-# Test pod deletion (dry run)
-kubectl delete pod <pod-name> -n zoo --dry-run=server
-
-# Check eviction controller permissions
-kubectl auth can-i patch pods --as=system:serviceaccount:zoo:zoo-project-dru-eviction-controller -n zoo
-```
 
 
 ### Notification using Knative
@@ -1436,3 +1364,76 @@ Then, using the command below, you can get the pod name to access its log (using
 ````bash
 kubectl get pods -n default
 ````
+
+## Troubleshooting
+
+### Common Migration Issues
+
+**Helm secret size limit exceeded**:
+```bash
+# Error: Secret "sh.helm.release.v1.zoo-project-dru.v1" is invalid: 
+# data: Too long: must have at most 1048576 bytes
+
+# Common causes: Full monitoring stack (~670KB), Large dashboards, Complex configurations
+
+# Solution 1: Use optimized values with disabled optional components
+helm install zoo-project-dru ./zoo-project-dru \
+  --values ./zoo-project-dru/values_minikube.yaml \
+  --namespace zoo --create-namespace
+
+# Solution 2: Deploy monitoring separately (recommended for full features)
+# See "Helm Secret Size Limitations and Monitoring Deployment Strategies" section above
+```
+
+**PostgreSQL connection issues after migration**:
+```bash
+# Check if PostgreSQL is running with new image
+kubectl get pods -n zoo -l app.kubernetes.io/name=zoo-project-dru-postgresql
+
+# Check initialization logs
+kubectl logs -n zoo deployment/zoo-project-dru-postgresql --tail=50
+
+# Verify database creation
+kubectl exec -it -n zoo deployment/zoo-project-dru-postgresql -- psql -U zoo -d zoo -c "\dt"
+```
+
+**RabbitMQ setup issues**:
+```bash
+# Check auto-setup job completion
+kubectl get jobs -n zoo -l app.kubernetes.io/component=rabbitmq-setup
+
+# Check management plugin status
+kubectl port-forward -n zoo svc/zoo-project-dru-rabbitmq 15672:15672
+# Access: http://localhost:15672 (zoo/CHANGEME)
+
+# Verify queue creation
+kubectl logs -n zoo -l app.kubernetes.io/component=rabbitmq-setup
+```
+
+### KEDA-Specific Issues
+
+#### Common KEDA Issues
+
+**Pods not scaling to zero:**
+```bash
+# Check if pods have active workers
+kubectl describe pods -n zoo -l app.kubernetes.io/name=zoo-project-dru-zoofpm
+
+# Check ScaledObject configuration
+kubectl describe scaledobject -n zoo
+
+# Verify eviction controller is running
+kubectl get pods -n zoo -l app.kubernetes.io/component=eviction-controller
+```
+
+**Protection not working:**
+```bash
+# Check Kyverno policies (if enabled)
+kubectl get clusterpolicy
+
+# Test pod deletion (dry run)
+kubectl delete pod <pod-name> -n zoo --dry-run=server
+
+# Check eviction controller permissions
+kubectl auth can-i patch pods --as=system:serviceaccount:zoo:zoo-project-dru-eviction-controller -n zoo
+```
