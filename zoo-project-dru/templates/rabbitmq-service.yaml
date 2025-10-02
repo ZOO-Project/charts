@@ -1,0 +1,52 @@
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+spec:
+  type: ClusterIP
+  ports:
+  - name: amqp
+    port: 5672
+    targetPort: amqp
+    protocol: TCP
+  - name: management
+    port: 15672
+    targetPort: management
+    protocol: TCP
+  selector:
+    {{- include "zoo-project-dru.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+{{- if .Values.rabbitmq.headless }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-headless
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: amqp
+    port: 5672
+    targetPort: amqp
+    protocol: TCP
+  - name: management
+    port: 15672
+    targetPort: management
+    protocol: TCP
+  - name: epmd
+    port: 4369
+    targetPort: epmd
+    protocol: TCP
+  selector:
+    {{- include "zoo-project-dru.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+{{- end }}
+{{- end }}

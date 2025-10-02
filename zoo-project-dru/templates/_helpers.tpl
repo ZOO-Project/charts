@@ -1,4 +1,4 @@
-x\{{/*
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "zoo-project-dru.name" -}}
@@ -6,7 +6,20 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
-Create a default fully qualified app name.
+Redis service name  
+*/}}
+{{- define "zoo-project-dru.redis.servicename" -}}
+{{- include "zoo-project-dru.fullname" . }}-redis-service
+{{- end }}
+
+{{/*
+RabbitMQ Service name
+*/}}
+{{- define "zoo-project-dru.rabbitmq.serviceName" -}}
+{{- include "zoo-project-dru.fullname" . }}-rabbitmq
+{{- end }}
+
+{{/* fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
@@ -121,12 +134,67 @@ Argo Workflows MinIO endpoint helper
 Argo Workflows MinIO access key helper
 */}}
 {{- define "zoo-project-dru.argo.minio.accessKey" -}}
-{{- .Values.minio.auth.rootUser | default "minio-admin" }}
+{{- .Values.minio.rootUser | default "minio-admin" }}
 {{- end }}
 
 {{/*
 Argo Workflows MinIO secret key helper
 */}}
 {{- define "zoo-project-dru.argo.minio.secretKey" -}}
-{{- .Values.minio.auth.rootPassword | default "minio-secret-password" }}
+{{- .Values.minio.rootPassword | default "minio-secret-password" }}
+{{- end }}
+
+{{/*
+RabbitMQ readiness init container
+This template creates an init container that waits for RabbitMQ to be ready
+with management API and definitions loaded.
+*/}}
+{{- define "zoo-project-dru.rabbitmq.initContainer" -}}
+- name: init-wait-for-dependencies-{{ .componentName }}
+  image: curlimages/curl:latest
+  imagePullPolicy: IfNotPresent
+  command: [ "/bin/sh" ]
+  args:
+    - -c
+    - |
+      set -e
+      echo "Waiting for RabbitMQ to be ready with management API and definitions loaded..."
+
+      while true; do
+        # Check if RabbitMQ management API is accessible
+        if curl -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
+          http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/overview >/dev/null 2>&1; then
+
+          # Check if both zoo_service_queue and unroutable_messages_queue exist
+          if curl -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
+            http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/queues/%2F/zoo_service_queue >/dev/null 2>&1 && \
+            curl -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
+            http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/queues/%2F/unroutable_messages_queue >/dev/null 2>&1; then
+            echo "RabbitMQ is fully ready!"
+            break
+          else
+            echo "RabbitMQ is up but zoo_service_queue not created yet..."
+          fi
+        else
+          echo "Waiting for RabbitMQ management API..."
+        fi
+        sleep 5
+      done
+  env:
+    - name: ZOO_RABBITMQ_HOST
+      value: {{ include "zoo-project-dru.rabbitmq.serviceName" . }}
+{{- end }}
+
+{{/*
+PostgreSQL service name
+*/}}
+{{- define "zoo-project-dru.postgresql.servicename" -}}
+{{- include "zoo-project-dru.fullname" . }}-postgresql-service
+{{- end }}
+
+{{/*
+KEDA PostgreSQL query ConfigMap name
+*/}}
+{{- define "zoo-project-dru.keda.postgresql.configmap" -}}
+{{- include "zoo-project-dru.fullname" . }}-keda-postgresql-query
 {{- end }}

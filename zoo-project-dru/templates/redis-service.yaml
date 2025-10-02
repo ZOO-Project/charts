@@ -1,0 +1,22 @@
+{{- if .Values.redis.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "zoo-project-dru.fullname" . }}-redis
+    chart: {{ include "zoo-project-dru.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ include "zoo-project-dru.fullname" . }}-redis-service
+spec:
+  ports:
+  - name: redis
+    port: {{ .Values.redis.port }}
+    protocol: TCP
+    targetPort: redis
+  selector:
+    app: {{ include "zoo-project-dru.fullname" . }}-redis
+    release: {{ .Release.Name }}
+  type: ClusterIP
+{{- end }}

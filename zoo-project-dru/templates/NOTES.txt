@@ -56,12 +56,12 @@
 📦 MinIO Object Storage:
   kubectl port-forward -n {{ .Release.Namespace }} svc/s3-service 9001:9001
   Open: http://localhost:9001
-  Username: {{ .Values.minio.auth.rootUser | default "minio-admin" }}
+  Username: {{ .Values.minio.rootUser | default "minioadmin" }}
   Password: (check secret s3-service)
 
   # Access MinIO credentials
-  kubectl get secret s3-service -n {{ .Release.Namespace }} -o jsonpath='{.data.root-user}' | base64 --decode
-  kubectl get secret s3-service -n {{ .Release.Namespace }} -o jsonpath='{.data.root-password}' | base64 --decode
+  kubectl get secret s3-service -n {{ .Release.Namespace }} -o jsonpath='{.data.rootUser}' | base64 --decode
+  kubectl get secret s3-service -n {{ .Release.Namespace }} -o jsonpath='{.data.rootPassword}' | base64 --decode
 
 {{- end }}
 

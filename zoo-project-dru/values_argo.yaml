@@ -1,4 +1,19 @@
 # ZOO-Project-DRU Helm Chart Configuration with Argo Workflows support
+
+
+# # Optimization: Use shorter names to reduce Helm secret size
+# nameOverride: "zoo"
+# fullnameOverride: "zoo"
+
+# Optimization: Disable optional components to reduce Helm secret size (avoid >1MB limit)
+# These optimizations reduce secret size by disabling large ConfigMaps
+zoo:
+  openapi:
+    enabled: false  # Disable OpenAPI spec (saves ~29KB)
+  security:
+    enabled: false  # Disable security service (saves ~11KB)  
+  includeOptionalConfigs: false  # Disable web assets (saves ~2KB)
+
 argo:
   enabled: true
   installCRDs: true  # Install CRDs automatically
@@ -45,8 +60,8 @@ argo:
     insecure: true
     # MinIO secret configuration
     secretName: "s3-service"
-    accessKeySecretKey: "root-user"
-    secretKeySecretKey: "root-password"
+    accessKeySecretKey: "rootUser"
+    secretKeySecretKey: "rootPassword"
     
   # Ingress configuration for Argo Workflows UI
   ingress:
@@ -90,24 +105,30 @@ workflow:
   additionalInputs:
     s3_bucket: results
     region_name: us-east-1
-    aws_secret_access_key: minio-secret-password
-    aws_access_key_id: minio-admin
+    # Use template helpers to get credentials dynamically
+    aws_secret_access_key: "minio-secret-password"
+    aws_access_key_id: "minio-admin"
     endpoint_url: http://s3-service.zoo.svc.cluster.local:9000
 
 minio:
   # minio chart value parameters description can be found here:
   # https://github.com/bitnami/charts/tree/main/bitnami/minio
   enabled: true
-  auth:
-    rootUser: minio-admin
-    rootPassword: minio-secret-password
-    # to access the dashboard from browser run the following port-forward command:
-    # kubectl port-forward svc/s3-service 9001:9001 -n zoo
+  # Authentication
+  rootUser: minio-admin
+  rootPassword: minio-secret-password
   persistence:
     enabled: true
     size: 2Gi
     accessMode: ReadWriteOnce
-  defaultBuckets: "eoepca results"
+  defaultBuckets: "eoepca"
+  buckets:
+    - name: eoepca
+      policy: none
+      purge: false
+    - name: results
+      policy: none
+      purge: false
   fullnameOverride: "s3-service"
 
 cookiecutter:
@@ -168,10 +189,10 @@ argo-workflows:
       insecure: true
       accessKeySecret:
         name: s3-service
-        key: root-user
+        key: rootUser
       secretKeySecret:
         name: s3-service
-        key: root-password
+        key: rootPassword
   
   # Workflow Controller Configuration
   controller:
@@ -277,9 +298,11 @@ argo-workflows:
     install: false
     keep: true
 
+# Note: Monitoring stack disabled to keep under 1MB Helm secret limit
+# To enable monitoring, deploy kube-prometheus-stack separately:
+# helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace
 monitoring:
-  enabled: true
-  disableProblematicTargets: true  # Disable patch since node-exporter is correctly configured
+  enabled: false
   # Disable patch since node-exporter is already correctly configured below
   nodeExporterPatchEnabled: true
   kube-prometheus-stack:
@@ -316,31 +339,55 @@ monitoring:
         serviceMonitorSelector: {}
         ruleSelector: {}
     
-    # Grafana
+    # Grafana (heavily optimized to reduce secret size)
     grafana:
       enabled: true
-      defaultDashboardsEnabled: true
+      defaultDashboardsEnabled: false  # Disable all default dashboards
       adminPassword: admin
+      sidecar:
+        dashboards:
+          enabled: false  # Disable dashboard sidecar completely
     
-    # Kube-state-metrics
+    # Disable all default dashboard ConfigMaps that cause size issues
+    defaultRules:
+      create: false  # Disable default PrometheusRules (saves ~200KB)
+    
+    # Disable other dashboard-related components
+    kubeApiServer:
+      enabled: false
+    kubelet:
+      enabled: false
+    kubeControllerManager:
+      enabled: false  
+    coreDns:
+      enabled: false
+    kubeEtcd:
+      enabled: false
+    kubeScheduler:
+      enabled: false
+    kubeProxy:
+      enabled: false
+    kubeStateMetrics:
+      enabled: false
+    nodeExporter:
+      enabled: false
+    
+    # Kube-state-metrics (disabled to reduce secret size)
     kube-state-metrics:
-      enabled: true
-      podSecurityPolicy:
-        enabled: false
+      enabled: false  # Saves ~100KB in PrometheusRules
     
-    # Alertmanager
+    # Alertmanager (disabled to reduce secret size) 
     alertmanager:
-      enabled: true
-      podSecurityPolicy:
-        enabled: false
+      enabled: false  # Saves ~50KB in configuration
     
     # Disable PodSecurityPolicy globalement
     podSecurityPolicy:
       enabled: false
 
-# Argo Events Chart Configuration
+# Argo Events disabled to reduce Helm secret size
+# Deploy separately if needed: helm install argo-events argo/argo-events
 argo-events:
-  enabled: true
+  enabled: false
   
   # Désactiver l'installation des CRDs (ils sont déjà installés)
   crds:

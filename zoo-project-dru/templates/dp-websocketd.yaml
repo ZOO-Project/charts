@@ -38,10 +38,10 @@ spec:
           image: docker.io/wshihadeh/wait_for:latest
           imagePullPolicy: IfNotPresent
           command: [ "/docker-entrypoint.sh" ]
-          args: [ "wait_for", "redis:{{ .Release.Name }}-redis-master"]
+          args: [ "wait_for", "redis:{{ include "zoo-project-dru.redis.servicename" . }}"]
           env:
-            - name: ZOO_REDI_HOST
-              value: {{ .Release.Name }}-redis-master
+            - name: ZOO_REDIS_HOST
+              value: {{ include "zoo-project-dru.redis.servicename" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -52,7 +52,7 @@ spec:
           imagePullPolicy: {{ .Values.websocketd.pullPolicy }}
           env:
             - name: ZOO_REDIS_HOST
-              value: {{ .Release.Name }}-redis-master
+              value: {{ include "zoo-project-dru.redis.servicename" . }}
           ports:
             - name: ws
               containerPort: 8888

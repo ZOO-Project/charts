@@ -53,7 +53,7 @@ try:
     if "ZOO_REDIS_HOST" in os.environ:
         r = redis.Redis(host=os.environ["ZOO_REDIS_HOST"], port=6379, db=0)
     else:
-        r = redis.Redis(host='{{ .Release.Name }}-redis-master', port=6379, db=0)
+        r = redis.Redis(host='{{ .Values.redis.serviceName }}', port=6379, db=0)
     print(params,file=sys.stderr)
     r.publish(params["jobid"][0],data)
     print(data,file=sys.stderr)

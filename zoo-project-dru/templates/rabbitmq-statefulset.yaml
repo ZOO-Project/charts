@@ -1,0 +1,117 @@
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+spec:
+  serviceName: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-headless
+  replicas: {{ .Values.rabbitmq.replicas }}
+  selector:
+    matchLabels:
+      {{- include "zoo-project-dru.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: rabbitmq
+  template:
+    metadata:
+      labels:
+        {{- include "zoo-project-dru.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: "{{ .Values.rabbitmq.image.repository }}:{{ .Values.rabbitmq.image.tag }}"
+        imagePullPolicy: {{ .Values.rabbitmq.image.pullPolicy }}
+        ports:
+        - name: amqp
+          containerPort: 5672
+          protocol: TCP
+        - name: management
+          containerPort: 15672
+          protocol: TCP
+        - name: epmd
+          containerPort: 4369
+          protocol: TCP
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: {{ .Values.rabbitmq.auth.username | quote }}
+        - name: RABBITMQ_DEFAULT_PASS
+          value: {{ .Values.rabbitmq.auth.password | quote }}
+        - name: RABBITMQ_DEFAULT_VHOST
+          value: {{ .Values.rabbitmq.auth.vhost | quote }}
+        {{- if .Values.rabbitmq.clustering.enabled }}
+        - name: RABBITMQ_USE_LONGNAME
+          value: "true"
+        - name: RABBITMQ_NODENAME
+          value: "rabbit@$(POD_NAME).{{ include "zoo-project-dru.fullname" . }}-rabbitmq-headless.{{ .Release.Namespace }}.svc.cluster.local"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        {{- end }}
+        livenessProbe:
+          exec:
+            command:
+            - rabbitmq-diagnostics
+            - -q
+            - ping
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 20
+          failureThreshold: 6
+        readinessProbe:
+          exec:
+            command:
+            - rabbitmq-diagnostics
+            - -q
+            - check_running
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 20
+          failureThreshold: 3
+        resources:
+          {{- toYaml .Values.rabbitmq.resources | nindent 10 }}
+        volumeMounts:
+        {{- if .Values.rabbitmq.persistence.enabled }}
+        - name: data
+          mountPath: /var/lib/rabbitmq/mnesia
+        {{- end }}
+        {{- if .Values.rabbitmq.config }}
+        - name: config
+          mountPath: /etc/rabbitmq/rabbitmq.conf
+          subPath: rabbitmq.conf
+        {{- end }}
+        - name: definitions
+          mountPath: /etc/rabbitmq/definitions.json
+          subPath: load_definition.json
+        - name: plugins
+          mountPath: /etc/rabbitmq/enabled_plugins
+          subPath: enabled_plugins
+      volumes:
+      {{- if .Values.rabbitmq.config }}
+      - name: config
+        configMap:
+          name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-config
+      {{- end }}
+      - name: plugins
+        configMap:
+          name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-plugins
+      - name: definitions
+        secret:
+          secretName: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-definition
+  {{- if .Values.rabbitmq.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.rabbitmq.persistence.size }}
+      {{- if .Values.rabbitmq.persistence.storageClass }}
+      storageClassName: {{ .Values.rabbitmq.persistence.storageClass }}
+      {{- end }}
+  {{- end }}
+{{- end }}

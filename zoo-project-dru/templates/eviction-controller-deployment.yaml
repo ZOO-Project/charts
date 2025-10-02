@@ -34,22 +34,74 @@ spec:
         imagePullPolicy: {{ .Values.keda.evictionController.image.pullPolicy | default "IfNotPresent" }}
         env:
         - name: NAMESPACE
-          value: {{ .Release.Namespace }}
+          value: "{{ .Release.Namespace }}"
         - name: SCALEDOBJECT_NAME
-          value: {{ include "zoo-project-dru.fullname" . }}-{{ .Values.keda.scaleTargetRef.deployment }}-scaler
-        - name: PG_HOST
-          value: {{ .Release.Name }}-postgresql
-        - name: PG_PORT
-          value: "5432"
-        - name: PG_USER
-          value: {{ .Values.global.postgresql.auth.username | default "zoo" }}
+          value: "{{ include "zoo-project-dru.fullname" . }}-{{ .Values.keda.scaleTargetRef.deployment }}-scaler"
+
+        {{- if (.Values.global.postgresql.auth.existingSecret) }}
         - name: PG_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.postgresql.auth.existingSecret | default (print .Release.Name "-postgresql") }}
+              name: {{ .Values.global.postgresql.auth.existingSecret }}
               key: password
+              optional: true
+        - name: PG_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.postgresql.auth.existingSecret }}
+              key: username
+              optional: true
+        - name: PG_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.postgresql.auth.existingSecret }}
+              key: host
+              optional: true
+        - name: PG_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.postgresql.auth.existingSecret }}
+              key: port
+              optional: true
         - name: PG_DATABASE
-          value: {{ .Values.global.postgresql.auth.database | default "zoo" }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.postgresql.auth.existingSecret }}
+              key: database
+              optional: true
+        {{- else }}
+        {{- if .Values.postgresql.enabled }}
+        - name: PG_HOST
+          value: "{{ include "zoo-project-dru.postgresql.servicename" . }}"
+        - name: PG_DATABASE
+          value: {{ .Values.global.postgresql.auth.database | quote}}
+        - name: PG_PASSWORD
+          {{- if .Values.postgresql.useSecret }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql-secret" (include "zoo-project-dru.fullname" .)) }}
+              key: password
+          {{- else }}
+          value: {{ .Values.global.postgresql.auth.password | quote}}
+          {{- end }}
+        - name: PG_USER
+          value: {{ .Values.global.postgresql.auth.username | quote}}
+        - name: PG_PORT
+          value: {{ .Values.global.postgresql.service.ports.postgresql | quote}}
+        {{- else }}
+        # External PostgreSQL (not managed by chart)
+        - name: PG_HOST
+          value: "{{ include "zoo-project-dru.fullname" . }}-postgresql-service"
+        - name: PG_DATABASE
+          value: {{ .Values.global.postgresql.auth.database | quote}}
+        - name: PG_PASSWORD
+          value: {{ .Values.global.postgresql.auth.password | quote}}
+        - name: PG_USER
+          value: {{ .Values.global.postgresql.auth.username | quote}}
+        - name: PG_PORT
+          value: "5432"
+        {{- end }}
+        {{- end }}
         ports:
         - containerPort: 8080
           name: metrics

@@ -15,6 +15,8 @@ This chart bootstraps a [ZOO-Project](http://zoo-project.org) deployment on a cl
  * Kubernetes 1.19+
  * Helm 3.2.0+
  * PV provisioner support in the underlying infrastructure
+ * **Optional**: KEDA 2.14+ for autoscaling capabilities
+ * **Optional**: Kyverno 3.5+ for advanced pod protection
 
 ## Installing the Chart
 
@@ -22,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.7.5
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.0
 ````
 
 ## Parameters
@@ -48,7 +50,7 @@ There are two persistent storage: `procServices` and `tmp`. The ZOO-Project uses
 
 ### Global parameters
 
-See the reference [PostgreSQL chart documentation](https://artifacthub.io/packages/helm/bitnami/postgresql#global-parameters) for other options.
+See the configuration parameters below for the official PostgreSQL Docker image integration.
 
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
@@ -88,55 +90,98 @@ global.postgresql.auth.existingSecret: postgresql-secret
 
 If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
-### Dependencies
+### Dependency Management
+
+#### MinIO
+
+See the reference [MinIO chart documentation](https://artifacthub.io/packages/helm/minio-official/minio) for more informations.
+
+| Name                                                     | Description                        | Value                                                                 |
+|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
+| minio.enabled                                            | Enable MinIO for storage | false |
+| minio.mode                                               | MinIO deployment mode | "standalone" |
+| minio.replicas                                           | Number of MinIO replicas | 1 |
+| minio.rootUser                                           | MinIO root username | "minio-admin" |
+| minio.rootPassword                                       | MinIO root password | "minio-secret-password" |
+| minio.fullnameOverride                                   | MinIO service name override | "s3-service" |
+| minio.buckets                                            | Default buckets to create | [{"name": "eoepca", "policy": "none"}, {"name": "results", "policy": "none"}] |
+| minio.persistence.enabled                                | Enable MinIO persistence | true |
+| minio.persistence.size                                   | MinIO storage size | "10Gi" |
+| minio.persistence.storageClass                           | Storage class for MinIO | "" |
+| minio.service.type                                       | MinIO service type | "ClusterIP" |
+| minio.service.port                                       | MinIO service port | 9000 |
+| minio.consoleService.port                                | MinIO console port | 9001 |
 
 #### PostgreSQL
 
-See the reference [PostgreSQL chart documentation](https://artifacthub.io/packages/helm/bitnami/postgresql) for more parameters.
+This chart deploys PostgreSQL using the official [PostgreSQL Docker image](https://hub.docker.com/_/postgres).
+
 
 | Name                                       | Description                                                     | Value                    |
 |:-------------------------------------------|:----------------------------------------------------------------|:-------------------------|
-| postgresql.defineEnvironmentVariables      | Set it to true to get PostgreSQL environment variables defined  | false                    |
-| postgresql.enabled                         | Is database used to store process execution status              | true                     |
-| postgresql.primary.initdb.scriptsConfigMap | The init script config map                                      | true                     |
+| postgresql.enabled                         | Enable PostgreSQL deployment                                   | true                     |
+| postgresql.name                           | Name of the PostgreSQL deployment                              | postgresql-db            |
+| postgresql.serviceName                    | Name of the PostgreSQL service                                 | postgresql-db-service    |
+| postgresql.image.repository               | PostgreSQL Docker image repository                             | postgres                 |
+| postgresql.image.tag                      | PostgreSQL Docker image tag                                    | 16-alpine                |
+| postgresql.image.pullPolicy               | Image pull policy                                              | IfNotPresent             |
+| postgresql.resources.limits.cpu           | CPU limit for PostgreSQL                                       | 1000m                    |
+| postgresql.resources.limits.memory        | Memory limit for PostgreSQL                                    | 1Gi                      |
+| postgresql.resources.requests.cpu         | CPU request for PostgreSQL                                     | 250m                     |
+| postgresql.resources.requests.memory      | Memory request for PostgreSQL                                  | 256Mi                    |
+| postgresql.persistence.enabled            | Enable persistent storage                                       | true                     |
+| postgresql.persistence.size               | Size of the persistent volume                                   | 8Gi                      |
+| postgresql.persistence.accessMode         | Access mode for the persistent volume                          | ReadWriteOnce            |
+| postgresql.persistence.storageClass       | Storage class for the persistent volume                        | ""                       |
+| postgresql.auth.createSecret              | Automatically create a secret for PostgreSQL credentials       | false                    |
+| postgresql.primary.initdb.scriptsConfigMap | ConfigMap containing initialization scripts                     | postgresql-primary-init-scripts |
 
-When `postgresql.defineEnvironmentVariables` is set to true, the environment variables for PostgreSQL (`PGHOST`,`PGPORT`,`PGUSER`,`PGPASSWORD`,`PGDATABASE`) will be defined for the ZOO-Kernel and the ZOO-FPM pods.
+When `postgresql.enabled` is set to true, the environment variables for PostgreSQL (`PGHOST`,`PGPORT`,`PGUSER`,`PGPASSWORD`,`PGDATABASE`) will be defined for the ZOO-Kernel and the ZOO-FPM pods.
 
 If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
 #### RabbitMQ
 
-See the reference [RabbitMQ chart documentation](https://artifacthub.io/packages/helm/bitnami/rabbitmq) for more parameters.
+This chart now integrates RabbitMQ using the [official Docker image](https://hub.docker.com/_/rabbitmq).
+
 
 | Name                                       | Description                                              | Value                                        |
 |:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
-| rabbitmq.auth.username                     | User that will be used to connect to RabbitMQ            | RABBITMQ_USERNAME                            |
-| rabbitmq.auth.password                     | Password for the user                                    | CHANGEME                                     |
-| rabbitmq.loadDefinition.enabled            | Enable loading a RabbitMQ definitions file to configure RabbitMQ                               | true                                         |
-| rabbitmq.loadDefinition.existingSecret     | Existing secret with the load definitions file                              | load-definition                              |
-| rabbitmq.extraConfiguration                | Configuration file content: extra configuration to be appended to RabbitMQ configuration                              | load_definitions = /app/load_definition.json |
-
-#### MinIO
-
-See the reference [MinIO chart documentation](https://artifacthub.io/packages/helm/bitnami/minio) for more parameters.
-
-| Name          | Description                                          | Value |
-|:--------------|:-----------------------------------------------------|:------|
-| minio.enabled | Is MinIO used for storage in place of AWS            | false |
-| minio.defaultBuckets | Comma, semi-colon or space separated list of buckets to create at initialization (only in standalone mode)            | "processingresults" |
-| minio.fullnameOverride | String to fully override the MinIO's common.names.fullname template            | "s3-service" |
-
+| rabbitmq.enabled                           | Enable integrated RabbitMQ deployment                    | true                                         |
+| rabbitmq.image.repository                  | RabbitMQ image repository                                | rabbitmq                                     |
+| rabbitmq.image.tag                         | RabbitMQ image tag                                       | 4.1.4-alpine                                 |
+| rabbitmq.auth.username                     | RabbitMQ default user                                    | zoo                                          |
+| rabbitmq.auth.password                     | RabbitMQ default password                                | CHANGEME                                     |
+| rabbitmq.config                            | Override RabbitMQ configuration (if empty, uses files/rabbitmq/rabbitmq.conf) | ""                          |
+| rabbitmq.autoSetup.enabled                 | Enable automatic RabbitMQ configuration via HTTP API     | true                                         |
+| rabbitmq.autoSetup.ttlSecondsAfterFinished | Cleanup setup job after completion (seconds)             | 30                                           |
+| rabbitmq.definitions                        | RabbitMQ definitions for queues, exchanges, bindings    | Automatically templated                      |
 
 #### Redis
 
-See the reference [Redis chart documentation](https://artifacthub.io/packages/helm/bitnami/redis) for more parameters.
+This chart deploys Redis using the official [Redis Docker image](https://hub.docker.com/_/redis).
 
-| Name          | Description                                          | Value |
-|:--------------|:-----------------------------------------------------|:------|
-| redis.enabled | Is Redis used by the current deployment              | false |
-| redis.replica.replicaCount | Number of Redis replica                 | 1     |
-| redis.auth.enabled | Number of Redis replica                         | false |
+| Name                                       | Description                                              | Value                    |
+|:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
+| redis.enabled                              | Enable Redis deployment                                 | true                     |
+| redis.name                                 | Name of the Redis deployment                            | redis-db                 |
+| redis.serviceName                          | Name of the Redis service                               | redis-db-service         |
+| redis.port                                 | Redis port                                              | 6379                     |
+| redis.image.repository                     | Redis Docker image repository                           | redis                    |
+| redis.image.tag                            | Redis Docker image tag                                  | 7-alpine                 |
+| redis.image.pullPolicy                     | Image pull policy                                       | IfNotPresent             |
+| redis.auth.enabled                         | Enable Redis authentication                             | false                    |
+| redis.auth.password                        | Redis password (if auth enabled)                        | ""                       |
+| redis.resources.limits.cpu                 | CPU limit for Redis                                     | 500m                     |
+| redis.resources.limits.memory              | Memory limit for Redis                                  | 512Mi                    |
+| redis.resources.requests.cpu               | CPU request for Redis                                   | 100m                     |
+| redis.resources.requests.memory            | Memory request for Redis                                | 128Mi                    |
+| redis.persistence.enabled                  | Enable persistent storage                               | true                     |
+| redis.persistence.size                     | Size of the persistent volume                           | 4Gi                      |
+| redis.persistence.accessMode               | Access mode for the persistent volume                   | ReadWriteOnce            |
+| redis.persistence.storageClass             | Storage class for the persistent volume                 | ""                       |
 
+For high-availability requirements, consider external Redis cluster solutions
 
 ### CookieCutter
 
@@ -156,13 +201,11 @@ See the reference [Redis chart documentation](https://artifacthub.io/packages/he
 | zookernel.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
 | zoofpm.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
 
-#### KEDA
+### KEDA
 
-KEDA (Kubernetes Event-driven Autoscaler) is used to provide event-driven autoscaling based on PostgreSQL and RabbitMQ metrics. 
+KEDA (Kubernetes Event-driven Autoscaler) provides intelligent event-driven autoscaling with worker protection and scale-to-zero capabilities.
 
-##### KEDA Autoscaling
-
-KEDA provides event-driven autoscaling with intelligent worker protection and scale-to-zero capabilities.
+#### KEDA Autoscaling Configuration
 
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
@@ -171,16 +214,10 @@ KEDA provides event-driven autoscaling with intelligent worker protection and sc
 | keda.maxReplicas                           | Maximum number of replicas                               | 10                       |
 | keda.pollingInterval                       | Interval for checking metrics (seconds)                 | 10                       |
 | keda.cooldownPeriod                        | Cooldown period after scaling (seconds)                 | 60                       |
-| keda.triggers.postgresql.enabled           | Enable PostgreSQL worker count trigger                  | true                     |
-| keda.triggers.postgresql.targetQueryValue  | Target value for PostgreSQL query                       | 0.5                      |
-| keda.triggers.postgresql.activationTargetQueryValue | Activation threshold for PostgreSQL query     | 0.1                      |
-| keda.triggers.rabbitmq.enabled             | Enable RabbitMQ queue length trigger                    | true                     |
-| keda.triggers.rabbitmq.queueName           | RabbitMQ queue name to monitor                          | zoo_service_queue        |
-| keda.triggers.rabbitmq.value               | Target queue length for scaling                         | 1                        |
 
-#### PostgreSQL Trigger Configuration
+#### PostgreSQL Trigger
 
-The PostgreSQL trigger monitors both active services and workers using an intelligent query:
+Monitors active processing jobs and workers for intelligent scaling:
 
 | Name                                        | Description                                                    | Value                    |
 |:--------------------------------------------|:---------------------------------------------------------------|:-------------------------|
@@ -192,21 +229,19 @@ The PostgreSQL trigger monitors both active services and workers using an intell
 | keda.triggers.postgresql.dbName             | Database name (uses global.postgresql.auth.database if empty) | ""                       |
 | keda.triggers.postgresql.userName           | Username (uses global.postgresql.auth.username if empty)      | ""                       |
 | keda.triggers.postgresql.sslmode            | SSL mode for connection                                        | "disable"                |
-| keda.triggers.postgresql.query              | Custom PostgreSQL query for scaling metrics                   | See below                |
 
+#### RabbitMQ Trigger
 
-#### RabbitMQ Trigger Configuration
+Monitors queue length for immediate scaling response:
 
-The RabbitMQ trigger monitors queue length for immediate scaling:
-
-| Name                                        | Description                                                    | Value                    |
-|:--------------------------------------------|:---------------------------------------------------------------|:-------------------------|
-| keda.triggers.rabbitmq.enabled              | Enable RabbitMQ trigger for scaling                           | true                     |
-| keda.triggers.rabbitmq.protocol             | RabbitMQ protocol                                              | "amqp"                   |
-| keda.triggers.rabbitmq.queueName            | Queue name to monitor                                          | "zoo_service_queue"      |
-| keda.triggers.rabbitmq.mode                 | Scaling mode                                                   | "QueueLength"            |
-| keda.triggers.rabbitmq.value                | Target messages per replica                                    | "1"                      |
-| keda.triggers.rabbitmq.host                 | RabbitMQ host (auto-generated if empty)                       | ""                       |
+| Name                                       | Description                                              | Value                    |
+|:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
+| keda.triggers.rabbitmq.enabled             | Enable RabbitMQ queue length trigger                    | true                     |
+| keda.triggers.rabbitmq.queueName           | RabbitMQ queue name to monitor                          | zoo_service_queue        |
+| keda.triggers.rabbitmq.value               | Target queue length for scaling                         | 1                        |
+| keda.triggers.rabbitmq.host                | RabbitMQ host (auto-generated if empty)                 | ""                       |
+| keda.triggers.rabbitmq.username            | RabbitMQ username for trigger auth                      | zoo                      |
+| keda.triggers.rabbitmq.password            | RabbitMQ password for trigger auth                      | CHANGEME                 |
 
 #### KEDA Authentication
 
@@ -228,7 +263,7 @@ global:
 When no existing secret is configured, KEDA uses values from `global.postgresql.auth.*` and creates a dedicated secret.
 
 
-##### KEDA Eviction Controller
+#### KEDA Eviction Controller
 
 The eviction controller provides intelligent worker protection and pod annotation management.
 
@@ -243,7 +278,7 @@ The eviction controller provides intelligent worker protection and pod annotatio
 | keda.evictionController.resources.limits.cpu     | CPU resource limits                               | 200m                     |
 | keda.evictionController.resources.limits.memory  | Memory resource limits                            | 128Mi                    |
 
-##### Kyverno Integration
+#### Kyverno Integration
 
 Kyverno provides admission-level protection for pods with active workers.
 
@@ -257,6 +292,28 @@ Kyverno provides admission-level protection for pods with active workers.
 | keda.kyverno.policies.zoofpmProtection.protectZoofpm   | Enable protection for zoofpm pods                       | true                     |
 
 **Note:** Kyverno must be installed separately in the cluster. The chart only creates policy definitions.
+
+#### Quick Start with KEDA
+
+For rapid deployment with KEDA autoscaling capabilities:
+
+```bash
+# Deploy with Skaffold (includes KEDA operator installation)
+skaffold dev -p keda
+
+# Or manual Helm deployment (requires KEDA operator pre-installed)
+helm install zoo-project-dru ./zoo-project-dru \
+  --values ./zoo-project-dru/values_minikube.yaml \
+  --set keda.enabled=true \
+  --set keda.skipScaledObject=false \
+  --namespace zoo --create-namespace
+```
+
+**Important Configuration Notes**:
+- KEDA operator must be installed cluster-wide before enabling `keda.enabled=true`
+- Set `keda.skipScaledObject=false` to enable automatic ScaledObject creation
+- PostgreSQL triggers require worker tracking tables (automatically created)
+- Scale-to-zero works when `keda.minReplicas=0` (default)
 
 #### Scaling Logic and Protection
 
@@ -288,7 +345,6 @@ kubectl get events -n <namespace> --sort-by='.lastTimestamp'
 # Check worker protection status
 kubectl get pods -n <namespace> -o jsonpath='{range .items[*]}{.metadata.name}{": safe-to-evict="}{.metadata.annotations.cluster-autoscaler\.kubernetes\.io/safe-to-evict}{", workers="}{.metadata.annotations.zoo-project\.org/has-active-workers}{"\n"}{end}'
 ```
- 
 
 ### Identity and Access Management
 
@@ -505,7 +561,7 @@ workflow:
   - name: my-secret
 ````
 
-#### WES support
+### WES support
 
 ZOO-Project-DRU can execute CWL workflows through the toil Workflow Execution Service (WES).
 See [reference documentation](https://zoo-project.github.io/zoo-wes-runner/) for more informations.
@@ -517,7 +573,7 @@ See [reference documentation](https://zoo-project.github.io/zoo-wes-runner/) for
 | workflow.inputs.WES_PASSWORD                          | The password to authenticate to access the WES | `"$$2y$$12$$ci.4U63YX83CwkyUrjqxAucnmi2xXOIlEF6T/KdP9824f1Rf1iyNG"` |
 
 
-#### Argo Workflows Support
+### Argo Workflows Support
 
 ZOO-Project-DRU can execute CWL workflows through the official Argo Workflows chart (v3.7.1).
 See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-workflows) for more information.
@@ -589,7 +645,7 @@ See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-eve
 | argo-workflows.images.tag                                | Argo Workflows version | "v3.7.1" |
 | argo-workflows.images.pullPolicy                         | Image pull policy | "IfNotPresent" |
 
-### Artifact Repository Configuration
+#### Artifact Repository Configuration
 
 The chart automatically configures artifact storage using S3-compatible MinIO:
 
@@ -604,7 +660,7 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.artifactRepository.s3.secretKeySecret.name | Secret name for S3 secret key | "s3-service" |
 | argo-workflows.artifactRepository.s3.secretKeySecret.key  | Secret key for S3 secret key | "root-password" |
 
-### Workflow Controller Configuration
+#### Workflow Controller Configuration
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -616,7 +672,7 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.controller.clusterWorkflowTemplates.enabled | Enable cluster-wide workflow templates | false |
 | argo-workflows.controller.workflowDefaults.spec.serviceAccountName | Default service account for workflows | "argo-workflow" |
 
-### Server Configuration
+#### Server Configuration
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -629,7 +685,7 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.server.extraArgs                          | Additional server arguments | ["--namespaced"] |
 | argo-workflows.server.clusterWorkflowTemplates.enabled   | Enable cluster templates in server | false |
 
-### RBAC and Security
+#### RBAC and Security
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -638,22 +694,8 @@ The chart automatically configures artifact storage using S3-compatible MinIO:
 | argo-workflows.crds.install                              | Install CRDs (disabled if already present) | false |
 | argo-workflows.crds.keep                                 | Keep CRDs on uninstall | true |
 
-### MinIO Integration
 
-The chart includes integrated MinIO for artifact storage:
-
-| Name                                                     | Description                        | Value                                                                 |
-|:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
-| minio.enabled                                            | Enable MinIO for artifact storage | true |
-| minio.auth.rootUser                                      | MinIO root username | "minio-admin" |
-| minio.auth.rootPassword                                  | MinIO root password | "minio-secret-password" |
-| minio.persistence.enabled                                | Enable MinIO persistence | true |
-| minio.persistence.storageClass                           | Storage class for MinIO | "standard" |
-| minio.persistence.size                                   | MinIO storage size | "2Gi" |
-| minio.defaultBuckets                                     | Default buckets to create | "eoepca results" |
-| minio.fullnameOverride                                   | MinIO service name override | "s3-service" |
-
-### Access Configuration
+#### Access Configuration
 
 **Access the Argo Workflows UI**:
 ```bash
@@ -668,7 +710,7 @@ kubectl port-forward -n zoo svc/s3-service 9001:9001
 # Credentials: minio-admin / minio-secret-password
 ```
 
-### Deployment Examples
+#### Deployment Examples
 
 **Basic deployment with official Argo Workflows**:
 ```bash
@@ -694,11 +736,11 @@ argo-workflows:
       bucket: "production-artifacts"
 ```
 
-## Argo Events Integration
+### Argo Events Integration
 
 The chart includes optional Argo Events integration for real-time workflow monitoring and event-driven automation. This provides reactive capabilities that automatically respond to workflow state changes.
 
-### Overview
+#### Overview
 
 Argo Events complements Argo Workflows by providing:
 - **Real-time workflow monitoring**: Automatically capture workflow state changes (Running, Succeeded, Failed)
@@ -706,7 +748,7 @@ Argo Events complements Argo Workflows by providing:
 - **Metrics integration**: Real-time updates to Prometheus metrics and Grafana dashboards
 - **Webhook notifications**: Send notifications to external systems when workflows complete
 
-### Core Configuration
+#### Core Configuration
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -715,7 +757,7 @@ Argo Events complements Argo Workflows by providing:
 | argo.events.webhook.port                       | Port for the webhook service | 8080 |
 | argo.events.webhook.path                       | Path for webhook endpoint | "/webhook" |
 
-### Argo Events Chart Configuration
+#### Argo Events Chart Configuration
 
 The chart uses the official Argo Events Helm chart (v2.4.8) to provide event-driven capabilities:
 
@@ -730,7 +772,7 @@ The chart uses the official Argo Events Helm chart (v2.4.8) to provide event-dri
 | argo-events.controller.resources.limits.cpu              | Controller CPU limits | "500m" |
 | argo-events.controller.resources.limits.memory           | Controller memory limits | "256Mi" |
 
-### EventSource Configuration
+#### EventSource Configuration
 
 EventSources define what events to listen for. The chart automatically creates an EventSource for workflow monitoring:
 
@@ -756,7 +798,7 @@ workflow:
 - Workflow completion (status: Succeeded)
 - Workflow failure (status: Failed, Error)
 
-### Sensor Configuration
+#### Sensor Configuration
 
 Sensors define what actions to take when events are received. The chart includes a webhook sensor for notifications:
 
@@ -767,7 +809,7 @@ Sensors define what actions to take when events are received. The chart includes
 | argo.events.sensor.webhook.method              | HTTP method for webhook calls | "POST" |
 | argo.events.sensor.webhook.headers             | Additional HTTP headers | {"Content-Type": "application/json"} |
 
-### EventBus Configuration
+#### EventBus Configuration
 
 The EventBus handles event routing between EventSources and Sensors:
 
@@ -776,7 +818,7 @@ The EventBus handles event routing between EventSources and Sensors:
 | argo-events.eventBusConfig.jetstream.versions           | JetStream versions for EventBus | ["latest"] |
 | argo-events.global.image.tag                            | Argo Events image tag | "v1.9.1" |
 
-### Monitoring Integration
+#### Monitoring Integration
 
 When Argo Events is enabled with monitoring, additional metrics and dashboards are available:
 
@@ -787,7 +829,7 @@ When Argo Events is enabled with monitoring, additional metrics and dashboards a
 | argo-events.controller.serviceMonitor.enabled           | Enable ServiceMonitor for Prometheus discovery | true |
 | argo-events.controller.serviceMonitor.additionalLabels  | Additional labels for ServiceMonitor selection | {"release": "zoo-project-dru"} |
 
-### Real-time Dashboard Updates
+#### Real-time Dashboard Updates
 
 With Argo Events enabled, Grafana dashboards receive real-time updates:
 
@@ -795,7 +837,7 @@ With Argo Events enabled, Grafana dashboards receive real-time updates:
 2. **Event statistics**: Track event processing rates and success/failure ratios
 3. **Latency monitoring**: Monitor time between workflow completion and notification delivery
 
-### Webhook Integration
+#### Webhook Integration
 
 The chart includes a webhook service that receives event notifications:
 
@@ -828,7 +870,7 @@ spec:
 }
 ```
 
-### RBAC Configuration
+#### RBAC Configuration
 
 Argo Events requires specific permissions to monitor workflows:
 
@@ -839,7 +881,7 @@ Argo Events requires specific permissions to monitor workflows:
 | configmaps                | get, list, create, patch  | EventBus configuration            |
 | secrets                   | get, list                 | EventBus authentication           |
 
-### Troubleshooting
+#### Troubleshooting
 
 **Check EventSource status**:
 ```bash
@@ -882,19 +924,19 @@ curl -X POST http://localhost:8080/webhook \
   -d '{"test": "event", "workflowName": "test-workflow"}'
 ```
 
-### Security Considerations
+#### Security Considerations
 
 - **Network policies**: Consider restricting EventBus network access
 - **Authentication**: Use secrets for external webhook authentication  
 - **RBAC**: Apply principle of least privilege for service accounts
 - **TLS**: Enable TLS for external webhook endpoints
 
-## Monitoring
+### Monitoring
 
 The chart includes comprehensive monitoring capabilities using the Prometheus stack (Prometheus, Grafana, Alertmanager, and node-exporter) with real-time Argo Workflows integration.
 See [reference documentation](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack) for more information.
 
-### Core Monitoring Configuration
+#### Core Monitoring Configuration
 
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
@@ -909,6 +951,122 @@ See [reference documentation](https://artifacthub.io/packages/helm/prometheus-co
 | monitoring.kube-prometheus-stack.grafana.persistence.enabled | Enable Grafana data persistence | true |
 | monitoring.kube-prometheus-stack.grafana.persistence.size | Grafana storage size | "5Gi" |
 | monitoring.kube-prometheus-stack.alertmanager.enabled    | Enable Alertmanager for notifications | true |
+
+#### Helm Secret Size Limitations and Monitoring Deployment Strategies
+
+⚠️ **Important**: The complete monitoring stack (kube-prometheus-stack) adds ~670KB to the Helm secret, which can cause deployments to exceed Kubernetes' 1MB secret size limit, resulting in installation failures.
+
+##### Problem Description
+
+When deploying with full monitoring enabled (especially with Argo profiles), you may encounter this error:
+```
+Error: INSTALLATION FAILED: create: failed to create: Secret "sh.helm.release.v1.zoo-project-dru.v1" is invalid: data: Too long: must have at most 1048576 bytes
+```
+
+This happens because the monitoring stack includes:
+- **Grafana Dashboards**: ~400KB of dashboard configurations
+- **Prometheus Rules**: ~200KB of alerting and recording rules  
+- **CRDs and Templates**: ~70KB of additional Kubernetes resources
+
+##### Recommended Solutions
+
+**Solution 1: Separate Monitoring Deployment (Recommended)**
+
+Deploy monitoring as a separate Helm release to avoid secret size issues:
+
+```bash
+# 1. Deploy ZOO-Project without integrated monitoring
+skaffold dev -p argo  # Uses optimized values_argo.yaml with monitoring.enabled=false
+
+# 2. Deploy monitoring stack separately
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install monitoring prometheus-community/kube-prometheus-stack \
+  --namespace monitoring --create-namespace \
+  --set grafana.adminPassword=admin \
+  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+
+# 3. Access services
+kubectl port-forward -n zoo svc/zoo-project-dru-service 8080:80           # ZOO-Project
+kubectl port-forward -n zoo svc/zoo-project-dru-argo-workflows-server 2746:2746  # Argo UI
+kubectl port-forward -n monitoring svc/monitoring-grafana 3000:80         # Grafana
+```
+
+**Solution 2: Minimal Integrated Monitoring**
+
+Use a lightweight monitoring configuration that stays under the 1MB limit:
+
+```bash
+# Create optimized values file
+cat > values_argo_with_monitoring.yaml << EOF
+# Include all content from values_argo.yaml, then override:
+monitoring:
+  enabled: true
+  kube-prometheus-stack:
+    # Minimal Prometheus configuration
+    prometheus:
+      enabled: true
+      prometheusSpec:
+        retention: "7d"
+        storageSpec: null  # Disable persistent storage
+    # Lightweight Grafana without default dashboards  
+    grafana:
+      enabled: true
+      adminPassword: admin
+      defaultDashboardsEnabled: false  # Saves ~400KB
+      sidecar:
+        dashboards:
+          enabled: false
+    # Disable heavy components
+    alertmanager:
+      enabled: false      # Saves ~50KB
+    kube-state-metrics:
+      enabled: false      # Saves ~100KB
+    prometheus-node-exporter:
+      enabled: false      # Saves ~30KB
+    defaultRules:
+      create: false       # Saves ~200KB
+EOF
+
+# Deploy with minimal monitoring
+helm install zoo-project-dru ./zoo-project-dru \
+  --values values_argo_with_monitoring.yaml \
+  --namespace zoo --create-namespace
+```
+
+**Solution 3: Post-Deployment Dashboard Addition**
+
+Add Grafana dashboards after the initial deployment:
+
+```bash
+# 1. Deploy with minimal monitoring (Solution 2)
+# 2. Add custom dashboards via ConfigMaps
+kubectl create configmap argo-workflows-dashboard \
+  --from-file=dashboard.json=files/argo-workflows/grafana-dashboard.json \
+  --namespace zoo
+kubectl label configmap argo-workflows-dashboard grafana_dashboard=1
+
+# Grafana will automatically detect and load the dashboard
+```
+
+##### Size Optimization Summary
+
+| Configuration | Helm Secret Size | Monitoring Level | Recommended Use |
+|:-------------|:-----------------|:-----------------|:----------------|
+| Full monitoring | ~970KB+ | Complete | Separate deployment |
+| Minimal monitoring | ~300KB | Basic metrics only | Integrated deployment |
+| No monitoring | ~240KB | None | Development only |
+| Separate deployment | ~240KB + separate | Complete | **Production** |
+
+##### Troubleshooting Size Issues
+
+Check your deployment size before installing:
+```bash
+# Check template size
+helm template zoo-project-dru ./zoo-project-dru \
+  --values ./zoo-project-dru/values_argo.yaml | wc -c
+
+# If > 900,000 bytes, consider using separate monitoring deployment
+```
 
 ### Prometheus Node Exporter Configuration
 
@@ -1019,13 +1177,13 @@ customConfig.main.mySection: |-
 
 All these sections will be added to the `sections_list` from the `servicesNamespace` section.
 
-## Advanced Usage
+### Advanced Usage
 
-### Working with KEDA and Worker Protection
+#### Working with KEDA and Worker Protection
 
 When KEDA is enabled, the system provides intelligent protection for running jobs:
 
-#### Monitoring Worker Status
+##### Monitoring Worker Status
 
 Check the status of pods and their associated workers:
 
@@ -1040,7 +1198,7 @@ kubectl get scaledobjects -n zoo
 kubectl logs -n zoo deployment/zoo-project-dru-eviction-controller --tail=50
 ```
 
-#### Understanding Protection Annotations
+##### Understanding Protection Annotations
 
 The system uses several annotations to manage pod protection:
 
@@ -1049,7 +1207,7 @@ The system uses several annotations to manage pod protection:
 - `zoo-project.org/last-check`: Timestamp of last worker status check
 - `zoo-project.org/emergency-delete`: Emergency override for forced deletion
 
-#### Emergency Pod Deletion
+##### Emergency Pod Deletion
 
 If you need to force delete a protected pod:
 
@@ -1061,7 +1219,7 @@ kubectl annotate pod <pod-name> -n zoo zoo-project.org/emergency-delete=true
 kubectl delete pod <pod-name> -n zoo
 ```
 
-#### Scaling Behavior
+##### Scaling Behavior
 
 The system implements intelligent scaling:
 
@@ -1070,33 +1228,6 @@ The system implements intelligent scaling:
 3. **Scale-down**: Only pods without active workers can be terminated
 4. **Scale-to-zero**: When no workers are active, all pods can be terminated after grace period
 
-### Troubleshooting
-
-#### Common Issues
-
-**Pods not scaling to zero:**
-```bash
-# Check if pods have active workers
-kubectl describe pods -n zoo -l app.kubernetes.io/name=zoo-project-dru-zoofpm
-
-# Check ScaledObject configuration
-kubectl describe scaledobject -n zoo
-
-# Verify eviction controller is running
-kubectl get pods -n zoo -l app.kubernetes.io/component=eviction-controller
-```
-
-**Protection not working:**
-```bash
-# Check Kyverno policies (if enabled)
-kubectl get clusterpolicy
-
-# Test pod deletion (dry run)
-kubectl delete pod <pod-name> -n zoo --dry-run=server
-
-# Check eviction controller permissions
-kubectl auth can-i patch pods --as=system:serviceaccount:zoo:zoo-project-dru-eviction-controller -n zoo
-```
 
 
 ### Notification using Knative
@@ -1214,3 +1345,76 @@ Then, using the command below, you can get the pod name to access its log (using
 ````bash
 kubectl get pods -n default
 ````
+
+## Troubleshooting
+
+### Common Migration Issues
+
+**Helm secret size limit exceeded**:
+```bash
+# Error: Secret "sh.helm.release.v1.zoo-project-dru.v1" is invalid: 
+# data: Too long: must have at most 1048576 bytes
+
+# Common causes: Full monitoring stack (~670KB), Large dashboards, Complex configurations
+
+# Solution 1: Use optimized values with disabled optional components
+helm install zoo-project-dru ./zoo-project-dru \
+  --values ./zoo-project-dru/values_minikube.yaml \
+  --namespace zoo --create-namespace
+
+# Solution 2: Deploy monitoring separately (recommended for full features)
+# See "Helm Secret Size Limitations and Monitoring Deployment Strategies" section above
+```
+
+**PostgreSQL connection issues after migration**:
+```bash
+# Check if PostgreSQL is running with new image
+kubectl get pods -n zoo -l app.kubernetes.io/name=zoo-project-dru-postgresql
+
+# Check initialization logs
+kubectl logs -n zoo deployment/zoo-project-dru-postgresql --tail=50
+
+# Verify database creation
+kubectl exec -it -n zoo deployment/zoo-project-dru-postgresql -- psql -U zoo -d zoo -c "\dt"
+```
+
+**RabbitMQ setup issues**:
+```bash
+# Check auto-setup job completion
+kubectl get jobs -n zoo -l app.kubernetes.io/component=rabbitmq-setup
+
+# Check management plugin status
+kubectl port-forward -n zoo svc/zoo-project-dru-rabbitmq 15672:15672
+# Access: http://localhost:15672 (zoo/CHANGEME)
+
+# Verify queue creation
+kubectl logs -n zoo -l app.kubernetes.io/component=rabbitmq-setup
+```
+
+### KEDA-Specific Issues
+
+#### Common KEDA Issues
+
+**Pods not scaling to zero:**
+```bash
+# Check if pods have active workers
+kubectl describe pods -n zoo -l app.kubernetes.io/name=zoo-project-dru-zoofpm
+
+# Check ScaledObject configuration
+kubectl describe scaledobject -n zoo
+
+# Verify eviction controller is running
+kubectl get pods -n zoo -l app.kubernetes.io/component=eviction-controller
+```
+
+**Protection not working:**
+```bash
+# Check Kyverno policies (if enabled)
+kubectl get clusterpolicy
+
+# Test pod deletion (dry run)
+kubectl delete pod <pod-name> -n zoo --dry-run=server
+
+# Check eviction controller permissions
+kubectl auth can-i patch pods --as=system:serviceaccount:zoo:zoo-project-dru-eviction-controller -n zoo
+```

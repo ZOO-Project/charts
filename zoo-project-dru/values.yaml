@@ -84,6 +84,8 @@ autoscaling:
 keda:
   # Enable KEDA as a subchart dependency
   enabled: false
+  # Skip ScaledObject creation if KEDA CRDs are not ready
+  skipScaledObject: false
   # KEDA subchart configuration
   # When enabled, KEDA will be deployed as part of this chart
   # See: https://github.com/kedacore/charts/tree/main/keda
@@ -116,7 +118,7 @@ keda:
     namespaceOverride: "kyverno-system"  # Dedicated namespace for Kyverno
     policies:
       zoofpmProtection:
-        enabled: true  # Policy to protect zoofpm pods
+        enabled: false  # Policy to protect zoofpm pods - disabled since Kyverno is not installed
         failurePolicy: "Enforce"  # Strictly block deletions (Enforce/Audit)
         background: false  # Real-time validation only
         protectZoofpm: true  # Prevent deletion of zoofpm pods
@@ -133,66 +135,10 @@ keda:
   triggers:
     postgresql:
       enabled: true
-      # STRICT query - Absolute protection of pods by IP
-      # GUARANTEE: No pod with its IP in workers.host can be deleted
-      query: |
-        WITH active_worker_ips AS (
-          -- IPs of pods that have active workers - ABSOLUTE PROTECTION
-          SELECT DISTINCT host as protected_ip
-          FROM workers 
-          WHERE status = 1 AND host IS NOT NULL
-        ),
-        protected_count AS (
-          -- MINIMUM number of pods to keep (those with workers)
-          SELECT COUNT(*) as must_keep_minimum
-          FROM active_worker_ips
-        ),
-        workload_needs AS (
-          -- Calculation based on total workload
-          SELECT 
-            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_workers,
-            -- Pods needed for workload (async_worker=10 per pod)
-            -- Scale-to-zero if no active workers
-            CASE 
-              WHEN SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) > 0
-              THEN GREATEST(CEIL(SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END)::decimal / 10), 1)
-              ELSE 0  -- Scale-to-zero if no workers
-            END as pods_for_workload
-          FROM workers
-          WHERE host IS NOT NULL
-        ),
-        service_needs AS (
-          -- Pods needed for running services
-          SELECT 
-            COUNT(*) as running_services,
-            -- Only if workers exist AND services
-            CASE 
-              WHEN EXISTS(SELECT 1 FROM workers WHERE status = 1 AND host IS NOT NULL) 
-                AND COUNT(*) > 0 
-              THEN GREATEST(CEIL(COUNT(*)::decimal / 10), 1)
-              ELSE 0  -- Scale-to-zero if no active workers
-            END as pods_for_services
-          FROM services 
-          WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')
-        )
-        SELECT 
-          -- Hybrid logic: active workers AND pending services
-          GREATEST(
-            -- Calculation based on active workers (1 pod per 10 workers)
-            CASE 
-              WHEN (SELECT COUNT(*) FROM workers WHERE status = 1 AND host IS NOT NULL) > 0
-              THEN CEIL((SELECT COUNT(*)::decimal FROM workers WHERE status = 1 AND host IS NOT NULL) / 10)
-              ELSE 0
-            END,
-            -- Calculation based on active services (1 pod per 5 services)
-            CASE 
-              WHEN (SELECT COUNT(*) FROM services WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')) > 0
-              THEN CEIL((SELECT COUNT(*)::decimal FROM services WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')) / 5)
-              ELSE 0
-            END,
-            -- Scale-to-zero if no activity
-            0
-          )
+      # Use ConfigMap for the PostgreSQL query (recommended for complex queries)
+      useConfigMap: true
+      # Alternative: inline query (set useConfigMap: false and uncomment the query below)
+      # query: "SELECT COUNT(*) FROM workers WHERE status = 1"
       targetQueryValue: "1.0"  # 1:1 scaling - no over-allocation
       activationTargetQueryValue: "0.1"  # Scale-up at the slightest activity
       host: "" # Will be auto-generated from postgresql service
@@ -218,7 +164,7 @@ zoo:
   promoteHead: true
   detectEntrypoint: false
   rabbitmq:
-    definitions: "files/rabbitmq/definitions.json"
+    definitions: "files/rabbitmq/definitions.json.tpl"
 
 zoofpm:
   image:
@@ -280,8 +226,39 @@ workflow:
     CwlRunnerEndpoint: "calrissian-runner"
 
 postgresql:
-  defineEnvironmentVariables: false
+  # Configuration for official PostgreSQL Docker image
   enabled: true
+  name: postgresql-db
+  serviceName: postgresql-db-service
+
+  # Security configuration
+  useSecret: false  # Set to true to store credentials in a Kubernetes Secret
+  secretName: ""    # Optional: specify an existing secret name, otherwise auto-generated
+
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+
+  # Resources configuration
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  # Persistence configuration
+  persistence:
+    enabled: true
+    volumeName: postgresql-data
+    mountPath: /var/lib/postgresql/data
+    accessMode: ReadWriteOnce
+    size: 8Gi
+    storageClass: ""
+
+  # Init scripts configuration (keep existing ConfigMap)
   primary:
     initdb:
       scriptsConfigMap: "postgresql-primary-init-scripts"
@@ -299,14 +276,45 @@ global:
 
 # rabbitmq
 rabbitmq:
-  auth:
-    username: RABBITMQ_USERNAME
-    password: CHANGEME
-  loadDefinition:
+  enabled: true
+  autoSetup:
     enabled: true
-    existingSecret: load-definition
-  extraConfiguration: |
-    load_definitions = /app/load_definition.json
+  image:
+    repository: rabbitmq
+    tag: "4.1.4-alpine"
+    pullPolicy: IfNotPresent
+
+  replicas: 1
+
+  # Auto-setup: automatically enable management plugin and import definitions
+  autoSetup:
+    enabled: true
+
+  auth:
+    username: "zoo"
+    password: "CHANGEME"
+    vhost: "/"
+
+  clustering:
+    enabled: false
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: ""
+
+  # RabbitMQ configuration
+  # If config is set, it overrides the default file-based configuration
+  # If not set (or empty), the configuration will be loaded from files/rabbitmq/rabbitmq.conf
+  config: ""
 
 persistence:
   enabled: true
@@ -348,6 +356,62 @@ cookiecutter:
 
 minio:
   enabled: false
+  # Configuration for official MinIO chart (https://charts.min.io/)
+  mode: standalone  # or 'distributed' for production
+  replicas: 1
+
+  # Authentication
+  rootUser: minio-admin
+  rootPassword: minio-secret-password
+
+  # Backward compatibility: keep s3-service name
+  fullnameOverride: "s3-service"
+
+  # Create default buckets after install
+  buckets:
+    - name: eoepca
+      policy: none
+      purge: false
+    - name: results
+      policy: none
+      purge: false
+
+  # Resources
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+  # Persistence
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""  # Use default storage class
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 9000
+
+  # Console (web UI)
+  consoleService:
+    type: ClusterIP
+    port: 9001
+
+  # Environment variables
+  environment:
+    MINIO_BROWSER: "on"
+    MINIO_DOMAIN: ""
+
+  # Security context
+  securityContext:
+    enabled: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
 
 websocketd:
   enabled: false
@@ -358,11 +422,38 @@ websocketd:
     tag: 67449315857b54bbc970f02c7aa4fd10a94721f0
 
 redis: 
+  # Configuration for official Redis Docker image
   enabled: false
-  replica:
-    replicaCount: 1
+  name: redis-db
+  serviceName: redis-db-service
+  port: 6379
+
+  image:
+    repository: redis
+    tag: "alpine3.22"
+    pullPolicy: IfNotPresent
+
+  # Authentication configuration
   auth:
     enabled: false
+    password: ""
+
+  # Resources configuration
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Persistence configuration
+  persistence:
+    enabled: true
+    volumeName: redis-data
+    accessMode: ReadWriteOnce
+    size: 4Gi
+    storageClass: ""
 
 iam: 
   enabled: true
@@ -393,8 +484,6 @@ webui:
   oidc:
     issuer: https://auth.geolabs.fr/realms/zooproject
     remoteUserClaim: email
-    clientId: webapp
-    clientSecret: onKWPIoKeRAThAkLjSINJZ6gd1qVzhXs
     providerTokenEndpointAuth: client_secret_basic
     authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
     scope: "openid email"
@@ -406,6 +495,9 @@ argo:
   # Options for automatic token management
   autoTokenManagement: true  # Enable automatic token retrieval
   restartOnTokenUpdate: false  # Restart pods after token update
+  # Service account configuration for Argo workflows
+  serviceAccount:
+    name: "argo-workflow"
   # Ingress configuration for Argo Workflows UI
   ingress:
     enabled: false
@@ -460,10 +552,10 @@ argo-workflows:
       secure: false
       accessKeySecret:
         name: s3-service
-        key: root-user
+        key: rootUser
       secretKeySecret:
         name: s3-service
-        key: root-password
+        key: rootPassword
   stageInOut:
     enabled: true
 

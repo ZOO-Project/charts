@@ -1,20 +1,25 @@
 useKubeProxy: true
 
+# Optimization: Use shorter names to reduce Helm secret size
+# nameOverride: "zoo"
+# fullnameOverride: "zoo"
+
 minio:
   # minio chart value parameters description can be found here:
   # https://github.com/bitnami/charts/tree/main/bitnami/minio
   enabled: true
-  auth:
-    rootUser: minio-admin
-    rootPassword: minio-secret-password
-    # to access the dashboard from browser run the following port-forward command:
-    # kubectl port-forward svc/zoo-project-dru-minio 9001:9001 -n zp
   persistence:
     enabled: true
     storageClass: standard
     size: 2Gi
     accessMode: ReadWriteOnce
   defaultBuckets: "eoepca"
+  # Create default buckets using official MinIO chart format
+  buckets:
+    - name: eoepca
+      policy: none
+      purge: false
+  # Keep backward compatibility with s3-service name
   fullnameOverride: "s3-service"
 
 cookiecutter:
@@ -26,6 +31,14 @@ iam:
   openeoAuth:
     enabled: false
 
+# Optimization: disable optional components to reduce Helm secret size
+zoo:
+  openapi:
+    enabled: false  # Disable OpenAPI spec (saves ~29KB)
+  security:
+    enabled: false  # Disable security service (saves ~11KB)  
+  includeOptionalConfigs: false  # Disable web assets (saves ~2KB)
+
 webui:
   enabled: false
 
@@ -35,3 +48,40 @@ websocketd:
 
 redis:
   enabled: true
+
+rabbitmq:
+  enabled: true
+  autoSetup:
+    enabled: true
+  persistence:
+    storageClass: standard
+    size: 1Gi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# KEDA Configuration for Minikube
+# Note: KEDA is installed by Skaffold profile, not by this chart
+# keda:
+#   enabled: false  # Disable subchart, KEDA installed separately
+#   skipScaledObject: true  # Skip ScaledObject creation until KEDA is ready
+#   operator:
+#     replicaCount: 1
+#   metricsServer:
+#     replicaCount: 1
+#   policies:
+#     zoofpmProtection:
+#       enabled: true
+#   
+#   # Use ConfigMap for PostgreSQL trigger (reduces Helm secret size)
+#   triggers:
+#     postgresql:
+#       useConfigMap: true
+    
+#   # Enable eviction controller for minikube
+#   evictionController:
+#     enabled: true

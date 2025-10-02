@@ -1,0 +1,16 @@
+{{- if .Values.rabbitmq.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-config
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: rabbitmq
+data:
+  rabbitmq.conf: |
+{{- if .Values.rabbitmq.config }}
+{{ .Values.rabbitmq.config | indent 4 }}
+{{- else }}
+{{ tpl (.Files.Get "files/rabbitmq/rabbitmq.conf") . | indent 4 }}
+{{- end }}
+{{- end }}
