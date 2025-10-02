@@ -109,49 +109,6 @@ global.postgresql.auth.existingSecret: postgresql-secret
 
 If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZOO-FPM pods, it means that the database setting will use these variables rather than the one defined in the `main.cfg` available from the configmap.
 
-## Chart Architecture
-
-### Migration from Bitnami Dependencies
-
-This chart has been **completely redesigned** to eliminate external dependencies and provide direct control over all components:
-
-- **PostgreSQL**: Migrated from `bitnami/postgresql` to official `postgres:16-alpine` Docker image
-- **RabbitMQ**: Migrated from `bitnami/rabbitmq` to official `rabbitmq:4.1.4-alpine` Docker image  
-- **Redis**: Migrated from `bitnami/redis` to official `redis:7-alpine` Docker image
-- **MinIO**: Uses official MinIO chart with backward-compatible service naming
-
-### Key Benefits of Migration
-
-- **Reduced Complexity**: Eliminated chart dependencies and version conflicts
-- **Better Control**: Direct template management for all database components
-- **Smaller Deployments**: Helm secret size reduced from >1MB to ~820KB
-- **Faster Updates**: No dependency on external chart release cycles
-- **Enhanced Security**: Direct control over image sources and security policies
-
-### Performance Optimizations
-
-This version includes several optimizations for better deployment reliability and resource usage:
-
-#### Helm Secret Size Optimization
-
-- **Problem**: Helm secrets >1MB cause deployment failures
-- **Solution**: ConfigMap externalization and conditional template rendering
-- **Result**: Chart size reduced from >1MB to ~820KB (~19% reduction)
-
-#### Resource Management
-
-- **Official Images**: Lighter Alpine-based images for better resource efficiency
-- **Smart Scaling**: KEDA-based autoscaling prevents over-provisioning
-- **Worker Protection**: Prevents interruption of running jobs during scale-down
-- **Scale-to-Zero**: Automatic scaling to zero replicas when no work is available
-
-#### Deployment Reliability
-
-- **Conditional Templates**: Only deploy components when actually needed
-- **Readiness Probes**: Enhanced health checks for all database components  
-- **Init Containers**: Proper startup sequencing and dependency management
-- **Graceful Degradation**: Services continue operating even if optional components fail
-
 ### Dependency Management
 
 #### MinIO
@@ -176,14 +133,8 @@ See the reference [MinIO chart documentation](https://artifacthub.io/packages/he
 
 ### PostgreSQL
 
-**Migration from Bitnami**: This chart now deploys PostgreSQL using the official [PostgreSQL Docker image](https://hub.docker.com/_/postgres), eliminating the Bitnami chart dependency and providing direct template control.
+This chart deploys PostgreSQL using the official [PostgreSQL Docker image](https://hub.docker.com/_/postgres).
 
-**Key Changes**:
-- **Official Image**: `postgres:16-alpine` (was `bitnami/postgresql`)
-- **Direct Templates**: Custom Kubernetes manifests (was subchart dependency)
-- **Enhanced Init**: Automatic database and table creation with proper sequencing
-- **KEDA Integration**: Worker tracking tables for intelligent autoscaling
-- **Backward Compatibility**: Same connection parameters and secret structure
 
 | Name                                       | Description                                                     | Value                    |
 |:-------------------------------------------|:----------------------------------------------------------------|:-------------------------|
@@ -210,14 +161,8 @@ If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZO
 
 ### RabbitMQ
 
-**Migration from Bitnami**: This chart now integrates RabbitMQ using the [official `rabbitmq:4.1.4-alpine` Docker image](https://hub.docker.com/_/rabbitmq), replacing the Bitnami chart dependency with direct template management.
+This chart now integrates RabbitMQ using the [official Docker image](https://hub.docker.com/_/rabbitmq).
 
-**Key Changes**:
-- **Official Image**: `rabbitmq:4.1.4-alpine` (was `bitnami/rabbitmq`)
-- **Auto-Setup**: HTTP API-based queue and exchange configuration
-- **Management Plugin**: Automatically enabled with web console access
-- **KEDA Integration**: Queue length monitoring for responsive autoscaling
-- **Simplified Configuration**: Direct JSON definitions instead of complex subchart values
 
 | Name                                       | Description                                              | Value                                        |
 |:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
@@ -233,14 +178,7 @@ If an environment variable for PostgreSQL is available from the ZOO-Kernel or ZO
 
 ### Redis
 
-**Migration from Bitnami**: This chart deploys Redis using the official [Redis Docker image](https://hub.docker.com/_/redis), eliminating the Bitnami subchart dependency.
-
-**Key Changes**:
-- **Official Image**: `redis:7-alpine` (was `bitnami/redis`)
-- **Simplified Deployment**: Direct StatefulSet instead of subchart complexity
-- **Persistent Storage**: Optional persistence with configurable storage classes
-- **Resource Optimization**: Lighter Alpine image with reduced memory footprint
-- **Enhanced Security**: Optional authentication with flexible password management
+This chart deploys Redis using the official [Redis Docker image](https://hub.docker.com/_/redis).
 
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
