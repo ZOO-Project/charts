@@ -72,7 +72,7 @@ spec:
         {{- else }}
         {{- if .Values.postgresql.enabled }}
         - name: PG_HOST
-          value: "{{ .Values.postgresql.serviceName }}"
+          value: "{{ include "zoo-project-dru.postgresql.servicename" . }}"
         - name: PG_DATABASE
           value: {{ .Values.global.postgresql.auth.database | quote}}
         - name: PG_PASSWORD
@@ -91,7 +91,7 @@ spec:
         {{- else }}
         # External PostgreSQL (not managed by chart)
         - name: PG_HOST
-          value: "postgresql-db-service"
+          value: "{{ include "zoo-project-dru.fullname" . }}-postgresql-service"
         - name: PG_DATABASE
           value: {{ .Values.global.postgresql.auth.database | quote}}
         - name: PG_PASSWORD

@@ -1,5 +1,9 @@
 useKubeProxy: true
 
+# Optimization: Use shorter names to reduce Helm secret size
+# nameOverride: "zoo"
+# fullnameOverride: "zoo"
+
 minio:
   # minio chart value parameters description can be found here:
   # https://github.com/bitnami/charts/tree/main/bitnami/minio
@@ -27,6 +31,14 @@ iam:
   openeoAuth:
     enabled: false
 
+# Optimization: disable optional components to reduce Helm secret size
+zoo:
+  openapi:
+    enabled: false  # Disable OpenAPI spec (saves ~29KB)
+  security:
+    enabled: false  # Disable security service (saves ~11KB)  
+  includeOptionalConfigs: false  # Disable web assets (saves ~2KB)
+
 webui:
   enabled: false
 
@@ -39,6 +51,8 @@ redis:
 
 rabbitmq:
   enabled: true
+  autoSetup:
+    enabled: true
   persistence:
     storageClass: standard
     size: 1Gi
@@ -50,13 +64,24 @@ rabbitmq:
       cpu: 100m
       memory: 128Mi
 
-keda:
-  enabled: true
-  operator:
-    replicaCount: 1
-  metricsServer:
-    replicaCount: 1
-  
-  # Enable eviction controller for minikube
-  evictionController:
-    enabled: true
+# KEDA Configuration for Minikube
+# Note: KEDA is installed by Skaffold profile, not by this chart
+# keda:
+#   enabled: false  # Disable subchart, KEDA installed separately
+#   skipScaledObject: true  # Skip ScaledObject creation until KEDA is ready
+#   operator:
+#     replicaCount: 1
+#   metricsServer:
+#     replicaCount: 1
+#   policies:
+#     zoofpmProtection:
+#       enabled: true
+#   
+#   # Use ConfigMap for PostgreSQL trigger (reduces Helm secret size)
+#   triggers:
+#     postgresql:
+#       useConfigMap: true
+    
+#   # Enable eviction controller for minikube
+#   evictionController:
+#     enabled: true

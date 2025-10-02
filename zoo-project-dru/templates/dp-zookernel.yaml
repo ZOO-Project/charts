@@ -20,7 +20,9 @@ spec:
         checksum/cm-cwlwrapper-assets: {{ include (print .Template.BasePath "/cm-cwlwrapper-assets.yaml") . | sha256sum }}
         checksum/cm-zoo-deploy-service-config: {{ include (print .Template.BasePath "/cm-zoo-deploy-service-config.yaml") . | sha256sum }}
         checksum/cm-zoo-project-config: {{ include (print .Template.BasePath "/cm-zoo-project-config.yaml") . | sha256sum }}
+        {{- if .Values.zoo.openapi.enabled }}
         checksum/cm-openapi-config: {{ include (print .Template.BasePath "/cm-openapi-config.yaml") . | sha256sum }}
+        {{- end }}
       labels:
         {{- include "zoo-project-dru.selectorLabels" . | nindent 8 }}
     spec:
@@ -29,7 +31,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       initContainers:
-        {{- include "zoo-project-dru.rabbitmq.initContainer" (dict "Values" .Values "Release" .Release "componentName" "zookernel") | nindent 8 }}
+        {{- include "zoo-project-dru.rabbitmq.initContainer" (dict "Values" .Values "Release" .Release "Chart" .Chart "componentName" "zookernel") | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -40,7 +42,7 @@ spec:
           args: [ "-D", "FOREGROUND" ]
           env:
             - name: ZOO_REDIS_HOST
-              value: {{ .Values.redis.serviceName }}
+              value: {{ include "zoo-project-dru.redis.servicename" . }}
 
             {{- if (.Values.global.postgresql.auth.existingSecret) }}
             - name: PGPASSWORD
@@ -76,7 +78,7 @@ spec:
             {{- else }}
             {{- if .Values.postgresql.enabled }}
             - name: PGHOST
-              value: "{{ .Values.postgresql.serviceName }}"
+              value: "{{ include "zoo-project-dru.postgresql.servicename" . }}"
             - name: PGDATABASE
               value: {{ .Values.global.postgresql.auth.database | quote}}
             - name: PGPASSWORD
@@ -155,6 +157,7 @@ spec:
             - name: zoo-example-config
               mountPath: /var/www/html/examples/water-bodies/job-order1.json
               subPath: job-order1.json
+            {{- if .Values.zoo.openapi.enabled }}
             - name: openapi-config
               mountPath: /var/www/header.md
               subPath: header.md
@@ -179,6 +182,7 @@ spec:
             - name: openapi-config
               mountPath: /var/www/job-results.md
               subPath: job-results.md
+            {{- end }}
             - name: zoo-deploy-service-config
               mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
               subPath: cookiecutter_config.yaml
@@ -203,9 +207,11 @@ spec:
         - name: zoo-example-config
           configMap:
             name: {{ .Release.Name }}-zoo-example-config
+        {{- if .Values.zoo.openapi.enabled }}
         - name: openapi-config
           configMap:
             name: {{ .Release.Name }}-openapi-config
+        {{- end }}
         - name: zoo-deploy-service-config
           configMap:
             name: {{ .Release.Name }}-zoo-deploy-service-config

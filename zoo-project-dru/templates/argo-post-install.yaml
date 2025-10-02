@@ -23,7 +23,7 @@ spec:
       serviceAccountName: {{ .Values.argo.serviceAccount.name }}
       containers:
       - name: post-install
-        image: bitnami/kubectl:1.28
+        image: alpine/k8s:1.31.13
         command:
         - /bin/bash
         - -c

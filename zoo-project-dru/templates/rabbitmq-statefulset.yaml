@@ -99,7 +99,7 @@ spec:
           name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-plugins
       - name: definitions
         secret:
-          secretName: load-definition
+          secretName: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-definition
   {{- if .Values.rabbitmq.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:

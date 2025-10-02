@@ -1,4 +1,4 @@
-{{- if and .Values.keda.enabled .Values.keda.scaleTargetRef }}
+{{- if and .Values.keda.enabled .Values.keda.scaleTargetRef (not .Values.keda.skipScaledObject) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -7,7 +7,7 @@ metadata:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-weight": "5"  # Execute after KEDA is ready but before other components
+    "helm.sh/hook-weight": "10"  # Execute after KEDA CRDs are installed (weight 5)
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -49,7 +49,12 @@ spec:
   - type: postgresql
     name: pg_workers_and_jobs
     metadata:
+      {{- if .Values.keda.triggers.postgresql.useConfigMap }}
+      queryFromConfigMap: {{ include "zoo-project-dru.keda.postgresql.configmap" . }}
+      queryFromConfigMapKey: query.sql
+      {{- else }}
       query: {{ .Values.keda.triggers.postgresql.query | quote }}
+      {{- end }}
       targetQueryValue: {{ .Values.keda.triggers.postgresql.targetQueryValue | quote }}
       {{- if .Values.keda.triggers.postgresql.activationTargetQueryValue }}
       activationTargetQueryValue: {{ .Values.keda.triggers.postgresql.activationTargetQueryValue | quote }}
@@ -62,7 +67,7 @@ spec:
       # Use values from configuration since no existing secret is defined
       {{- $pgHost := .Values.keda.triggers.postgresql.host }}
       {{- if not $pgHost }}
-      {{- $pgHost = printf "%s.%s.svc.cluster.local" .Values.postgresql.serviceName .Release.Namespace }}
+      {{- $pgHost = printf "%s.%s.svc.cluster.local" (include "zoo-project-dru.postgresql.servicename" .) (.Release.Namespace | default "zoo") }}
       {{- end }}
       host: {{ $pgHost | quote }}
       {{- $pgPort := .Values.keda.triggers.postgresql.port }}

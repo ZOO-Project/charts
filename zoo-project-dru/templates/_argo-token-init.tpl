@@ -4,7 +4,7 @@
 
 initContainers:
 - name: argo-token-retriever
-  image: bitnami/kubectl:latest
+  image: alpine/k8s:1.31.13
   command:
   - /bin/bash
   - -c

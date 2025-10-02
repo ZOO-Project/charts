@@ -84,6 +84,8 @@ autoscaling:
 keda:
   # Enable KEDA as a subchart dependency
   enabled: false
+  # Skip ScaledObject creation if KEDA CRDs are not ready
+  skipScaledObject: false
   # KEDA subchart configuration
   # When enabled, KEDA will be deployed as part of this chart
   # See: https://github.com/kedacore/charts/tree/main/keda
@@ -116,7 +118,7 @@ keda:
     namespaceOverride: "kyverno-system"  # Dedicated namespace for Kyverno
     policies:
       zoofpmProtection:
-        enabled: true  # Policy to protect zoofpm pods
+        enabled: false  # Policy to protect zoofpm pods - disabled since Kyverno is not installed
         failurePolicy: "Enforce"  # Strictly block deletions (Enforce/Audit)
         background: false  # Real-time validation only
         protectZoofpm: true  # Prevent deletion of zoofpm pods
@@ -133,66 +135,10 @@ keda:
   triggers:
     postgresql:
       enabled: true
-      # STRICT query - Absolute protection of pods by IP
-      # GUARANTEE: No pod with its IP in workers.host can be deleted
-      query: |
-        WITH active_worker_ips AS (
-          -- IPs of pods that have active workers - ABSOLUTE PROTECTION
-          SELECT DISTINCT host as protected_ip
-          FROM workers 
-          WHERE status = 1 AND host IS NOT NULL
-        ),
-        protected_count AS (
-          -- MINIMUM number of pods to keep (those with workers)
-          SELECT COUNT(*) as must_keep_minimum
-          FROM active_worker_ips
-        ),
-        workload_needs AS (
-          -- Calculation based on total workload
-          SELECT 
-            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_workers,
-            -- Pods needed for workload (async_worker=10 per pod)
-            -- Scale-to-zero if no active workers
-            CASE 
-              WHEN SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) > 0
-              THEN GREATEST(CEIL(SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END)::decimal / 10), 1)
-              ELSE 0  -- Scale-to-zero if no workers
-            END as pods_for_workload
-          FROM workers
-          WHERE host IS NOT NULL
-        ),
-        service_needs AS (
-          -- Pods needed for running services
-          SELECT 
-            COUNT(*) as running_services,
-            -- Only if workers exist AND services
-            CASE 
-              WHEN EXISTS(SELECT 1 FROM workers WHERE status = 1 AND host IS NOT NULL) 
-                AND COUNT(*) > 0 
-              THEN GREATEST(CEIL(COUNT(*)::decimal / 10), 1)
-              ELSE 0  -- Scale-to-zero if no active workers
-            END as pods_for_services
-          FROM services 
-          WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')
-        )
-        SELECT 
-          -- Hybrid logic: active workers AND pending services
-          GREATEST(
-            -- Calculation based on active workers (1 pod per 10 workers)
-            CASE 
-              WHEN (SELECT COUNT(*) FROM workers WHERE status = 1 AND host IS NOT NULL) > 0
-              THEN CEIL((SELECT COUNT(*)::decimal FROM workers WHERE status = 1 AND host IS NOT NULL) / 10)
-              ELSE 0
-            END,
-            -- Calculation based on active services (1 pod per 5 services)
-            CASE 
-              WHEN (SELECT COUNT(*) FROM services WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')) > 0
-              THEN CEIL((SELECT COUNT(*)::decimal FROM services WHERE end_time IS NULL AND fstate NOT IN ('Succeeded', 'Failed')) / 5)
-              ELSE 0
-            END,
-            -- Scale-to-zero if no activity
-            0
-          )
+      # Use ConfigMap for the PostgreSQL query (recommended for complex queries)
+      useConfigMap: true
+      # Alternative: inline query (set useConfigMap: false and uncomment the query below)
+      # query: "SELECT COUNT(*) FROM workers WHERE status = 1"
       targetQueryValue: "1.0"  # 1:1 scaling - no over-allocation
       activationTargetQueryValue: "0.1"  # Scale-up at the slightest activity
       host: "" # Will be auto-generated from postgresql service
@@ -331,6 +277,8 @@ global:
 # rabbitmq
 rabbitmq:
   enabled: true
+  autoSetup:
+    enabled: true
   image:
     repository: rabbitmq
     tag: "4.1.4-alpine"
@@ -364,25 +312,9 @@ rabbitmq:
     storageClass: ""
 
   # RabbitMQ configuration
-  config: |
-    ## Management plugin
-    management.tcp.port = 15672
-
-    ## Disable disk free limit (for development)
-    disk_free_limit.absolute = 1GB
-
-    ## Enable logging
-    log.console = true
-    log.console.level = info
-
-    ## Default user configuration
-    default_user = zoo
-    default_pass = CHANGEME
-    default_vhost = /
-    default_user_tags.administrator = true
-    default_permissions.configure = .*
-    default_permissions.read = .*
-    default_permissions.write = .*
+  # If config is set, it overrides the default file-based configuration
+  # If not set (or empty), the configuration will be loaded from files/rabbitmq/rabbitmq.conf
+  config: ""
 
 persistence:
   enabled: true
@@ -552,8 +484,6 @@ webui:
   oidc:
     issuer: https://auth.geolabs.fr/realms/zooproject
     remoteUserClaim: email
-    clientId: webapp
-    clientSecret: onKWPIoKeRAThAkLjSINJZ6gd1qVzhXs
     providerTokenEndpointAuth: client_secret_basic
     authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
     scope: "openid email"

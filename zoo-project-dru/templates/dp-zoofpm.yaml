@@ -36,7 +36,9 @@ spec:
         checksum/cm-cwlwrapper-assets: {{ include (print .Template.BasePath "/cm-cwlwrapper-assets.yaml") . | sha256sum }}
         checksum/cm-zoo-deploy-service-config: {{ include (print .Template.BasePath "/cm-zoo-deploy-service-config.yaml") . | sha256sum }}
         checksum/cm-zoo-project-config: {{ include (print .Template.BasePath "/cm-zoo-project-config.yaml") . | sha256sum }}
+        {{- if .Values.zoo.openapi.enabled }}
         checksum/cm-openapi-config: {{ include (print .Template.BasePath "/cm-openapi-config.yaml") . | sha256sum }}
+        {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-zoofpm
         app.kubernetes.io/instance: {{ .Release.Name }}-zoofpm
@@ -50,7 +52,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Release.Name }}-processing-manager
       initContainers:
-        {{- include "zoo-project-dru.rabbitmq.initContainer" (dict "Values" .Values "Release" .Release "componentName" "zoofpm") | nindent 8 }}
+        {{- include "zoo-project-dru.rabbitmq.initContainer" (dict "Values" .Values "Release" .Release "Chart" .Chart "componentName" "zoofpm") | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -66,7 +68,7 @@ spec:
             - name: ORIGIN_NAMESPACE
               value: {{ .Release.Namespace }}
             - name: ZOO_RABBITMQ_HOST
-              value: {{ .Release.Name }}-rabbitmq
+              value: {{ include "zoo-project-dru.rabbitmq.serviceName" . }}
             - name: STORAGE_CLASS
               value: {{ .Values.workflow.storageClass }}
             - name: DEFAULT_VOLUME_SIZE
@@ -175,7 +177,7 @@ spec:
             {{- else }}
             {{- if .Values.postgresql.enabled }}
             - name: PGHOST
-              value: "{{ .Values.postgresql.serviceName }}"
+              value: "{{ include "zoo-project-dru.postgresql.servicename" . }}"
             - name: PGDATABASE
               value: {{ .Values.global.postgresql.auth.database | quote}}
             - name: PGPASSWORD
@@ -228,6 +230,7 @@ spec:
               mountPath: {{ .Values.persistence.tmpPath }}/cookiecutter_config.yaml
               subPath: cookiecutter_config.yaml
 
+            {{- if not .Values.argo.enabled }}
             - name: cwlwrapper-config
               mountPath: /assets/main.yaml
               subPath: main.yaml
@@ -247,6 +250,7 @@ spec:
             - name: cwlwrapper-config
               mountPath: /assets/stagein-file.yaml
               subPath: stagein-file.yaml
+            {{- end }}
 
             - name: ades-processing-services
               mountPath: {{ .Values.persistence.servicesNamespacePath }}
@@ -265,9 +269,11 @@ spec:
         - name: zoo-kernel-config
           configMap:
             name: {{ .Release.Name }}-zoo-kernel-config
+        {{- if .Values.zoo.openapi.enabled }}
         - name: openapi-config
           configMap:
             name: {{ .Release.Name }}-openapi-config
+        {{- end }}
         - name: zoo-deploy-service-config
           configMap:
             name: {{ .Release.Name }}-zoo-deploy-service-config

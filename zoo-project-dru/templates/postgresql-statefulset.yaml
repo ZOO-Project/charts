@@ -4,22 +4,22 @@ kind: StatefulSet
 metadata:
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Values.postgresql.name }}
+    app: {{ include "zoo-project-dru.fullname" . }}-postgresql
     chart: {{ include "zoo-project-dru.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  name: {{ .Values.postgresql.name }}
+  name: {{ include "zoo-project-dru.fullname" . }}-postgresql
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.postgresql.name }}
+      app: {{ include "zoo-project-dru.fullname" . }}-postgresql
       release: {{ .Release.Name }}
-  serviceName: {{ .Values.postgresql.name }}
+  serviceName: {{ include "zoo-project-dru.fullname" . }}-postgresql-service
   template:
     metadata:
       labels:
-        app: {{ .Values.postgresql.name }}
+        app: {{ include "zoo-project-dru.fullname" . }}-postgresql
         release: {{ .Release.Name }}
     spec:
       {{- with .Values.imagePullSecrets }}

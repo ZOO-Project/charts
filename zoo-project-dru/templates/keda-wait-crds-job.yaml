@@ -1,0 +1,32 @@
+{{- if and .Values.keda.enabled .Values.keda.waitForCRDs }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "zoo-project-dru.fullname" . }}-wait-keda-crds
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "8"  # Execute before ScaledObject (weight 10)
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    spec:
+      serviceAccountName: {{ include "zoo-project-dru.serviceAccountName" . }}
+      restartPolicy: Never
+      containers:
+      - name: wait-keda-crds
+        image: alpine/k8s:1.31.13
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for KEDA CRDs to be available..."
+          timeout 300 bash -c '
+            until kubectl get crd scaledobjects.keda.sh >/dev/null 2>&1; do
+              echo "Waiting for ScaledObject CRD..."
+              sleep 5
+            done
+          '
+          echo "KEDA CRDs are ready!"
+{{- end }}

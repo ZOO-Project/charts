@@ -27,7 +27,7 @@ spec:
           
           # Wait for RabbitMQ management interface
           until curl -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
-            http://{{ include "zoo-project-dru.fullname" . }}-rabbitmq:15672/api/overview >/dev/null 2>&1; do
+            http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/overview >/dev/null 2>&1; do
             echo "Waiting for RabbitMQ management API..."
             sleep 10
           done
@@ -39,7 +39,7 @@ spec:
             -H "Content-Type: application/json" \
             -X POST \
             -d @/etc/rabbitmq/definitions.json \
-            http://{{ include "zoo-project-dru.fullname" . }}-rabbitmq:15672/api/definitions
+            http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/definitions
           
           echo "Definitions imported successfully!"
         volumeMounts:
@@ -49,5 +49,5 @@ spec:
       volumes:
       - name: definitions
         secret:
-          secretName: load-definition
+          secretName: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-definition
 {{- end }}

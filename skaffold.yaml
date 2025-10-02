@@ -42,7 +42,7 @@ profiles:
         value:
           name: kyverno
           remoteChart: kyverno/kyverno
-          version: "3.1.4"
+          version: "3.5.2"
           namespace: kyverno-system
           createNamespace: true
           values:
@@ -64,7 +64,10 @@ profiles:
         path: /deploy/helm/releases/1/setValues
         value:
           keda.enabled: "true"
+          keda.skipScaledObject: "false"  # Override to enable ScaledObject creation
           keda.triggers.postgresql.enabled: "true"
+          keda.triggers.postgresql.useConfigMap: "false"  # Use simple inline query
+          keda.triggers.postgresql.query: "SELECT COUNT(*) FROM workers WHERE status = 1"
           keda.triggers.rabbitmq.enabled: "true"
           keda.kyverno.enabled: "false"
           keda.kyverno.policies.zoofpmProtection.enabled: "true"
@@ -124,17 +127,17 @@ profiles:
         port: 2746
         localPort: 2746
       # Prometheus
-      - resourceType: service
-        resourceName: zoo-project-dru-kube-prome-prometheus
-        namespace: zoo
-        port: 9090
-        localPort: 9090
-      # Grafana
-      - resourceType: service
-        resourceName: zoo-project-dru-grafana
-        namespace: zoo
-        port: 80
-        localPort: 3000
+      # - resourceType: service
+      #   resourceName: zoo-project-dru-kube-prome-prometheus
+      #   namespace: zoo
+      #   port: 9090
+      #   localPort: 9090
+      # # Grafana
+      # - resourceType: service
+      #   resourceName: zoo-project-dru-grafana
+      #   namespace: zoo
+      #   port: 80
+      #   localPort: 3000
       - resourceType: service
         resourceName:	zoo-project-dru-service
         namespace: zoo

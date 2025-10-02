@@ -4,11 +4,11 @@ kind: Service
 metadata:
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Values.redis.name }}
+    app: {{ include "zoo-project-dru.fullname" . }}-redis
     chart: {{ include "zoo-project-dru.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  name: {{ .Values.redis.serviceName }}
+  name: {{ include "zoo-project-dru.fullname" . }}-redis-service
 spec:
   ports:
   - name: redis
@@ -16,7 +16,7 @@ spec:
     protocol: TCP
     targetPort: redis
   selector:
-    app: {{ .Values.redis.name }}
+    app: {{ include "zoo-project-dru.fullname" . }}-redis
     release: {{ .Release.Name }}
   type: ClusterIP
 {{- end }}

@@ -4,22 +4,22 @@ kind: StatefulSet
 metadata:
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Values.redis.name }}
+    app: {{ include "zoo-project-dru.fullname" . }}-redis
     chart: {{ include "zoo-project-dru.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  name: {{ .Values.redis.name }}
+  name: {{ include "zoo-project-dru.fullname" . }}-redis
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.redis.name }}
+      app: {{ include "zoo-project-dru.fullname" . }}-redis
       release: {{ .Release.Name }}
-  serviceName: {{ .Values.redis.name }}
+  serviceName: {{ include "zoo-project-dru.fullname" . }}-redis-service
   template:
     metadata:
       labels:
-        app: {{ .Values.redis.name }}
+        app: {{ include "zoo-project-dru.fullname" . }}-redis
         release: {{ .Release.Name }}
     spec:
       {{- with .Values.imagePullSecrets }}

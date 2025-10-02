@@ -51,7 +51,7 @@ dependencies:
     condition: keda.enabled
 
   - name: kyverno
-    version: "3.1.4"
+    version: "3.5.2"
     repository: https://kyverno.github.io/kyverno/
     condition: keda.kyverno.enabled
 
