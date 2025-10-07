@@ -31,14 +31,6 @@ iam:
   openeoAuth:
     enabled: false
 
-# Optimization: disable optional components to reduce Helm secret size
-zoo:
-  openapi:
-    enabled: false  # Disable OpenAPI spec (saves ~29KB)
-  security:
-    enabled: false  # Disable security service (saves ~11KB)  
-  includeOptionalConfigs: false  # Disable web assets (saves ~2KB)
-
 webui:
   enabled: false
 

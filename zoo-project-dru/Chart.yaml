@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.8.0
+version: 0.8.1
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.32"
+appVersion: "0.2.33"
 
 keywords:
   - workflows
@@ -72,28 +72,15 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: removed
-      description: "Remove bitnami/rabbitmq dependency and integrate the official rabbitmq Docker image"
-      links:
-        - name: RabbitMQ Docker Hub
-          url: https://hub.docker.com/_/rabbitmq
-    - kind: removed
-      description: "Remove bitnami/postgresql dependency and integrate the official PostgreSQL Docker image"
-      links:
-        - name: PostgreSQL Docker Hub
-          url: https://hub.docker.com/_/postgres
-    - kind: removed
-      description: "Remove bitnami/redis dependency and integrate the official Redis Docker image"
-      links:
-        - name: Redis Docker Hub
-          url: https://hub.docker.com/_/redis
     - kind: changed
-      description: "Migrate from bitnami/minio to the official one from https://charts.min.io/"
+      description: "Update to the latest ZOO-Project-DRU version"
       links:
-        - name: Artifact Hub
-          url: https://artifacthub.io/packages/helm/minio-official/minio
+        - name: GitHub Commit
+          url: https://github.com/ZOO-Project/charts/commit/b8fd69f
     - kind: fixed
-      description: "Update documentation to reflect new dependencies and official Docker images integration"
+      description: "Use the documentation.enabled value to determine if the openapi config map should be included"
+    - kind: fixed
+      description: "Use the rabbitmq.auth values to set the username and password in the configuration file"
 
 
   artifacthub.io/links: |
