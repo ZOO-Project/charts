@@ -1,18 +1,8 @@
 # ZOO-Project-DRU Helm Chart Configuration with Argo Workflows support
 
-
 # # Optimization: Use shorter names to reduce Helm secret size
 # nameOverride: "zoo"
 # fullnameOverride: "zoo"
-
-# Optimization: Disable optional components to reduce Helm secret size (avoid >1MB limit)
-# These optimizations reduce secret size by disabling large ConfigMaps
-zoo:
-  openapi:
-    enabled: false  # Disable OpenAPI spec (saves ~29KB)
-  security:
-    enabled: false  # Disable security service (saves ~11KB)  
-  includeOptionalConfigs: false  # Disable web assets (saves ~2KB)
 
 argo:
   enabled: true

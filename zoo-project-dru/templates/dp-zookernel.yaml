@@ -20,7 +20,7 @@ spec:
         checksum/cm-cwlwrapper-assets: {{ include (print .Template.BasePath "/cm-cwlwrapper-assets.yaml") . | sha256sum }}
         checksum/cm-zoo-deploy-service-config: {{ include (print .Template.BasePath "/cm-zoo-deploy-service-config.yaml") . | sha256sum }}
         checksum/cm-zoo-project-config: {{ include (print .Template.BasePath "/cm-zoo-project-config.yaml") . | sha256sum }}
-        {{- if .Values.zoo.openapi.enabled }}
+        {{- if .Values.documentation.enabled }}
         checksum/cm-openapi-config: {{ include (print .Template.BasePath "/cm-openapi-config.yaml") . | sha256sum }}
         {{- end }}
       labels:
@@ -157,7 +157,7 @@ spec:
             - name: zoo-example-config
               mountPath: /var/www/html/examples/water-bodies/job-order1.json
               subPath: job-order1.json
-            {{- if .Values.zoo.openapi.enabled }}
+            {{- if .Values.documentation.enabled }}
             - name: openapi-config
               mountPath: /var/www/header.md
               subPath: header.md
@@ -207,7 +207,7 @@ spec:
         - name: zoo-example-config
           configMap:
             name: {{ .Release.Name }}-zoo-example-config
-        {{- if .Values.zoo.openapi.enabled }}
+        {{- if .Values.documentation.enabled }}
         - name: openapi-config
           configMap:
             name: {{ .Release.Name }}-openapi-config
