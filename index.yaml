@@ -3,6 +3,71 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: changed
+          description: "Update to the latest ZOO-Project-DRU version"
+          links:
+            - name: GitHub Commit
+              url: https://github.com/ZOO-Project/charts/commit/b8fd69f
+        - kind: fixed
+          description: "Use the documentation.enabled value to determine if the openapi config map should be included"
+        - kind: fixed
+          description: "Use the rabbitmq.auth values to set the username and password in the configuration file"
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.33
+    created: "2025-10-07T07:16:10.991788152Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.5.2
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 898a209073168072d516cff0ead57d84f37ffbce8b8d715e11402b673903fdb3
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.8.1/zoo-project-dru-0.8.1.tgz
+    version: 0.8.1
+  - annotations:
+      artifacthub.io/changes: |
         - kind: removed
           description: "Remove bitnami/rabbitmq dependency and integrate the official rabbitmq Docker image"
           links:
@@ -3675,4 +3740,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-10-02T09:27:08.029003098Z"
+generated: "2025-10-07T07:16:10.99209248Z"
