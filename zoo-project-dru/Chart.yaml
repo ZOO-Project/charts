@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.8.1
+version: 0.8.2
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.33"
+appVersion: "0.2.34"
 
 keywords:
   - workflows
@@ -73,14 +73,14 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Update to the latest ZOO-Project-DRU version"
+      description: "Update to the latest ZOO-Project-DRU version, including the latest zoo-calrissian-runner"
       links:
         - name: GitHub Commit
-          url: https://github.com/ZOO-Project/charts/commit/b8fd69f
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/16dbe5b1b5c68900db69b1dd0ec3ed669dd82875
     - kind: fixed
-      description: "Use the documentation.enabled value to determine if the openapi config map should be included"
+      description: "Load definition on startup without requiring extra rabbitmq autoSetup"
     - kind: fixed
-      description: "Use the rabbitmq.auth values to set the username and password in the configuration file"
+      description: "Add options for RabbitMQ probes configuration"
 
 
   artifacthub.io/links: |
