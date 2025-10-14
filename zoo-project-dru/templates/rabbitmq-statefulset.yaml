@@ -56,20 +56,20 @@ spec:
             - rabbitmq-diagnostics
             - -q
             - ping
-          initialDelaySeconds: 120
-          periodSeconds: 30
-          timeoutSeconds: 20
-          failureThreshold: 6
+          initialDelaySeconds: {{ .Values.rabbitmq.probes.liveness.initialDelaySeconds | default 180 }}
+          periodSeconds: {{ .Values.rabbitmq.probes.liveness.periodSeconds | default 60 }}
+          timeoutSeconds: {{ .Values.rabbitmq.probes.liveness.timeoutSeconds | default 30 }}
+          failureThreshold: {{ .Values.rabbitmq.probes.liveness.failureThreshold | default 8 }}
         readinessProbe:
           exec:
             command:
             - rabbitmq-diagnostics
             - -q
             - check_running
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 20
-          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.rabbitmq.probes.readiness.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.rabbitmq.probes.readiness.periodSeconds | default 30 }}
+          timeoutSeconds: {{ .Values.rabbitmq.probes.readiness.timeoutSeconds | default 30 }}
+          failureThreshold: {{ .Values.rabbitmq.probes.readiness.failureThreshold | default 5 }}
         resources:
           {{- toYaml .Values.rabbitmq.resources | nindent 10 }}
         volumeMounts:
@@ -77,7 +77,7 @@ spec:
         - name: data
           mountPath: /var/lib/rabbitmq/mnesia
         {{- end }}
-        {{- if .Values.rabbitmq.config }}
+        {{- if not .Values.rabbitmq.config }}
         - name: config
           mountPath: /etc/rabbitmq/rabbitmq.conf
           subPath: rabbitmq.conf
@@ -89,7 +89,7 @@ spec:
           mountPath: /etc/rabbitmq/enabled_plugins
           subPath: enabled_plugins
       volumes:
-      {{- if .Values.rabbitmq.config }}
+      {{- if not .Values.rabbitmq.config }}
       - name: config
         configMap:
           name: {{ include "zoo-project-dru.fullname" . }}-rabbitmq-config

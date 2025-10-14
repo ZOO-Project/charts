@@ -170,7 +170,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-b8fd69f7dc3ae59bc53faa45d358d5a07edeb41e
+    tag: dru-16dbe5b1b5c68900db69b1dd0ec3ed669dd82875
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -182,7 +182,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-b8fd69f7dc3ae59bc53faa45d358d5a07edeb41e
+    tag: dru-16dbe5b1b5c68900db69b1dd0ec3ed669dd82875
   extraMountPoints: []
 
 notifications:
@@ -277,8 +277,6 @@ global:
 # rabbitmq
 rabbitmq:
   enabled: true
-  autoSetup:
-    enabled: true
   image:
     repository: rabbitmq
     tag: "4.1.4-alpine"
@@ -286,9 +284,17 @@ rabbitmq:
 
   replicas: 1
 
-  # Auto-setup: automatically enable management plugin and import definitions
-  autoSetup:
-    enabled: true
+  probes:
+    liveness:
+      initialDelaySeconds: 180
+      periodSeconds: 60
+      timeoutSeconds: 30
+      failureThreshold: 8
+    readiness:
+      initialDelaySeconds: 30
+      periodSeconds: 30
+      timeoutSeconds: 30
+      failureThreshold: 5
 
   auth:
     username: "zoo"

@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.0
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.2
 ````
 
 ## Parameters
@@ -153,9 +153,15 @@ This chart now integrates RabbitMQ using the [official Docker image](https://hub
 | rabbitmq.auth.username                     | RabbitMQ default user                                    | zoo                                          |
 | rabbitmq.auth.password                     | RabbitMQ default password                                | CHANGEME                                     |
 | rabbitmq.config                            | Override RabbitMQ configuration (if empty, uses files/rabbitmq/rabbitmq.conf) | ""                          |
-| rabbitmq.autoSetup.enabled                 | Enable automatic RabbitMQ configuration via HTTP API     | true                                         |
-| rabbitmq.autoSetup.ttlSecondsAfterFinished | Cleanup setup job after completion (seconds)             | 30                                           |
 | rabbitmq.definitions                        | RabbitMQ definitions for queues, exchanges, bindings    | Automatically templated                      |
+| rabbitmq.probes.liveness.initialDelaySeconds | Liveness probe initial delay in seconds               | 180                                          |
+| rabbitmq.probes.liveness.periodSeconds     | Liveness probe period in seconds                         | 60                                           |
+| rabbitmq.probes.liveness.timeoutSeconds    | Liveness probe timeout in seconds                        | 30                                           |
+| rabbitmq.probes.liveness.failureThreshold  | Liveness probe failure threshold                         | 8                                            |
+| rabbitmq.probes.readiness.initialDelaySeconds | Readiness probe initial delay in seconds              | 30                                           |
+| rabbitmq.probes.readiness.periodSeconds    | Readiness probe period in seconds                        | 30                                           |
+| rabbitmq.probes.readiness.timeoutSeconds   | Readiness probe timeout in seconds                       | 30                                           |
+| rabbitmq.probes.readiness.failureThreshold | Readiness probe failure threshold                        | 5                                            |
 
 #### Redis
 
@@ -1376,19 +1382,6 @@ kubectl logs -n zoo deployment/zoo-project-dru-postgresql --tail=50
 
 # Verify database creation
 kubectl exec -it -n zoo deployment/zoo-project-dru-postgresql -- psql -U zoo -d zoo -c "\dt"
-```
-
-**RabbitMQ setup issues**:
-```bash
-# Check auto-setup job completion
-kubectl get jobs -n zoo -l app.kubernetes.io/component=rabbitmq-setup
-
-# Check management plugin status
-kubectl port-forward -n zoo svc/zoo-project-dru-rabbitmq 15672:15672
-# Access: http://localhost:15672 (zoo/CHANGEME)
-
-# Verify queue creation
-kubectl logs -n zoo -l app.kubernetes.io/component=rabbitmq-setup
 ```
 
 ### KEDA-Specific Issues
