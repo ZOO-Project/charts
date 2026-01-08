@@ -39,7 +39,14 @@ def securityIn(conf, inputs, outputs):
             s.addHeader(conf, "dru.securityIn")
             if res == zoo.SERVICE_FAILED:
                 zoo.error("dru.securityIn has failed")
+{{- if .Values.eoapi.enabled }}
+                if conf["renv"]["REQUEST_URI"].count("/collections"):
+                    pass
+                else:
+                    return res
+{{- else }}
                 return res
+{{- end }}
     except Exception as e:
         if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
             zoo.debug(f"No JWT service available: {str(e)}")

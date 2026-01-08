@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.8.2
+version: 0.8.3
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.34"
+appVersion: "0.2.35"
 
 keywords:
   - workflows
@@ -73,15 +73,27 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Update to the latest ZOO-Project-DRU version, including the latest zoo-calrissian-runner"
+      description: "Update to the latest ZOO-Project-DRU version"
       links:
         - name: GitHub Commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/16dbe5b1b5c68900db69b1dd0ec3ed669dd82875
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/0b815fb32ee04eb6bd98164a040cc2733a2b5230
     - kind: fixed
-      description: "Load definition on startup without requiring extra rabbitmq autoSetup"
-    - kind: fixed
-      description: "Add options for RabbitMQ probes configuration"
+      description: "Fix issue #24: service selector mismatch in webui service causes 503 errors"
+      links:
+        - name: GitHub Issue
+          url: https://github.com/ZOO-Project/charts/issues/24
+    - kind: added
+      description: "Add eoapi proxy when the eoapi.enabled is set to true"
+    - kind: added
+      description: "Add the values.schema.json file to validate user values"
+    - kind: added
+      description: "Add options onlyImplicitFlow to the IAM configuration to restrict OpenAPI authentication method"
+    - kind: added
+      description: "Add globalNamespace option in oas.cfg configuration file"
+    - kind: changed
+      description: "Update DRU Helm chart documentation"
 
+  artifacthub.io/license: Apache-2.0
 
   artifacthub.io/links: |
     - name: source

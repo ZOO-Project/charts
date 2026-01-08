@@ -11,5 +11,6 @@ spec:
       protocol: TCP
       name: webui
   selector:
-    app.kubernetes.io/name: {{ .Release.Name }}-webui
+    app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-webui
+    app.kubernetes.io/instance: {{ .Release.Name }}-webui
 {{- end }}  

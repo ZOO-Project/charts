@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.2
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.3
 ````
 
 ## Parameters
@@ -149,7 +149,7 @@ This chart now integrates RabbitMQ using the [official Docker image](https://hub
 |:-------------------------------------------|:---------------------------------------------------------|:---------------------------------------------|
 | rabbitmq.enabled                           | Enable integrated RabbitMQ deployment                    | true                                         |
 | rabbitmq.image.repository                  | RabbitMQ image repository                                | rabbitmq                                     |
-| rabbitmq.image.tag                         | RabbitMQ image tag                                       | 4.1.4-alpine                                 |
+| rabbitmq.image.tag                         | RabbitMQ image tag                                       | 4.2.2-alpine                                 |
 | rabbitmq.auth.username                     | RabbitMQ default user                                    | zoo                                          |
 | rabbitmq.auth.password                     | RabbitMQ default password                                | CHANGEME                                     |
 | rabbitmq.config                            | Override RabbitMQ configuration (if empty, uses files/rabbitmq/rabbitmq.conf) | ""                          |
@@ -203,9 +203,28 @@ For high-availability requirements, consider external Redis cluster solutions
 | zoo.promoteHead            | Expose endpoints using the HEAD HTTP method in the OpenAPI    | true                    |
 | zoo.detectEntrypoint         | Dynamically deploy a pod and its associated service to detect docker `ENTRYPOINT` to prepend to existing baseCommand   | false                   |
 | zoo.rabbitmq.definitions         | The `definition.json` file containing initial RabbitMQ settings    | "files/rabbitmq/definitions.json"                    |
+
+#### ZOO-Kernel Configuration
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| zookernel.image.repository       | ZOO-Kernel container image repository                              | zooproject/zoo-project                               |
+| zookernel.image.tag              | ZOO-Kernel container image tag                                     | dru-16dbe5b1b5c68900db69b1dd0ec3ed669dd82875         |
+| zookernel.image.pullPolicy       | Image pull policy for ZOO-Kernel                                   | IfNotPresent                                         |
+| zookernel.replicaCount           | Number of ZOO-Kernel pod replicas                                  | 1                                                    |
 | zookernel.env                    | The environment variables defined in the main.cfg `env` section    | {}                    |
-| zookernel.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
-| zoofpm.extraMountPoints         | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
+| zookernel.extraMountPoints       | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
+
+#### ZOO-FPM Configuration
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| zoofpm.image.repository          | ZOO-FPM container image repository                                 | zooproject/zoo-project                               |
+| zoofpm.image.tag                 | ZOO-FPM container image tag                                        | dru-16dbe5b1b5c68900db69b1dd0ec3ed669dd82875         |
+| zoofpm.image.pullPolicy          | Image pull policy for ZOO-FPM                                      | IfNotPresent                                         |
+| zoofpm.replicaCount              | Number of ZOO-FPM pod replicas (when autoscaling is disabled)      | 1                                                    |
+| zoofpm.autoscaling.enabled       | Enable horizontal pod autoscaling for ZOO-FPM                      | false                                                |
+| zoofpm.extraMountPoints          | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
 
 ### KEDA
 
@@ -216,6 +235,8 @@ KEDA (Kubernetes Event-driven Autoscaler) provides intelligent event-driven auto
 | Name                                       | Description                                              | Value                    |
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
 | keda.enabled                               | Enable KEDA autoscaling and worker protection           | false                    |
+| keda.skipScaledObject                      | Skip automatic ScaledObject creation if KEDA CRDs are not ready. Set to `false` to enable automatic ScaledObject creation for autoscaling. | false                    |
+| keda.operator.replicaCount                 | Number of replicas for the KEDA operator                | 1                        |
 | keda.minReplicas                           | Minimum number of replicas (0 allows scale-to-zero)     | 0                        |
 | keda.maxReplicas                           | Maximum number of replicas                               | 10                       |
 | keda.pollingInterval                       | Interval for checking metrics (seconds)                 | 10                       |
@@ -361,6 +382,7 @@ kubectl get pods -n <namespace> -o jsonpath='{range .items[*]}{.metadata.name}{"
 | iam.type | The IAM type                        | openIdConnect |
 | iam.name | The IAM name                        | OpenIDAuth |
 | iam.realm | The realm associated with the IAM | Secured section |
+| iam.onlyImplicitFlow | When enabled, only the implicit flow authentication is available in the OpenAPI documentation | true |
 | iam.clientId | The clientId to access the IAM (optional) | undefined |
 | iam.clientSecret | The clientSecret to access the IAM (optional) | undefined |
 | iam.userinfoUrl | The userInfo url to access the user details from the IAM (optional) | undefined |
@@ -384,13 +406,12 @@ The WebUI lets you interact with the ZOO-Project-DRU when authentication is requ
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
 | webui.enabled | Activate the webui service                        | false |
 | webui.url | The fully defined URL to access the WebUI                        | http://localhost:3058 |
-| webui.port | Port                         | 3000 |
-| webui.image.repository | WebUI container image repository | zooproject/nuxt-client |
-| webui.image.tag | WebUI container image tag | 0.0.3 |
-| webui.image.pullPolicy | WebUI image pull policy | Always |
+| webui.port | Port number for the WebUI service                         | 3000 |
+| webui.image.repository | WebUI container image repository. This is the Docker registry and image name for the ZOO-Project web interface. | zooproject/nuxt-client |
+| webui.image.tag | WebUI container image tag. Specifies the version of the WebUI image to deploy. | 0.0.6 |
+| webui.image.pullPolicy | Image pull policy for WebUI. Controls when Kubernetes should pull the image (`Always`, `IfNotPresent`, or `Never`). | IfNotPresent |
 | webui.enforce | Should apache handle security before the requests are sent to the ZOO-Project?                         | false |
 | webui.oidc | The specific OpenIDConnect configuration                         | {"issuer":https://auth.geolabs.fr/realms/zooproject,"remoteUserClaim": email, "providerTokenEndpointAuth": client_secret_basic, "authVerifyJwksUri": https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs, "scope": "openid email"} |
-
 
 If you set `enabled` to `true`, you should ensure that the `webui.oidc` object contains the following informations.
 
@@ -409,6 +430,14 @@ If you set `enabled` to `true`, you should ensure that the `webui.oidc` object c
 WHere `<AUTH_URL>` is pointing to your keycloak instance (ie. `https://auth.geolabs.fr`), `<REALM>` (ie. `zooproject`) the realm you are willing to use. You can set the `YOUR_CLIENT_ID` and `YOUR_CLIENT_SECRET` to enable authentication.
 
 
+### EOAPI
+
+[EOAPI](https://github.com/developmentseed/eoapi-k8s) integration for STAC, Raster, and Vector services.
+
+| Name                             | Description                                                        | Value                                                |
+|:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
+| eoapi.enabled | Enable EOAPI integration for STAC, Raster, and Vector services | false |
+
 ### Documentation
 
 | Name                             | Description                                                        | Value                                                |
@@ -423,6 +452,9 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
 | websocketd.enabled | The websocketd server is enabled                        | true |
 | websocketd.port | The websocketd server listen port                        | 8888 |
+| websocketd.image.repository | Websocketd container image repository | zooproject/websocketd |
+| websocketd.image.tag | Websocketd container image tag (commit hash) | 67449315857b54bbc970f02c7aa4fd10a94721f0 |
+| websocketd.image.pullPolicy | Image pull policy for Websocketd | IfNotPresent |
 
 
 ### filter_in process
@@ -454,9 +486,9 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 | workflow.additionalInputs                                | The additional inputs passed as attributes to wrapped CWL Application.        | {}                                          |
 | workflow.imagePullSecrets                                | ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
 | workflow.additionalImagePullSecrets                      | additionalImagePullSecrets is an optional list of references to existing secrets for the processing namespace to use for pulling any of the images used by the processing pods. If specified, these secrets will be passed to individual puller implementations for them to use. For example, in the case of docker, only DockerConfig type secrets are honored. More info: https://kubernetes.io/docs/concepts/containers/images#specifying-imagepullsecrets-on-a-pod       | {}                                          |
-| workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label.       | {}                                          |
+| workflow.nodeSelector                                    | Constrain on which nodes the processing pods are eligible to run based on the node label. Use Kubernetes node labels to control pod placement (e.g., `{"disktype": "ssd"}` to run on nodes with SSD storage).       | {}                                          |
 | workflow.inputs                                          | Environmental variables for the ZOO-FPM pod (from where the processing is started).         | {}                                          |
-| workflow.podAnnotations                                          | Use an object of key value pairs containing the annotations you want to flag your pods with.         | Not defined                                          |
+| workflow.podAnnotations                                  | Annotations to add to workflow processing pods. Use key-value pairs to add metadata to pods for monitoring, networking, or policy purposes (e.g., `{"prometheus.io/scrape": "true", "sidecar.istio.io/inject": "false"}`). | Not defined                                          |
 | workflow.env                                             | Environmental variables for the processing pods.       | {}                                          |
 
 #### Reuse an existing namespace
@@ -531,17 +563,25 @@ If you want to define a one-to-one mapping, you can implement the following meth
 
 #### imagePullSecrets
 
-The `workflow.imagePullSecrets` is used at runtime by Calrissian to dynamically create a secret containing the object attributes defined for pulling an image from a resgistry.
-The syntaxe is as presenter below.
+The `workflow.imagePullSecrets` parameter is used at runtime by Calrissian to dynamically create a Kubernetes secret containing the credentials needed to pull container images from private registries. This is particularly useful when workflow steps require images from private Docker registries.
+
+**Configuration Format**: Define an `auths` object with registry URLs as keys and authentication details as values:
 
 ````yaml
-auths:
-  fake\.registry\.io:
-    username: fakeuser
-    password: fakepassword
-    email: fake@example.com
-    auth: ''
+workflow:
+  imagePullSecrets:
+    auths:
+      fake\.registry\.io:
+        username: fakeuser
+        password: fakepassword
+        email: fake@example.com
+        auth: ''  # Optional: base64-encoded username:password
+      another\.registry\.com:
+        username: anotheruser
+        password: anotherpass
 ````
+
+**Note**: The registry URL must escape dots with backslashes in YAML (e.g., `fake\.registry\.io`).
 
 In addition, you can also use secrets already available in the namespace where the ZOO-Project-DRU Helm chart was deployed. 
 For doing so, you can use the `workflow.additionalImagePullSecrets` with an array of object with a name pointing to the existing secret's name.
@@ -587,12 +627,13 @@ See [reference documentation](https://artifacthub.io/packages/helm/argo/argo-wor
 | Name                                                     | Description                        | Value                                                                 |
 |:---------------------------------------------------------|:-----------------------------------|:----------------------------------------------------------------------|
 | argo.enabled                                    | Activate Argo support by setting this to `true` | true |
-| argo.instanceID                                 | Instance ID for workflow isolation | "zoo" |
-| argo.cwlwrapperImage                            | CWL wrapper image version | "eoepca/cwl-wrapper:0.12.1" |
-| argo.stageOutImage                              | Stage-out image version | "ghcr.io/eoap/mastering-app-package/stage:1.1.0" |
-| argo.serviceAccount.name                        | ServiceAccount name for workflow execution | "argo-workflow" |
-| argo.autoTokenManagement                        | Enable automatic token retrieval from ServiceAccount | true |
-| argo.restartOnTokenUpdate                       | Restart ZOO-Kernel pods when token is updated | false |
+| argo.installCRDs                                | Install Argo Workflows Custom Resource Definitions (CRDs). Set to `false` if CRDs are already installed in the cluster to avoid conflicts. | true |
+| argo.instanceID                                 | Instance ID for workflow isolation. This allows multiple Argo installations in the same cluster by filtering workflows based on this label. | "zoo" |
+| argo.cwlwrapperImage                            | CWL wrapper container image with version tag. This image wraps CWL workflow execution for Argo Workflows. | "eoepca/cwl-wrapper:0.12.1" |
+| argo.stageOutImage                              | Stage-out container image with version tag. Used to transfer workflow outputs to final storage locations. | "ghcr.io/eoap/mastering-app-package/stage:1.1.0" |
+| argo.serviceAccount.name                        | ServiceAccount name for workflow execution. This account needs appropriate RBAC permissions for creating and managing workflow pods. | "argo-workflow" |
+| argo.autoTokenManagement                        | Enable automatic token retrieval from ServiceAccount. When enabled, the workflow token is automatically retrieved and configured, eliminating manual token configuration. | true |
+| argo.restartOnTokenUpdate                       | Restart ZOO-Kernel pods when token is updated. Useful to ensure pods use the latest authentication tokens. | false |
 
 
 | Name                                                     | Description                        | Value                                                                 |

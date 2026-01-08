@@ -8,7 +8,7 @@ cp /var/www/html/data/* /usr/com/zoo-project
 chown www-data:www-data -R /tmp/zTmp /usr/com/zoo-project
 chmod 777 -R /tmp/zTmp
 
-CMD="curl -o toto.out {{ .Release.Name }}-rabbitmq:15672"
+CMD="curl -o toto.out {{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672"
 $CMD
 cat toto.out
 if [ -e toto.out ]; then echo "Should start" ; else echo wait; sleep 1; $CMD ; fi

@@ -1,0 +1,1569 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ZOO-Project DRU Helm Chart Values",
+  "description": "Schema for the values of the ZOO-Project DRU Helm chart.",
+  "type": "object",
+  "properties": {
+    "imagePullSecrets": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Secrets for pulling images from a private registry."
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "Override the name of the chart."
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "Override the full name of the chart."
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Specifies whether a service account should be created."
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations to add to the service account."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the service account to use."
+        }
+      }
+    },
+    "useKubeProxy": {
+      "type": "boolean",
+      "description": "Enable the use of Kubernetes API proxy for accessing cluster resources. Useful for development and debugging."
+    },
+    "clusterAdminRoleName": {
+      "type": "string",
+      "description": "Name of the cluster admin role to bind for administrative operations. Default is typically 'cluster-admin'."
+    },
+    "podAnnotations": {
+      "type": "object",
+      "description": "Annotations to add to all pods. Use key-value pairs to add metadata for monitoring, networking, or policy purposes."
+    },
+    "podSecurityContext": {
+      "type": "object",
+      "description": "Security context settings at the pod level. Controls security attributes like fsGroup, runAsUser, runAsGroup, etc."
+    },
+    "securityContext": {
+      "type": "object",
+      "description": "Security context settings at the container level. Controls capabilities, privilege escalation, read-only root filesystem, etc."
+    },
+    "service": {
+      "type": "object",
+      "description": "Kubernetes service configuration for exposing the ZOO-Project DRU application within or outside the cluster.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["ClusterIP", "NodePort", "LoadBalancer", "ExternalName"],
+          "description": "Type of Kubernetes service. ClusterIP (internal only), NodePort (external via node port), LoadBalancer (cloud provider load balancer), or ExternalName (external DNS)."
+        },
+        "port": {
+          "type": "integer",
+          "description": "Port number on which the service will be exposed. Default is 80."
+        }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "description": "Defines the ingress through which the zoo-dru service is exposed for access outside of the cluster. The service URL is deduced from ingress.hosturl, or ingress.hosts.host[0] if ingress.enabled: true, or http://localhost:8080 as fallback.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enables creation of ingress resource for the zoo-dru service. In the case that enabled: false is set, then other values (with the exception of hosturl) do not apply"
+        },
+        "hosturl": {
+          "type": "string",
+          "description": "(optional) The URL through which the zoo-dru service is externally exposed. See documentation for service URL deduction priority."
+        },
+        "className": {
+          "type": "string",
+          "description": "Identifies the class of ingress controller that should satisfy the ingress request"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Additional parameters that are passed as configuration to the ingress controller that satisfies the ingress. See documentation of specific ingress controller for details."
+        },
+        "hosts": {
+          "type": "array",
+          "description": "Array of one or more host specifications that provide ingress rules",
+          "items": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "type": "string",
+                "description": "Hostname to match for the ingress rule"
+              },
+              "paths": {
+                "type": "array",
+                "description": "Array of paths to match for the ingress rule",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Path to match for the ingress rule"
+                    },
+                    "pathType": {
+                      "type": "string",
+                      "description": "Paths matching policy for the ingress rule"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tls": {
+          "type": "array",
+          "description": "(optional) Array of zero or more specifications providing details of TLS certificate to be used for specific hostnames. Each item should have 'hosts' (array of hostnames) and 'secretName' (name of secret holding the TLS certificate)."
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "description": "Resource requests and limits for CPU and memory. Define 'requests' (guaranteed resources) and 'limits' (maximum allowed resources) with cpu (e.g., '100m', '1000m') and memory (e.g., '128Mi', '1Gi') values."
+    },
+    "autoscaling": {
+      "type": "object",
+      "description": "Horizontal Pod Autoscaler (HPA) configuration for automatic scaling based on resource utilization.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable horizontal pod autoscaling. When enabled, automatically scales replicas based on CPU/memory metrics."
+        },
+        "minReplicas": {
+          "type": "integer",
+          "description": "Minimum number of pod replicas to maintain."
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "description": "Maximum number of pod replicas that can be created."
+        },
+        "targetCPUUtilizationPercentage": {
+          "type": "integer",
+          "description": "Target CPU utilization percentage that triggers scaling. Scales up when average CPU exceeds this value."
+        }
+      }
+    },
+    "keda": {
+      "type": "object",
+      "description": "KEDA (Kubernetes Event-driven Autoscaler) provides intelligent event-driven autoscaling with worker protection and scale-to-zero capabilities.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable KEDA autoscaling and worker protection"
+        },
+        "skipScaledObject": {
+          "type": "boolean",
+          "description": "Skip automatic ScaledObject creation if KEDA CRDs are not ready. Set to false to enable automatic ScaledObject creation for autoscaling."
+        },
+        "operator": {
+          "type": "object",
+          "description": "KEDA operator configuration settings.",
+          "properties": {
+            "replicaCount": {
+              "type": "integer",
+              "description": "Number of replicas for the KEDA operator deployment."
+            }
+          }
+        },
+        "metricsServer": {
+          "type": "object",
+          "description": "KEDA metrics server configuration for exposing scaling metrics.",
+          "properties": {
+            "replicaCount": {
+              "type": "integer",
+              "description": "Number of replicas for the KEDA metrics server."
+            }
+          }
+        },
+        "webhooks": {
+          "type": "object",
+          "description": "KEDA webhook configuration for admission control.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable KEDA admission webhooks for validation and mutation."
+            }
+          }
+        },
+        "evictionController": {
+          "type": "object",
+          "description": "The eviction controller provides intelligent worker protection and pod annotation management.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable intelligent eviction controller"
+            },
+            "image": {
+              "type": "object",
+              "description": "Eviction controller container image configuration",
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "description": "Eviction controller container image repository"
+                },
+                "tag": {
+                  "type": "string",
+                  "description": "Eviction controller container image tag"
+                },
+                "pullPolicy": {
+                  "type": "string",
+                  "description": "Image pull policy"
+                }
+              }
+            },
+            "resources": {
+              "type": "object",
+              "description": "Resource requests and limits for the eviction controller. Define CPU and memory constraints."
+            }
+          }
+        },
+        "kyverno": {
+          "type": "object",
+          "description": "Kyverno provides admission-level protection for pods with active workers.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Kyverno deployment (usually managed separately)"
+            },
+            "namespaceOverride": {
+              "type": "string",
+              "description": "Namespace where Kyverno is installed"
+            },
+            "policies": {
+              "type": "object",
+              "properties": {
+                "zoofpmProtection": {
+                  "type": "object",
+                  "description": "Kyverno pod protection policy configuration",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "Enable Kyverno pod protection policy"
+                    },
+                    "failurePolicy": {
+                      "type": "string",
+                      "description": "Policy failure action (Enforce or Audit)"
+                    },
+                    "background": {
+                      "type": "boolean",
+                      "description": "Enable background policy processing"
+                    },
+                    "protectZoofpm": {
+                      "type": "boolean",
+                      "description": "Enable protection for zoofpm pods"
+                    },
+                    "allowedOperations": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "List of allowed Kubernetes operations (e.g., CREATE, UPDATE). Only these operations will be permitted by the policy."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "scaleTargetRef": {
+          "type": "object",
+          "description": "Reference to the deployment that KEDA should scale.",
+          "properties": {
+            "deployment": {
+              "type": "string",
+              "description": "Name of the deployment to scale (will be prefixed with release name)."
+            }
+          }
+        },
+        "pollingInterval": {
+          "type": "integer",
+          "description": "Interval for checking metrics (seconds)"
+        },
+        "cooldownPeriod": {
+          "type": "integer",
+          "description": "Cooldown period after scaling (seconds)"
+        },
+        "minReplicas": {
+          "type": "integer",
+          "description": "Minimum number of replicas (0 allows scale-to-zero)"
+        },
+        "maxReplicas": {
+          "type": "integer",
+          "description": "Maximum number of replicas"
+        },
+        "idleReplicaCount": {
+          "type": "integer",
+          "description": "Number of replicas to maintain when idle (typically 0 for scale-to-zero capability)."
+        },
+        "triggers": {
+          "type": "object",
+          "properties": {
+            "postgresql": {
+              "type": "object",
+              "description": "PostgreSQL trigger monitors active processing jobs and workers for intelligent scaling",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable PostgreSQL trigger for scaling"
+                },
+                "useConfigMap": {
+                  "type": "boolean",
+                  "description": "Use a ConfigMap to store the PostgreSQL query instead of inline query. Recommended for complex queries."
+                },
+                "targetQueryValue": {
+                  "type": "string",
+                  "description": "Target scaling ratio for steady state"
+                },
+                "activationTargetQueryValue": {
+                  "type": "string",
+                  "description": "Threshold for scale-up activation"
+                },
+                "host": {
+                  "type": "string",
+                  "description": "PostgreSQL host (auto-generated from postgresql service if empty)."
+                },
+                "port": {
+                  "type": "string",
+                  "description": "PostgreSQL port."
+                },
+                "dbName": {
+                  "type": "string",
+                  "description": "Database name (uses global.postgresql.auth.database if empty)."
+                },
+                "userName": {
+                  "type": "string",
+                  "description": "Username (uses global.postgresql.auth.username if empty)."
+                },
+                "sslmode": {
+                  "type": "string",
+                  "description": "SSL mode for PostgreSQL connection (disable, require, verify-ca, verify-full)."
+                }
+              }
+            },
+            "rabbitmq": {
+              "type": "object",
+              "description": "RabbitMQ trigger monitors queue length for immediate scaling response",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable RabbitMQ queue length trigger"
+                },
+                "protocol": {
+                  "type": "string",
+                  "description": "Protocol to use for RabbitMQ connection (amqp or amqps)."
+                },
+                "queueName": {
+                  "type": "string",
+                  "description": "RabbitMQ queue name to monitor"
+                },
+                "mode": {
+                  "type": "string",
+                  "description": "Scaling mode for RabbitMQ trigger (QueueLength or MessageRate)."
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Target queue length for scaling"
+                },
+                "host": {
+                  "type": "string",
+                  "description": "RabbitMQ host (auto-generated from rabbitmq service if empty)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "description": "Node selector to constrain pods to nodes with specific labels. Use key-value pairs matching node labels (e.g., {\"disktype\": \"ssd\"})."
+    },
+    "tolerations": {
+      "type": "array",
+      "description": "Tolerations allow pods to schedule onto nodes with matching taints. Useful for dedicated nodes or special hardware."
+    },
+    "affinity": {
+      "type": "object",
+      "description": "Affinity and anti-affinity rules for pod placement. Controls pod-to-pod and pod-to-node relationships for high availability and performance."
+    },
+    "zoo": {
+      "type": "object",
+      "description": "ZOO-Project specific configuration",
+      "properties": {
+        "promoteHead": {
+          "type": "boolean",
+          "description": "Expose endpoints using the HEAD HTTP method in the OpenAPI"
+        },
+        "detectEntrypoint": {
+          "type": "boolean",
+          "description": "Dynamically deploy a pod and its associated service to detect docker ENTRYPOINT to prepend to existing baseCommand"
+        },
+        "rabbitmq": {
+          "type": "object",
+          "properties": {
+            "definitions": {
+              "type": "string",
+              "description": "The definition.json file containing initial RabbitMQ settings"
+            }
+          }
+        }
+      }
+    },
+    "zoofpm": {
+      "type": "object",
+      "description": "ZOO-FPM configuration",
+      "properties": {
+        "image": {
+          "type": "object",
+          "description": "ZOO-FPM container image configuration.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "ZOO-FPM container image repository."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy (Always, IfNotPresent, Never)."
+            },
+            "tag": {
+              "type": "string",
+              "description": "ZOO-FPM container image tag."
+            }
+          }
+        },
+        "autoscaling": {
+          "type": "object",
+          "description": "Autoscaling configuration for ZOO-FPM.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable horizontal pod autoscaling for ZOO-FPM."
+            }
+          }
+        },
+        "replicaCount": {
+          "type": "integer",
+          "description": "Number of ZOO-FPM pod replicas (when autoscaling is disabled)."
+        },
+        "extraMountPoints": {
+          "type": "array",
+          "description": "Additional mount points for files from files/<DIR> subdirectories to be accessed by ZOO-FPM."
+        }
+      }
+    },
+    "zookernel": {
+      "type": "object",
+      "description": "ZOO-Kernel configuration",
+      "properties": {
+        "env": {
+          "type": "object",
+          "description": "The environment variables defined in the main.cfg env section"
+        },
+        "image": {
+          "type": "object",
+          "description": "ZOO-Kernel container image configuration.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "ZOO-Kernel container image repository."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy (Always, IfNotPresent, Never)."
+            },
+            "tag": {
+              "type": "string",
+              "description": "ZOO-Kernel container image tag."
+            }
+          }
+        },
+        "extraMountPoints": {
+          "type": "array",
+          "description": "Additional mount points for files from files/<DIR> subdirectories to be accessed by ZOO-Kernel."
+        }
+      }
+    },
+    "notifications": {
+      "type": "object",
+      "description": "Notification configuration using Knative CloudEvents",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Define if notification using Knative CloudEvents should be activated"
+        },
+        "ksink": {
+          "type": "object",
+          "description": "Define the ksink to use to send CloudEvents",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "description": "Kind of the ksink resource (e.g., Broker)"
+            },
+            "namespace": {
+              "type": "string",
+              "description": "Namespace of the ksink resource"
+            },
+            "name": {
+              "type": "string",
+              "description": "Name of the ksink resource"
+            }
+          }
+        }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "description": "Workflow execution configuration",
+      "properties": {
+        "storageClass": {
+          "type": "string",
+          "description": "The storage class used."
+        },
+        "defaultVolumeSize": {
+          "type": "string",
+          "description": "The default volume size allocated."
+        },
+        "defaultMaxRam": {
+          "type": "string",
+          "description": "The default max ram allocated."
+        },
+        "defaultMaxCores": {
+          "type": "string",
+          "description": "The default max cores allocated."
+        },
+        "calrissianImage": {
+          "type": "string",
+          "description": "The calrissian image version."
+        },
+        "imagePullSecrets": {
+          "type": "object",
+          "description": "ImagePullSecrets is an optional list of references to secrets for the processing namespace to use for pulling any of the images used by the processing pods."
+        },
+        "additionalImagePullSecrets": {
+          "type": "array",
+          "description": "additionalImagePullSecrets is an optional list of references to existing secrets for the processing namespace to use for pulling any of the images used by the processing pods."
+        },
+        "nodeSelector": {
+          "type": "object",
+          "description": "Constrain on which nodes the processing pods are eligible to run based on the node label."
+        },
+        "env": {
+          "type": "object",
+          "description": "Environmental variables for the processing pods."
+        },
+        "inputs": {
+          "type": "object",
+          "description": "Environmental variables for the ZOO-FPM pod (from where the processing is started)."
+        },
+        "additionalInputs": {
+          "type": "object",
+          "description": "The additional inputs passed as attributes to wrapped CWL Application."
+        },
+        "dedicatedNamespace": {
+          "type": "object",
+          "description": "Reuse an existing namespace rather creating a new one for every job",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable dedicated namespace feature to reuse an existing namespace for workflow execution instead of creating new namespaces for each job."
+            }
+          }
+        },
+        "argo": {
+          "type": "object",
+          "description": "Argo Workflows configuration for CWL execution",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Activate Argo support by setting this to true"
+            },
+            "storageClass": {
+              "type": "string",
+              "description": "The storage class to use for temporary data"
+            },
+            "defaultVolumeSize": {
+              "type": "string",
+              "description": "The default volume size"
+            },
+            "defaultMaxRam": {
+              "type": "string",
+              "description": "The default maximum allocated ram"
+            },
+            "wfServer": {
+              "type": "string",
+              "description": "The Argo server URL"
+            },
+            "wfToken": {
+              "type": "string",
+              "description": "The Argo server token (auto-retrieved if autoTokenManagement enabled)"
+            },
+            "wfSynchronizationCm": {
+              "type": "string",
+              "description": "The configmap name for workflow synchronization"
+            },
+            "CwlRunnerTemplare": {
+              "type": "string",
+              "description": "The workflow template name to use as CWL Runner"
+            },
+            "CwlRunnerEndpoint": {
+              "type": "string",
+              "description": "The entry point to use from the CWL Runner Template"
+            }
+          }
+        }
+      }
+    },
+    "postgresql": {
+      "type": "object",
+      "description": "PostgreSQL database configuration using the official Docker image",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable PostgreSQL deployment"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the PostgreSQL deployment"
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "Name of the PostgreSQL service"
+        },
+        "useSecret": {
+          "type": "boolean",
+          "description": "Set to true to store PostgreSQL credentials in a Kubernetes Secret instead of plain values."
+        },
+        "secretName": {
+          "type": "string",
+          "description": "Name of an existing secret containing PostgreSQL credentials. If empty, a secret will be auto-generated."
+        },
+        "image": {
+          "type": "object",
+          "description": "PostgreSQL Docker image configuration.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "PostgreSQL Docker image repository."
+            },
+            "tag": {
+              "type": "string",
+              "description": "PostgreSQL Docker image tag."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy (Always, IfNotPresent, Never)."
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "description": "Resource requests and limits for PostgreSQL pods. Define CPU and memory constraints."
+        },
+        "persistence": {
+          "type": "object",
+          "description": "PostgreSQL persistence configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable persistent storage"
+            },
+            "volumeName": {
+              "type": "string",
+              "description": "Name of the persistent volume to use for PostgreSQL data."
+            },
+            "mountPath": {
+              "type": "string",
+              "description": "Path where the PostgreSQL data volume will be mounted inside the container."
+            },
+            "accessMode": {
+              "type": "string",
+              "description": "Access mode for the persistent volume"
+            },
+            "size": {
+              "type": "string",
+              "description": "Size of the persistent volume"
+            },
+            "storageClass": {
+              "type": "string",
+              "description": "Storage class for the persistent volume"
+            }
+          }
+        },
+        "primary": {
+          "type": "object",
+          "properties": {
+            "initdb": {
+              "type": "object",
+              "properties": {
+                "scriptsConfigMap": {
+                  "type": "string",
+                  "description": "ConfigMap containing initialization scripts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "global": {
+      "type": "object",
+      "properties": {
+        "postgresql": {
+          "type": "object",
+          "properties": {
+            "auth": {
+              "type": "object",
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "description": "User that will be used to connect to postgresql database"
+                },
+                "password": {
+                  "type": "string",
+                  "description": "Password for the user"
+                },
+                "database": {
+                  "type": "string",
+                  "description": "Database name"
+                },
+                "existingSecret": {
+                  "type": "string",
+                  "description": "Use an existing secrets to store the connection string"
+                }
+              }
+            },
+            "service": {
+              "type": "object",
+              "properties": {
+                "ports": {
+                  "type": "object",
+                  "properties": {
+                    "postgresql": {
+                      "type": "string",
+                      "description": "PostgreSQL port"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "rabbitmq": {
+      "type": "object",
+      "description": "RabbitMQ configuration using the official Docker image",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable integrated RabbitMQ deployment"
+        },
+        "image": {
+          "type": "object",
+          "description": "RabbitMQ Docker image configuration.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "RabbitMQ Docker image repository."
+            },
+            "tag": {
+              "type": "string",
+              "description": "RabbitMQ Docker image tag."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy (Always, IfNotPresent, Never)."
+            }
+          }
+        },
+        "replicas": {
+          "type": "integer",
+          "description": "Number of RabbitMQ replicas to deploy."
+        },
+        "probes": {
+          "type": "object",
+          "description": "Liveness and readiness probe configuration for RabbitMQ pods."
+        },
+        "auth": {
+          "type": "object",
+          "description": "RabbitMQ authentication configuration",
+          "properties": {
+            "username": {
+              "type": "string",
+              "description": "RabbitMQ default user"
+            },
+            "password": {
+              "type": "string",
+              "description": "RabbitMQ default password"
+            },
+            "vhost": {
+              "type": "string",
+              "description": "RabbitMQ virtual host. Default is '/' for the default vhost."
+            }
+          }
+        },
+        "clustering": {
+          "type": "object",
+          "description": "RabbitMQ clustering configuration for high availability.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable RabbitMQ clustering mode."
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "description": "Resource requests and limits for RabbitMQ pods. Define CPU and memory constraints."
+        },
+        "persistence": {
+          "type": "object",
+          "description": "RabbitMQ persistence configuration.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable persistent storage for RabbitMQ data."
+            },
+            "size": {
+              "type": "string",
+              "description": "Size of the persistent volume for RabbitMQ."
+            },
+            "storageClass": {
+              "type": "string",
+              "description": "Storage class for RabbitMQ persistent volume."
+            }
+          }
+        },
+        "config": {
+          "type": "string",
+          "description": "Custom RabbitMQ configuration. If set, overrides the default file-based configuration from files/rabbitmq/rabbitmq.conf."
+        }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The persistence is enabled"
+        },
+        "storageClass": {
+          "type": "string",
+          "description": "The storage class"
+        },
+        "userDataAccessMode": {
+          "type": "string",
+          "description": "The access mode"
+        },
+        "userDataSize": {
+          "type": "string",
+          "description": "The size allocated"
+        },
+        "procServicesAccessMode": {
+          "type": "string",
+          "description": "The access mode"
+        },
+        "procServicesStorageClass": {
+          "type": "string",
+          "description": "The storage class"
+        },
+        "procServicesSize": {
+          "type": "string",
+          "description": "The size allocated"
+        },
+        "servicesNamespacePath": {
+          "type": "string",
+          "description": "The services namespace path (directory where user namespaces are created)"
+        },
+        "tmpAccessMode": {
+          "type": "string",
+          "description": "The access mode"
+        },
+        "tmpStorageClass": {
+          "type": "string",
+          "description": "The storage class"
+        },
+        "tmpSize": {
+          "type": "string",
+          "description": "The size allocated"
+        },
+        "tmpPath": {
+          "type": "string",
+          "description": "The temporary diratory path"
+        }
+      }
+    },
+    "cookiecutter": {
+      "type": "object",
+      "description": "CookieCutter template configuration for service generation",
+      "properties": {
+        "templateUrl": {
+          "type": "string",
+          "description": "Where to download the cookiecutter from"
+        },
+        "templateBranch": {
+          "type": "string",
+          "description": "The branch to fetch the cookiecutter (optional)"
+        }
+      }
+    },
+    "minio": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable MinIO for storage"
+        },
+        "mode": {
+          "type": "string",
+          "description": "MinIO deployment mode"
+        },
+        "replicas": {
+          "type": "integer",
+          "description": "Number of MinIO replicas"
+        },
+        "rootUser": {
+          "type": "string",
+          "description": "MinIO root username"
+        },
+        "rootPassword": {
+          "type": "string",
+          "description": "MinIO root password"
+        },
+        "fullnameOverride": {
+          "type": "string",
+          "description": "MinIO service name override"
+        },
+        "buckets": {
+          "type": "array",
+          "description": "Default buckets to create",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the MinIO bucket to create."
+              },
+              "policy": {
+                "type": "string",
+                "description": "Bucket policy (none, public, download, upload)."
+              },
+              "purge": {
+                "type": "boolean",
+                "description": "Purge bucket on deletion."
+              }
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "description": "Resource requests and limits for MinIO pods. Define CPU and memory constraints."
+        },
+        "persistence": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable MinIO persistence"
+            },
+            "size": {
+              "type": "string",
+              "description": "MinIO storage size"
+            },
+            "storageClass": {
+              "type": "string",
+              "description": "Storage class for MinIO"
+            }
+          }
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "MinIO service type"
+            },
+            "port": {
+              "type": "integer",
+              "description": "MinIO service port"
+            }
+          }
+        },
+        "consoleService": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "MinIO console service type (ClusterIP, NodePort, LoadBalancer)."
+            },
+            "port": {
+              "type": "integer",
+              "description": "MinIO console port"
+            }
+          }
+        },
+        "environment": {
+          "type": "object",
+          "description": "Environment variables for MinIO container. Use to configure MinIO-specific settings."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Security context for MinIO pods. Controls user IDs, group IDs, and filesystem permissions."
+        }
+      }
+    },
+    "websocketd": {
+      "type": "object",
+      "description": "Configuration for the websocketd server. Can be activated if redis is enabled and IAM is disabled.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The websocketd server is enabled"
+        },
+        "port": {
+          "type": "integer",
+          "description": "The websocketd server listen port"
+        },
+        "image": {
+          "type": "object",
+          "description": "Image for the websocketd container.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Websocketd container image repository."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy (Always, IfNotPresent, Never)."
+            },
+            "tag": {
+              "type": "string",
+              "description": "Websocketd container image tag (commit hash)."
+            }
+          }
+        }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "description": "Redis configuration using the official Docker image",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Redis deployment"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the Redis deployment"
+        },
+        "serviceName": {
+          "type": "string",
+          "description": "Name of the Redis service"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Redis port"
+        },
+        "image": {
+          "type": "object",
+          "description": "Redis Docker image configuration.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Redis Docker image repository."
+            },
+            "tag": {
+              "type": "string",
+              "description": "Redis Docker image tag."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy (Always, IfNotPresent, Never)."
+            }
+          }
+        },
+        "auth": {
+          "type": "object",
+          "description": "Redis authentication configuration.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Redis authentication with password."
+            },
+            "password": {
+              "type": "string",
+              "description": "Redis password (used if auth.enabled is true)."
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "description": "Resource requests and limits for Redis pods. Define CPU and memory constraints."
+        },
+        "persistence": {
+          "type": "object",
+          "description": "Redis persistence configuration.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable persistent storage for Redis data."
+            },
+            "volumeName": {
+              "type": "string",
+              "description": "Name of the persistent volume for Redis."
+            },
+            "accessMode": {
+              "type": "string",
+              "description": "Access mode for Redis persistent volume (ReadWriteOnce, ReadWriteMany)."
+            },
+            "size": {
+              "type": "string",
+              "description": "Size of the persistent volume for Redis."
+            },
+            "storageClass": {
+              "type": "string",
+              "description": "Storage class for Redis persistent volume."
+            }
+          }
+        }
+      }
+    },
+    "iam": {
+      "type": "object",
+      "description": "Identity and Access Management (IAM) configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The Identity and Access Management (IAM)"
+        },
+        "openIdConnectUrl": {
+          "type": "string",
+          "description": "The OpenIDConnect configuration URL"
+        },
+        "type": {
+          "type": "string",
+          "description": "The IAM type"
+        },
+        "name": {
+          "type": "string",
+          "description": "The IAM name"
+        },
+        "realm": {
+          "type": "string",
+          "description": "The realm associated with the IAM"
+        },
+        "onlyImplicitFlow": {
+          "type": "boolean",
+          "description": "When enabled, only the implicit flow authentication is available in the OpenAPI documentation"
+        },
+        "openeoAuth": {
+          "type": "object",
+          "description": "OpenEO authentication mechanism configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable the openEO authentication mechanism"
+            },
+            "title": {
+              "type": "string",
+              "description": "The title used for the default client"
+            },
+            "grant_types": {
+              "type": "array",
+              "description": "The required grant types to be supported",
+              "items": { "type": "string" }
+            },
+            "redirect_uris": {
+              "type": "array",
+              "description": "The redirect urls the be supported",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "webui": {
+      "type": "object",
+      "description": "WebUI configuration for interacting with ZOO-Project-DRU when authentication is required",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Activate the webui service"
+        },
+        "url": {
+          "type": "string",
+          "description": "The fully defined URL to access the WebUI"
+        },
+        "port": {
+          "type": "integer",
+          "description": "Port"
+        },
+        "image": {
+          "type": "object",
+          "description": "WebUI container image configuration.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "WebUI container image repository."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy (Always, IfNotPresent, Never)."
+            },
+            "tag": {
+              "type": "string",
+              "description": "WebUI container image tag."
+            }
+          }
+        },
+        "enforce": {
+          "type": "boolean",
+          "description": "Should apache handle security before the requests are sent to the ZOO-Project?"
+        },
+        "oidc": {
+          "type": "object",
+          "description": "The specific OpenIDConnect configuration",
+          "properties": {
+            "issuer": {
+              "type": "string",
+              "description": "OIDC issuer URL (e.g., https://auth.example.com/realms/myrealm)."
+            },
+            "remoteUserClaim": {
+              "type": "string",
+              "description": "Claim to use for identifying the remote user (e.g., email, sub)."
+            },
+            "providerTokenEndpointAuth": {
+              "type": "string",
+              "description": "Authentication method for the token endpoint (client_secret_basic, client_secret_post)."
+            },
+            "authVerifyJwksUri": {
+              "type": "string",
+              "description": "JWKS URI for verifying JWT tokens."
+            },
+            "scope": {
+              "type": "string",
+              "description": "OIDC scopes to request (space-separated, e.g., 'openid email profile')."
+            },
+            "clientId": {
+              "type": "string",
+              "description": "OIDC client ID."
+            },
+            "clientSecret": {
+              "type": "string",
+              "description": "OIDC client secret."
+            }
+          }
+        }
+      }
+    },
+    "argo": {
+      "type": "object",
+      "description": "Argo Workflows Support configuration. ZOO-Project-DRU can execute CWL workflows through the official Argo Workflows chart.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Activate Argo support by setting this to true"
+        },
+        "installCRDs": {
+          "type": "boolean",
+          "description": "Install Argo Workflows Custom Resource Definitions (CRDs). Set to false if CRDs are already installed in the cluster to avoid conflicts."
+        },
+        "autoTokenManagement": {
+          "type": "boolean",
+          "description": "Enable automatic token retrieval from ServiceAccount"
+        },
+        "restartOnTokenUpdate": {
+          "type": "boolean",
+          "description": "Restart ZOO-Kernel pods when token is updated"
+        },
+        "serviceAccount": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "ServiceAccount name for workflow execution"
+            }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "description": "Ingress configuration for exposing Argo Workflows UI externally."
+        },
+        "prometheus": {
+          "type": "object",
+          "description": "Prometheus integration for Argo Workflows metrics.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Prometheus metrics collection for Argo Workflows."
+            },
+            "serviceMonitor": {
+              "type": "object",
+              "description": "ServiceMonitor configuration for Prometheus Operator.",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable ServiceMonitor creation for automatic scraping by Prometheus."
+                }
+              }
+            }
+          }
+        },
+        "events": {
+          "type": "object",
+          "description": "Event Monitoring Configuration: Enable real-time workflow monitoring with Argo Events integration.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Argo Events integration for real-time monitoring"
+            },
+            "eventBus": {
+              "type": "object",
+              "description": "EventBus configuration for persistent event streaming",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Enable EventBus (JetStream backend) for persistent event streaming"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Name of the EventBus"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Type of the EventBus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "argo-workflows": {
+      "type": "object",
+      "description": "Argo Workflows chart configuration. Controls the official Argo Workflows deployment.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Argo Workflows chart deployment."
+        },
+        "server": {
+          "type": "object",
+          "description": "Argo Workflows server (UI) configuration.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Argo Workflows server (UI)."
+            }
+          }
+        },
+        "global": {
+          "type": "object",
+          "description": "Global Argo Workflows configuration.",
+          "properties": {
+            "namespace": {
+              "type": "string",
+              "description": "Namespace where Argo Workflows operates."
+            }
+          }
+        },
+        "cwlRunner": {
+          "type": "object",
+          "description": "CWL Runner configuration for executing Common Workflow Language workflows.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable CWL Runner workflow template."
+            },
+            "defaultResources": {
+              "type": "object",
+              "description": "Default resource limits for CWL workflow execution.",
+              "properties": {
+                "maxRam": {
+                  "type": "string",
+                  "description": "Maximum RAM allocation for CWL workflows (e.g., '2Gi', '4Gi')."
+                },
+                "maxCores": {
+                  "type": "string",
+                  "description": "Maximum CPU cores allocation for CWL workflows (e.g., '2', '4')."
+                }
+              }
+            }
+          }
+        },
+        "minio": {
+          "type": "object",
+          "description": "MinIO configuration for Argo Workflows artifact storage.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable MinIO for artifact storage."
+            },
+            "external": {
+              "type": "object",
+              "description": "External MinIO server configuration (when using existing MinIO instance).",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Use external MinIO server instead of deploying a new one."
+                },
+                "endpoint": {
+                  "type": "string",
+                  "description": "External MinIO server endpoint URL."
+                },
+                "secure": {
+                  "type": "boolean",
+                  "description": "Use HTTPS for external MinIO connection."
+                },
+                "accessKeySecret": {
+                  "type": "object",
+                  "description": "Secret containing MinIO access key.",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the secret containing MinIO access key."
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "Key within the secret that contains the access key value."
+                    }
+                  }
+                },
+                "secretKeySecret": {
+                  "type": "object",
+                  "description": "Secret containing MinIO secret key.",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Name of the secret containing MinIO secret key."
+                    },
+                    "key": {
+                      "type": "string",
+                      "description": "Key within the secret that contains the secret key value."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "stageInOut": {
+          "type": "object",
+          "description": "Stage-in/stage-out workflow template configuration for data transfer.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable stage-in/stage-out workflow templates for input/output data transfer."
+            }
+          }
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "description": "Comprehensive monitoring capabilities using the Prometheus stack (Prometheus, Grafana, Alertmanager, and node-exporter) with real-time Argo Workflows integration.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable monitoring stack (Prometheus, Grafana, etc.)"
+        },
+        "disableProblematicTargets": {
+          "type": "boolean",
+          "description": "Disable problematic Kubernetes targets for local environments (Docker Desktop, Minikube). Automatically patches kube-scheduler, kube-proxy, etcd, and kube-controller-manager targets that cause connection refused errors."
+        },
+        "nodeExporterPatchEnabled": {
+          "type": "boolean",
+          "description": "Enable node-exporter patching for Docker Desktop compatibility. Adjusts port configuration and removes unsupported mounts."
+        },
+        "kube-prometheus-stack": {
+          "type": "object",
+          "description": "Configuration for the kube-prometheus-stack chart. See https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack for detailed options."
+        }
+      }
+    },
+    "documentation": {
+      "type": "object",
+      "description": "Documentation configuration for Swagger-UI",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The Swagger-UI should include the documentation available from files/openapi-config/*"
+        }
+      }
+    },
+    "eoapi": {
+      "type": "object",
+      "description": "Configuration for EOAPI (Earth Observation API) integration.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable EOAPI integration for STAC, Raster, and Vector services"
+        }
+      }
+    },
+    "filter_in": {
+      "type": "object",
+      "description": "Configuration for the filter_in process.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The filter_in process is enabled"
+        },
+        "path": {
+          "type": "string",
+          "description": "The filter_in process path"
+        },
+        "service": {
+          "type": "string",
+          "description": "The filter_in process name"
+        }
+      }
+    },
+    "filter_out": {
+      "type": "object",
+      "description": "Configuration for the filter_out process.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "The filter_out process is enabled"
+        },
+        "path": {
+          "type": "string",
+          "description": "The filter_out process path"
+        },
+        "service": {
+          "type": "string",
+          "description": "The filter_out process name"
+        }
+      }
+    },
+    "files": {
+      "type": "object",
+      "description": "File-based configuration and assets.",
+      "properties": {
+        "cwlwrapperAssets": {
+          "type": "object",
+          "description": "CWL wrapper assets and configuration files."
+        }
+      }
+    },
+    "customConfig": {
+      "type": "object",
+      "description": "Custom configuration sections for ZOO-Project main.cfg",
+      "properties": {
+        "main": {
+          "type": "object",
+          "description": "Optional sections to include in the main.cfg file. Use key-value pairs definition (e.g., customConfig.main.mySection: |-\n  myKey=myValue). All sections will be added to the sections_list from the servicesNamespace section."
+        }
+      }
+    }
+  }
+}

@@ -170,7 +170,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-16dbe5b1b5c68900db69b1dd0ec3ed669dd82875
+    tag: dru-0b815fb32ee04eb6bd98164a040cc2733a2b5230
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -182,7 +182,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-16dbe5b1b5c68900db69b1dd0ec3ed669dd82875
+    tag: dru-0b815fb32ee04eb6bd98164a040cc2733a2b5230
   extraMountPoints: []
 
 notifications:
@@ -279,7 +279,7 @@ rabbitmq:
   enabled: true
   image:
     repository: rabbitmq
-    tag: "4.1.4-alpine"
+    tag: "4.2.2-alpine"
     pullPolicy: IfNotPresent
 
   replicas: 1
@@ -463,6 +463,7 @@ redis:
 
 iam: 
   enabled: true
+  onlyImplicitFlow: true
   openIdConnectUrl: https://auth.geolabs.fr/realms/zooproject/.well-known/openid-configuration
   type: openIdConnect
   name: OpenIDAuth
@@ -485,7 +486,7 @@ webui:
   image:
     repository: zooproject/nuxt-client
     pullPolicy: IfNotPresent
-    tag: 0.0.3
+    tag: 0.0.6
   enforce: false
   oidc:
     issuer: https://auth.geolabs.fr/realms/zooproject
@@ -493,7 +494,12 @@ webui:
     providerTokenEndpointAuth: client_secret_basic
     authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
     scope: "openid email"
+    clientId: webapp
+    clientSecret: pyCIFp3rxeCUB6n76XcxzT3kVdGzsv7g
 
+eoapi:
+  enabled: false
+  
 argo:
   enabled: false
   # Control whether to install CRDs or assume they are already installed
