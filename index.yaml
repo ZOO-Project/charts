@@ -4,6 +4,83 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: changed
+          description: "Update to the latest ZOO-Project-DRU version"
+          links:
+            - name: GitHub Commit
+              url: https://github.com/ZOO-Project/ZOO-Project/commit/0b815fb32ee04eb6bd98164a040cc2733a2b5230
+        - kind: fixed
+          description: "Fix issue #24: service selector mismatch in webui service causes 503 errors"
+          links:
+            - name: GitHub Issue
+              url: https://github.com/ZOO-Project/charts/issues/24
+        - kind: added
+          description: "Add eoapi proxy when the eoapi.enabled is set to true"
+        - kind: added
+          description: "Add the values.schema.json file to validate user values"
+        - kind: added
+          description: "Add options onlyImplicitFlow to the IAM configuration to restrict OpenAPI authentication method"
+        - kind: added
+          description: "Add globalNamespace option in oas.cfg configuration file"
+        - kind: changed
+          description: "Update DRU Helm chart documentation"
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.35
+    created: "2026-01-08T12:20:05.627170489Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.5.2
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 2830d83bf82d211d22c9c422a28792e4a9c58119a294cfc6025d8fa27bd60223
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.8.3/zoo-project-dru-0.8.3.tgz
+    version: 0.8.3
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: changed
           description: "Update to the latest ZOO-Project-DRU version, including the latest zoo-calrissian-runner"
           links:
             - name: GitHub Commit
@@ -3805,4 +3882,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2025-10-14T07:07:04.936591139Z"
+generated: "2026-01-08T12:20:05.627541247Z"
