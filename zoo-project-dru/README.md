@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.3
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.8.4
 ````
 
 ## Parameters

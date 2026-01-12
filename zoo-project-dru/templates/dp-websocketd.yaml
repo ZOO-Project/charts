@@ -50,6 +50,8 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.websocketd.image.repository }}:{{ .Values.websocketd.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.websocketd.pullPolicy }}
+          command: ["/websocketd/websocketd"]
+          args: ["--port=8888", "--passenv=ZOO_REDIS_HOST", "/shell.py"]
           env:
             - name: ZOO_REDIS_HOST
               value: {{ include "zoo-project-dru.redis.servicename" . }}
