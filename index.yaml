@@ -4,6 +4,92 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: changed
+          description: "Update to the latest ZOO-Project-DRU version (including fix for GHSA-58pv-8j8x-9vj2)"
+          links:
+            - name: GitHub Commit
+              url: https://github.com/ZOO-Project/ZOO-Project/commit/f4c7c44dbcc9b3333c8b6248e09f2a176c911057
+        - kind: changed
+          description: "Update Nuxt client to version 0.0.9"
+          links:
+            - name: Nuxt-Client release
+              url: https://github.com/ZOO-Project/nuxt-client/releases/tag/0.0.9
+        - kind: fixed
+          description: "Fix issue with cwl-loader for loading some CWL files"
+          links:
+            - name: GitHub Issue
+              url: https://github.com/ZOO-Project/charts/issues/25
+        - kind: fixed
+          description: "Remove the clientSecret from the default values.yaml to avoid security issue (the previous one is now revoked)"
+        - kind: changed
+          description: "Update the Postgresql docker image to version 16-trixie (16-alpine before), the image is a bit bigger in size but also safer"
+        - kind: added
+          description: "Add support for OGC API - Processes - Part 1: Core 2.0 conformance classes (optional, disabled by default)"
+          links:
+            - name: OGC API - Processes - Part 1: Core 2.0
+              url: https://ogcapi.github.io/processes/2.0/core/
+        - kind: added
+          description: "Add option to skip cwl2ogc schema generation in processDescription responses (disabled by default)"
+          links:
+            - name: cwl2ogc GitHub repository
+              url: https://github.com/eoap/cwl2ogc
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.37
+    created: "2026-01-16T16:46:55.247232943Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.5.2
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 88af5806ebf0d5458c7848eb50cc73f76f72c3dff41db47b06422bea2081943c
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.8.5/zoo-project-dru-0.8.5.tgz
+    version: 0.8.5
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: changed
           description: "Update to the latest ZOO-Project-DRU version"
           links:
             - name: GitHub Commit
@@ -3950,4 +4036,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2026-01-12T15:09:50.177195208Z"
+generated: "2026-01-16T16:46:55.247497969Z"
