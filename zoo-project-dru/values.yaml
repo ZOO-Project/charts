@@ -163,6 +163,8 @@ affinity: {}
 zoo:
   promoteHead: true
   detectEntrypoint: false
+  processesv2: false
+  skipCwl2ogcSchema: false
   rabbitmq:
     definitions: "files/rabbitmq/definitions.json.tpl"
 
@@ -170,7 +172,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-e1a799659515b81812c676f3b245532cdfa7bf24
+    tag: dru-10445f76d7c78b35330af508d82f6ea76bc59d52
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -182,7 +184,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-e1a799659515b81812c676f3b245532cdfa7bf24
+    tag: dru-10445f76d7c78b35330af508d82f6ea76bc59d52
   extraMountPoints: []
 
 notifications:
@@ -237,7 +239,7 @@ postgresql:
 
   image:
     repository: postgres
-    tag: "16-alpine"
+    tag: "16-trixie"
     pullPolicy: IfNotPresent
 
   # Resources configuration
@@ -486,7 +488,7 @@ webui:
   image:
     repository: zooproject/nuxt-client
     pullPolicy: IfNotPresent
-    tag: 0.0.6
+    tag: 0.0.9
   enforce: false
   oidc:
     issuer: https://auth.geolabs.fr/realms/zooproject
@@ -495,7 +497,6 @@ webui:
     authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
     scope: "openid email"
     clientId: webapp
-    clientSecret: pyCIFp3rxeCUB6n76XcxzT3kVdGzsv7g
 
 eoapi:
   enabled: false

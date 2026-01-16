@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.8.4
+version: 0.8.5
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.36"
+appVersion: "0.2.37"
 
 keywords:
   - workflows
@@ -73,16 +73,34 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Update to the latest ZOO-Project-DRU version"
+      description: "Update to the latest ZOO-Project-DRU version (including fix for GHSA-58pv-8j8x-9vj2)"
       links:
         - name: GitHub Commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/e1a799659515b81812c676f3b245532cdfa7bf24
-    - kind: fixed
-      description: "Add parameter to pass the ZOO_REDIS_HOST value to the websocketd deployment"
-    - kind: added
-      description: "Add /jobs/{jobId}/results/{outputId} endpoint to retrieve a unique job output"
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/f4c7c44dbcc9b3333c8b6248e09f2a176c911057
     - kind: changed
-      description: "Also update the tmpUrl configuration parameter in security_service.py"
+      description: "Update Nuxt client to version 0.0.9"
+      links:
+        - name: Nuxt-Client release
+          url: https://github.com/ZOO-Project/nuxt-client/releases/tag/0.0.9
+    - kind: fixed
+      description: "Fix issue with cwl-loader for loading some CWL files"
+      links:
+        - name: GitHub Issue
+          url: https://github.com/ZOO-Project/charts/issues/25
+    - kind: fixed
+      description: "Remove the clientSecret from the default values.yaml to avoid security issue (the previous one is now revoked)"
+    - kind: changed
+      description: "Update the Postgresql docker image to version 16-trixie (16-alpine before), the image is a bit bigger in size but also safer"
+    - kind: added
+      description: "Add support for OGC API - Processes - Part 1: Core 2.0 conformance classes (optional, disabled by default)"
+      links:
+        - name: OGC API - Processes - Part 1: Core 2.0
+          url: https://ogcapi.github.io/processes/2.0/core/
+    - kind: added
+      description: "Add option to skip cwl2ogc schema generation in processDescription responses (disabled by default)"
+      links:
+        - name: cwl2ogc GitHub repository
+          url: https://github.com/eoap/cwl2ogc
 
   artifacthub.io/license: Apache-2.0
 
