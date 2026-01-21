@@ -172,7 +172,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-10445f76d7c78b35330af508d82f6ea76bc59d52
+    tag: dru-96cb050ba36a1ecfcfefb58d7201b7cadd914109
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -184,7 +184,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-10445f76d7c78b35330af508d82f6ea76bc59d52
+    tag: dru-96cb050ba36a1ecfcfefb58d7201b7cadd914109
   extraMountPoints: []
 
 notifications:
@@ -239,7 +239,7 @@ postgresql:
 
   image:
     repository: postgres
-    tag: "16-trixie"
+    tag: "16-alpine"
     pullPolicy: IfNotPresent
 
   # Resources configuration

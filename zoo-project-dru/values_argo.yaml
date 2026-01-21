@@ -11,7 +11,7 @@ argo:
 
   # Images configuration
   cwlwrapperImage: "eoepca/cwl-wrapper:0.12.1"
-  stageOutImage: "ghcr.io/eoap/mastering-app-package/stage:1.1.0"
+  stageOutImage: "ghcr.io/eoap/mastering-app-package/stage:1.1.1"
   
   # Service Account
   serviceAccount:

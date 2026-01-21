@@ -10,7 +10,6 @@ minio:
   enabled: true
   persistence:
     enabled: true
-    storageClass: standard
     size: 2Gi
     accessMode: ReadWriteOnce
   defaultBuckets: "eoepca"
@@ -24,7 +23,7 @@ minio:
 
 cookiecutter:
   templateUrl: https://github.com/gfenoy/eoepca-proc-service-template.git
-  templateBranch: feature/output-handling
+  templateBranch: feature/zoo-template-common
 
 iam:
   enabled: false
@@ -46,7 +45,6 @@ rabbitmq:
   autoSetup:
     enabled: true
   persistence:
-    storageClass: standard
     size: 1Gi
   resources:
     limits:

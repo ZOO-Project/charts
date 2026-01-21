@@ -1,7 +1,6 @@
 import os
 import sys
 import traceback
-import yaml
 import json
 import boto3  # noqa: F401
 import botocore
