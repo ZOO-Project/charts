@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.9.1
+version: 0.9.2
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.39"
+appVersion: "0.2.40"
 
 keywords:
   - workflows
@@ -72,11 +72,11 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: "Update to the latest ZOO-Project-DRU version 2.1.0"
+    - kind: fixed
+      description: "Fix issue with the WES support using zoo-wes-runner < 0.2.1"
       links:
         - name: GitHub Commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/62e370056b87e27409bda1b6a0df163fcc0d9a29
+          url: https://github.com/ZOO-Project/zoo-wes-runner/commit/c3298222a85e184d953e25b51e2c9e9a633e920d
 
   artifacthub.io/license: Apache-2.0
 

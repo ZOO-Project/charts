@@ -49,11 +49,13 @@ skaffold dev
 Wait for the deployment to stabilize, the logs will show:
 
 ```
-Completed post-deploy hooks
-Port forwarding service/s3-service in namespace zoo, remote port 9000 -> http://127.0.0.1:9000
+Deployments stabilized in 39.087 seconds
 Port forwarding service/zoo-project-dru-service in namespace zoo, remote port 80 -> http://127.0.0.1:8080
-Port forwarding service/s3-service in namespace zoo, remote port 9001 -> http://127.0.0.1:9001
-No artifacts found to watch
+Port forwarding service/s3-service in namespace zoo, remote port 9000 -> http://127.0.0.1:9000
+Port forwarding service/zoo-project-dru-websocketd in namespace zoo, remote port 8888 -> http://127.0.0.1:8888
+Port forwarding service/s3-service-console in namespace zoo, remote port 9001 -> http://127.0.0.1:9001
+Listing files to watch...
+ - ghcr.io/zoo-project/zoofpm-eviction-controller
 Press Ctrl+C to exit
 Watching for changes...
 ```
