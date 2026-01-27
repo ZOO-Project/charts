@@ -3,6 +3,68 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: fixed
+          description: "Fix issue with the WES support using zoo-wes-runner < 0.2.1"
+          links:
+            - name: GitHub Commit
+              url: https://github.com/ZOO-Project/zoo-wes-runner/commit/c3298222a85e184d953e25b51e2c9e9a633e920d
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.40
+    created: "2026-01-27T12:44:56.374195029Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.5.2
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: e21c0d4189a6ec02b81494ab5a9878c5ac625ea76c62af3ee159531999693d12
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.9.2/zoo-project-dru-0.9.2.tgz
+    version: 0.9.2
+  - annotations:
+      artifacthub.io/changes: |
         - kind: changed
           description: "Update to the latest ZOO-Project-DRU version 2.1.0"
           links:
@@ -4250,4 +4312,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2026-01-24T14:05:48.905627326Z"
+generated: "2026-01-27T12:44:56.374524566Z"
