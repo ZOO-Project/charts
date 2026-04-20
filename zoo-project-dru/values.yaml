@@ -172,7 +172,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-3862860293ffec5d91cf4964a82994b1a385ec53
+    tag: dru-b567b1dff96b9f720215aaa4da69dbd3a7ffe031
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -184,7 +184,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-3862860293ffec5d91cf4964a82994b1a385ec53
+    tag: dru-b567b1dff96b9f720215aaa4da69dbd3a7ffe031
   extraMountPoints: []
 
 notifications:
@@ -199,7 +199,7 @@ workflow:
   defaultVolumeSize: "10190"
   defaultMaxRam: "1024"
   defaultMaxCores: "2"
-  calrissianImage: "terradue/calrissian:0.12.0"
+  calrissianImage: ghcr.io/duke-gcb/calrissian/calrissian:latest
   imagePullSecrets: {}
   # auths:
   #  fake\.registry\.io:
@@ -500,7 +500,7 @@ webui:
 
 eoapi:
   enabled: false
-  
+
 argo:
   enabled: false
   # Control whether to install CRDs or assume they are already installed
@@ -571,6 +571,66 @@ argo-workflows:
         key: rootPassword
   stageInOut:
     enabled: true
+
+# Dask-Gateway optional subchart configuration
+# When dask.enabled=true, a dask-gateway instance is deployed alongside ZOO-Project-DRU
+# in the same release namespace. The gateway is accessible via its Traefik proxy service,
+# whose URL is auto-computed from the release name and namespace:
+#   http://traefik-<release-name>-dask-gateway.<namespace>.svc.cluster.local:80
+#
+# This URL is automatically injected as both `gateway_url` and `dask_gateway_url`
+# in the [additional_parameters] section of main.cfg — no manual customConfig needed.
+# Both keys are set for compatibility (existing services use `gateway_url`).
+#
+# Minimal usage (just add to your values.yaml):
+#   dask:
+#     enabled: true
+#
+# To use a custom worker image (e.g. eoap):
+#   dask-gateway:
+#     gateway:
+#       backend:
+#         image:
+#           name: ghcr.io/eoap/dev-platform-eoap/dask-gateway-worker
+#           tag: "0.1.0"
+#         imagePullSecrets:
+#           - name: my-pull-secret
+dask:
+  # Set to true to deploy dask-gateway alongside ZOO-Project-DRU
+  enabled: false
+  # Override the auto-computed Traefik gateway URL injected into main.cfg [additional_parameters].
+  # Leave empty to use the auto-generated URL:
+  #   http://traefik-<release-name>-dask-gateway.<namespace>.svc.cluster.local:80
+  gatewayUrl: ""
+
+# Dask-Gateway subchart values
+# These values are passed directly to the dask-gateway Helm chart (v2024.1.0).
+# See: https://helm.dask.org/ and https://gateway.dask.org/install-kube.html
+dask-gateway:
+  enabled: false
+  gateway:
+    # Backend configuration: controls the Dask worker pod image and options
+    backend:
+      image:
+        name: "daskgateway/dask-worker"
+        tag: "2024.1.0"
+      # imagePullSecrets: []
+    # Extra Python configuration for the dask-gateway server.
+    # Defines available cluster options (resources, image) that users can customize.
+    extraConfig:
+      dask_gateway_config.py: |
+        c = get_config()
+        from dask_gateway_server.options import Options, String, Integer, Float
+        c.Backend.cluster_options = Options(
+          Float("worker_cores_limit", default=1, label="Worker Cores Limit"),
+          Float("worker_cores", default=1, label="Worker Cores"),
+          String("worker_memory", default="1 G", label="Worker Memory"),
+          String("image", default="daskgateway/dask-worker:latest", label="Worker Image")
+        )
+  # Traefik proxy service, exposed as ClusterIP for in-cluster access only
+  traefik:
+    service:
+      type: ClusterIP
 
 # Monitoring configuration
 monitoring:

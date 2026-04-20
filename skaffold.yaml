@@ -165,6 +165,28 @@ profiles:
         port: 9001
         localPort: 9001
 
+  # Profile: dask
+  # Activates dask-gateway deployment as a subchart of ZOO-Project-DRU.
+  # The dask-gateway Traefik proxy will be available at:
+  #   http://traefik-zoo-project-dru-dask-gateway.zoo.svc.cluster.local:80
+  # Combine with other profiles, e.g.: skaffold dev -p dask
+  - name: dask
+    patches:
+      - op: add
+        path: /deploy/helm/releases/0/setValues
+        value:
+          dask.enabled: "true"
+          dask-gateway.traefik.service.type: "ClusterIP"
+      # Use setValueTemplates to allow Skaffold image tag substitution for a custom worker image.
+      # Override gateway.backend.image.name and gateway.backend.image.tag here if needed.
+      # Example for eoap custom worker:
+      #   - op: add
+      #     path: /deploy/helm/releases/0/setValueTemplates
+      #     value:
+      #       dask-gateway.gateway.backend.image.name: ghcr.io/eoap/dev-platform-eoap/dask-gateway-worker:0.1.0
+      #       dask-gateway.gateway.backend.image.tag: "{{.IMAGE_TAG_ghcr_io_eoap_dev_platform_eoap_dask_gateway_worker}}"
+      #       dask-gateway.gateway.backend.imagePullSecrets[0].name: kaniko-secret
+
 portForward:
 
 # ZOO-Project services

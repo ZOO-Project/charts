@@ -1517,6 +1517,82 @@
         }
       }
     },
+    "dask": {
+      "type": "object",
+      "description": "Configuration for the optional Dask-Gateway subchart deployment.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Dask-Gateway deployment as a subchart. When enabled, a Dask-Gateway instance is deployed alongside ZOO-Project-DRU and its URL is automatically injected into main.cfg [additional_parameters] and [pod_env_vars] as gateway_url, dask_gateway_url, and DASK_GATEWAY_URL."
+        },
+        "gatewayUrl": {
+          "type": "string",
+          "description": "Override the auto-computed Dask-Gateway URL. Leave empty to auto-generate: http://traefik-<release-name>-dask-gateway.<namespace>.svc.cluster.local:80"
+        }
+      }
+    },
+    "dask-gateway": {
+      "type": "object",
+      "description": "Values passed directly to the dask-gateway subchart (v2024.1.0). See https://helm.dask.org/ for full reference.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable the dask-gateway subchart (controlled by dask.enabled condition)"
+        },
+        "gateway": {
+          "type": "object",
+          "description": "Dask-Gateway server configuration.",
+          "properties": {
+            "backend": {
+              "type": "object",
+              "description": "Backend configuration controlling Dask worker pod image and cluster options.",
+              "properties": {
+                "image": {
+                  "type": "object",
+                  "description": "Dask worker container image.",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Worker image name (e.g. daskgateway/dask-worker or a custom eoap image)"
+                    },
+                    "tag": {
+                      "type": "string",
+                      "description": "Worker image tag"
+                    }
+                  }
+                },
+                "imagePullSecrets": {
+                  "type": "array",
+                  "description": "Image pull secrets for private worker images",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            },
+            "extraConfig": {
+              "type": "object",
+              "description": "Extra Python configuration files for the dask-gateway server (e.g. cluster options, resource limits)."
+            }
+          }
+        },
+        "traefik": {
+          "type": "object",
+          "description": "Traefik proxy configuration for dask-gateway.",
+          "properties": {
+            "service": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "Kubernetes service type for the Traefik proxy (ClusterIP for in-cluster access)"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "filter_in": {
       "type": "object",
       "description": "Configuration for the filter_in process.",

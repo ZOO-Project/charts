@@ -1,0 +1,160 @@
+cwlVersion: v1.2
+
+class: CommandLineTool
+id: stageout-file
+
+doc: "Stage-out a file to S3 storage"
+
+inputs:
+  file:
+    doc: "The file to stage out"
+    label: "File to stage out"
+    type: File
+  
+  STAGEOUT_OUTPUT:
+    doc: "The S3 output path (e.g., s3://bucket-name)"
+    label: "S3 output path"
+    type: string
+  
+  process:
+    doc: "The process ID"
+    label: "Process ID"
+    type: string
+  
+  STAGEOUT_AWS_ACCESS_KEY_ID:
+    doc: "AWS access key ID"
+    label: "AWS access key ID"
+    type: string
+  
+  STAGEOUT_AWS_SECRET_ACCESS_KEY:
+    doc: "AWS secret access key"
+    label: "AWS secret access key"
+    type: string
+  
+  STAGEOUT_AWS_REGION:
+    doc: "AWS region"
+    label: "AWS region"
+    type: string
+  
+  STAGEOUT_AWS_SERVICEURL:
+    doc: "AWS service URL (for S3-compatible storage)"
+    label: "AWS service URL"
+    type: string
+
+outputs:
+  s3_file_output:
+    doc: "The S3 URI of the staged-out file"
+    label: "S3 file URI"
+    type: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI
+    outputBinding:
+      glob: file-uri.txt
+      loadContents: true
+      outputEval: |
+        ${
+          return { "value": self[0].contents.trim(), "type": "https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml#URI" };
+        }
+
+stdout: file-uri.txt
+
+baseCommand:
+  - python
+  - stage.py
+
+arguments:
+  - $(inputs.file.path)
+  - $(inputs.STAGEOUT_OUTPUT)
+  - ${
+      var firstPart = (Math.random() * 46656) | 0;
+      var secondPart = (Math.random() * 46656) | 0;
+      firstPart = ("000" + firstPart.toString(36)).slice(-3);
+      secondPart = ("000" + secondPart.toString(36)).slice(-3);
+      return inputs.process + "-" + firstPart + secondPart;
+    }
+
+requirements:
+  NetworkAccess:
+    networkAccess: true
+  
+  SchemaDefRequirement:
+    types:
+      - $import: https://raw.githubusercontent.com/eoap/schemas/main/string_format.yaml
+  
+  DockerRequirement:
+    dockerPull: ghcr.io/eoap/mastering-app-package/stage:1.0.0
+  
+  InlineJavascriptRequirement: {}
+  
+  EnvVarRequirement:
+    envDef:
+      STAGEOUT_AWS_ACCESS_KEY_ID: $(inputs.STAGEOUT_AWS_ACCESS_KEY_ID)
+      STAGEOUT_AWS_SECRET_ACCESS_KEY: $(inputs.STAGEOUT_AWS_SECRET_ACCESS_KEY)
+      STAGEOUT_AWS_REGION: $(inputs.STAGEOUT_AWS_REGION)
+      STAGEOUT_AWS_SERVICEURL: $(inputs.STAGEOUT_AWS_SERVICEURL)
+  
+  ResourceRequirement: {}
+  
+  InitialWorkDirRequirement:
+    listing:
+      - entryname: stage.py
+        entry: |-
+          import os
+          import sys
+          import boto3
+          import botocore
+          from urllib.parse import urlparse
+
+          file_path = sys.argv[1]
+          bucket_uri = sys.argv[2]
+          subfolder = sys.argv[3]
+          if not bucket_uri.startswith("s3://"):
+              bucket_uri = "s3://" + bucket_uri
+
+          print(f"file_path: {file_path}", file=sys.stderr)
+          print(f"bucket_uri: {bucket_uri}", file=sys.stderr)
+          print(f"subfolder: {subfolder}", file=sys.stderr)
+
+          aws_access_key_id = os.environ["STAGEOUT_AWS_ACCESS_KEY_ID"]
+          aws_secret_access_key = os.environ["STAGEOUT_AWS_SECRET_ACCESS_KEY"]
+          region_name = os.environ["STAGEOUT_AWS_REGION"]
+          endpoint_url = os.environ["STAGEOUT_AWS_SERVICEURL"]
+
+          # Parse bucket URI (e.g., s3://bucket-name or s3://bucket-name/path)
+          parsed = urlparse(bucket_uri)
+          bucket = parsed.netloc
+          base_path = parsed.path.lstrip("/") if parsed.path else ""
+
+          # Create S3 client
+          client = boto3.client(
+              "s3",
+              aws_access_key_id=aws_access_key_id,
+              aws_secret_access_key=aws_secret_access_key,
+              endpoint_url=endpoint_url,
+              region_name=region_name,
+          )
+
+          # Get file name from path
+          file_name = os.path.basename(file_path)
+
+          print(f"Base path {base_path}", file=sys.stderr)
+
+          # Construct S3 key
+          if base_path:
+              s3_key = os.path.normpath(f"{base_path}/{subfolder}/{file_name}")
+          else:
+              s3_key = os.path.normpath(f"{subfolder}/{file_name}")
+
+          # Remove leading slashes from s3_key
+          s3_key = s3_key.lstrip("/")
+          bucket = bucket.lstrip("/")
+          print(f"Target s3://{bucket}/", file=sys.stderr)
+          print(f"Target s3://{bucket}/{s3_key}", file=sys.stderr)
+          
+
+          # Upload file to S3
+          print(f"Uploading {file_path} to s3://{bucket}/{s3_key}", file=sys.stderr)
+          client.upload_file(file_path, bucket, s3_key)
+
+          # Construct and return the S3 URI
+          s3_uri = f"s3://{bucket}/{s3_key}"
+          print(f"File staged out to: {s3_uri}", file=sys.stderr)
+          print(s3_uri)

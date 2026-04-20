@@ -20,35 +20,36 @@ print('')
 #print(data)
 
 from urllib import parse
+params=parse.parse_qs(os.environ["QUERY_STRING"])
 
-# Ensure that only the zoofpm pod is allowed to invoke the publish CGI script
-config = configparser.ConfigParser()
-config.read("/usr/lib/cgi-bin/main.cfg")
-driver = ogr.GetDriverByName("PostgreSQL")
-connection_string=""
-for key in config["database"]:
-    if key != "type" and key != "schema":
-        connection_string += f"{key}={config['database'][key]} "
-ds=driver.Open(f"PG:{connection_string}")
-layer=ds.ExecuteSQL("SELECT host from servers")
-if layer is not None and layer.GetFeatureCount() > 0:
-    hasAddress = False
-    for i in range(layer.GetFeatureCount()):
-        host = layer.GetFeature(i).GetFieldAsString("host")
-        if os.environ["REMOTE_ADDR"] == host:
-            print("You are allowed to publish this job", file=sys.stderr)
-            hasAddress = True
-            break
-    if not(hasAddress):
+if "jobid" in params:
+    # Ensure that only the zoofpm pod is allowed to invoke the publish CGI script
+    config = configparser.ConfigParser()
+    config.read("/usr/lib/cgi-bin/main.cfg")
+    driver = ogr.GetDriverByName("PostgreSQL")
+    connection_string=""
+    for key in config["database"]:
+        if key != "type" and key != "schema":
+            connection_string += f"{key}={config['database'][key]} "
+    ds=driver.Open(f"PG:{connection_string}")
+    layer=ds.ExecuteSQL("SELECT host from servers")
+    if layer is not None and layer.GetFeatureCount() > 0:
+        hasAddress = False
+        for i in range(layer.GetFeatureCount()):
+            host = layer.GetFeature(i).GetFieldAsString("host")
+            if os.environ["REMOTE_ADDR"] == host:
+                print("You are allowed to publish this job", file=sys.stderr)
+                hasAddress = True
+                break
+        if not(hasAddress):
+            print("You are not allowed to publish this job", file=sys.stderr)
+            sys.exit(0)
+    else:
         print("You are not allowed to publish this job", file=sys.stderr)
         sys.exit(0)
-else:
-    print("You are not allowed to publish this job", file=sys.stderr)
-    sys.exit(0)
 
 {{- if .Values.redis.enabled }}
 try:
-    params=parse.parse_qs(os.environ["QUERY_STRING"])
     r=None
     if "ZOO_REDIS_HOST" in os.environ:
         r = redis.Redis(host=os.environ["ZOO_REDIS_HOST"], port=6379, db=0)
@@ -63,23 +64,41 @@ except Exception as e:
 {{- end }}
 
 {{- if .Values.notifications.enabled }}
+ce_name_prefix="org.ogc.api.process."
+ce_name_job_prefix=ce_name_prefix + "job."
 k_sink = os.environ.get("K_SINK", None)
 k_ce_overrides_str = os.environ.get("K_CE_OVERRIDES", None)
 configp = configparser.ConfigParser()
 configp.read("/usr/lib/cgi-bin/oas.cfg")
 try:
     if k_sink is not None:
-        params=parse.parse_qs(os.environ["QUERY_STRING"])
         #print(params,file=sys.stderr)
         #print(f"k_sink: {k_sink}",file=sys.stderr)
         # TODO: detect the userid and add it to the URLs
         data = json.loads(data)
         host_name = configp["openapi"]["rootUrl"]
         root_path = configp["openapi"]["rootPath"]
+
+        if "operation" in params:
+            operation = params["operation"][0]
+            attributes = {
+                "type": ce_name_job_prefix + operation,
+                "source": f"{host_name}/{root_path}/job/{job_id}",
+            }
+            if operation != "undeploy":
+                attributes["dataschema"] = "https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/link.yaml"
+                attributes["datacontenttype"] = "application/json"
+            else:
+                attributes["datacontenttype"] = "text/plain"
+            event = CloudEvent(attributes, data)
+            headers, body = to_binary(event)
+            requests.post(k_sink, data=body, headers=headers)
+            sys.exit(0)
+
         try:
             job_id = data["id"]
             attributes = {
-                "type": "org.eoepca.ogc-api-processes-notification.job.update",
+                "type": ce_name_job_prefix + "update",
                 "source": f"{host_name}/{root_path}/job/{job_id}",
                 "datacontenttype": "application/json",
                 "dataschema": "https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/statusInfo.yaml",
@@ -89,7 +108,7 @@ try:
             data = data["stac"]["value"]
             job_id = data["id"]
             attributes = {
-                "type": "org.eoepca.ogc-api-processes-notification.job.result",
+                "type": ce_name_job_prefix + "result",
                 "source": f"{host_name}/{root_path}/job/{job_id}/results",
                 "datacontenttype": "application/json",
                 #"dataschema": "https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/results.yaml",

@@ -201,6 +201,11 @@ spec:
               value: {{ $v }}
             {{- end }}
 
+            {{- if .Values.dask.enabled }}
+            - name: DASK_GATEWAY_URL
+              value: {{ if .Values.dask.gatewayUrl }}{{ .Values.dask.gatewayUrl }}{{ else }}{{ printf "http://traefik-%s-dask-gateway.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}{{ end }}
+            {{- end }}
+
           volumeMounts:
             - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/main.cfg
@@ -250,6 +255,10 @@ spec:
             - name: cwlwrapper-config
               mountPath: /assets/stagein-file.yaml
               subPath: stagein-file.yaml
+
+            - name: cwlwrapper-config
+              mountPath: /assets/stageout-file.yaml
+              subPath: stageout-file.yaml
             {{- end }}
 
             - name: ades-processing-services

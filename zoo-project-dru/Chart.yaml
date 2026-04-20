@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.9.2
+version: 0.9.3
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.40"
+appVersion: "0.2.41"
 
 keywords:
   - workflows
@@ -70,13 +70,23 @@ dependencies:
     repository: https://prometheus-community.github.io/helm-charts
     condition: monitoring.enabled
 
+  - name: dask-gateway
+    version: "2024.1.0"
+    repository: https://helm.dask.org/
+    condition: dask.enabled
+
 annotations:
   artifacthub.io/changes: |
-    - kind: fixed
-      description: "Fix issue with the WES support using zoo-wes-runner < 0.2.1"
-      links:
-        - name: GitHub Commit
-          url: https://github.com/ZOO-Project/zoo-wes-runner/commit/c3298222a85e184d953e25b51e2c9e9a633e920d
+    - kind: added
+      description: "Add dask-gateway as optional subchart dependency (dask.enabled)"
+    - kind: added
+      description: "Handle CloudEvents following current pubsub spec relying on the configured sink (k_sink) if set"
+    - kind: added
+      description: "Add stageout-file.yaml CWL wrapper to stage files"
+    - kind: changed
+      description: "Use the ZOO-Project-DRU image tagged dru-b567b1dff96b9f720215aaa4da69dbd3a7ffe031 (using custom versions of Python modules)"
+    - kind: added
+      description: "Upgrade calrissian Docker image from terradue/calrissian:0.12.0 to upstream calrissian/calrissian:latest"
 
   artifacthub.io/license: Apache-2.0
 
