@@ -3,6 +3,75 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: changed
+          description: "Use the ZOO-Project-DRU image tagged dru-93e1a1d16150d88eb7c9b83d0a3ad076b3e6c9dd (using custom versions of Python modules)"
+        - kind: changed
+          description: "Update rabbitmq to 4.2.5-alpine Docker image"
+        - kind: changed
+          description: "Update the start-up.sh script to enable starting ZOO-Kernel-FPM as unprivileged user (for better security)"
+        - kind: changed
+          description: "Update nuxt-client to 0.1.0"
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.42
+    created: "2026-04-27T10:36:20.614023449Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.5.2
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    - condition: dask.enabled
+      name: dask-gateway
+      repository: https://helm.dask.org/
+      version: 2024.1.0
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 815f1c3be885b60937b20f75ddc09b09283e14c57d96d12213088baf7baed2a7
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.9.4/zoo-project-dru-0.9.4.tgz
+    version: 0.9.4
+  - annotations:
+      artifacthub.io/changes: |
         - kind: added
           description: "Add dask-gateway as optional subchart dependency (dask.enabled)"
         - kind: added
@@ -4383,4 +4452,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2026-04-20T12:10:17.376776377Z"
+generated: "2026-04-27T10:36:20.614338766Z"
