@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.9.3
+version: 0.9.4
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.41"
+appVersion: "0.2.42"
 
 keywords:
   - workflows
@@ -77,16 +77,14 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: "Add dask-gateway as optional subchart dependency (dask.enabled)"
-    - kind: added
-      description: "Handle CloudEvents following current pubsub spec relying on the configured sink (k_sink) if set"
-    - kind: added
-      description: "Add stageout-file.yaml CWL wrapper to stage files"
     - kind: changed
-      description: "Use the ZOO-Project-DRU image tagged dru-b567b1dff96b9f720215aaa4da69dbd3a7ffe031 (using custom versions of Python modules)"
-    - kind: added
-      description: "Upgrade calrissian Docker image from terradue/calrissian:0.12.0 to upstream calrissian/calrissian:latest"
+      description: "Use the ZOO-Project-DRU image tagged dru-93e1a1d16150d88eb7c9b83d0a3ad076b3e6c9dd (using custom versions of Python modules)"
+    - kind: changed
+      description: "Update rabbitmq to 4.2.5-alpine Docker image"
+    - kind: changed
+      description: "Update the start-up.sh script to enable starting ZOO-Kernel-FPM as unprivileged user (for better security)"
+    - kind: changed
+      description: "Update nuxt-client to 0.1.0"
 
   artifacthub.io/license: Apache-2.0
 

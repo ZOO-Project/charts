@@ -172,7 +172,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-b567b1dff96b9f720215aaa4da69dbd3a7ffe031
+    tag: dru-93e1a1d16150d88eb7c9b83d0a3ad076b3e6c9dd
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -184,7 +184,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-b567b1dff96b9f720215aaa4da69dbd3a7ffe031
+    tag: dru-93e1a1d16150d88eb7c9b83d0a3ad076b3e6c9dd
   extraMountPoints: []
 
 notifications:
@@ -281,7 +281,7 @@ rabbitmq:
   enabled: true
   image:
     repository: rabbitmq
-    tag: "4.2.2-alpine"
+    tag: "4.2.5-alpine"
     pullPolicy: IfNotPresent
 
   replicas: 1
@@ -488,7 +488,7 @@ webui:
   image:
     repository: zooproject/nuxt-client
     pullPolicy: IfNotPresent
-    tag: 0.0.9
+    tag: 0.1.0
   enforce: false
   oidc:
     issuer: https://auth.geolabs.fr/realms/zooproject
