@@ -3,6 +3,79 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: security
+          description: "Ensure that every pod runs as a non-root user for better security. The specific non-root user may vary depending on the component and the base image used."
+        - kind: changed
+          description: "Update the documentation to detail the podSecurityContext and securityContext options for the webui, websocketd, and redis components, and provide guidance on setting appropriate security contexts based on the user that the container runs as."
+        - kind: added
+          description: "Add extraFromEnv configuration option to allow users to inject additional environment variables from secrets into the ZOO-Kernel-FPM pod."
+        - kind: changed
+          description: "Update the documentation to reflect the new extraEnvFrom configuration option and provide an example of how to use it to inject environment variables from a secret."
+        - kind: changed
+          description: "Update the oas.cfg configuration file to add a new hidden process 'Notify' to the list of hidden processes. This process is used internally by the ZOO-Project and should not be exposed to users."
+        - kind: changed
+          description: "Update nuxt-client to 0.1.1 to ensure the webui also runs as non-root user (for better security)"
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.42
+    created: "2026-04-28T14:59:14.030773843Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.5.2
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    - condition: dask.enabled
+      name: dask-gateway
+      repository: https://helm.dask.org/
+      version: 2024.1.0
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 60dcb62e1bd1b63bb7e210ae83732efd2eff22f87b29f73c10058a22682a4e13
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.9.5/zoo-project-dru-0.9.5.tgz
+    version: 0.9.5
+  - annotations:
+      artifacthub.io/changes: |
         - kind: changed
           description: "Use the ZOO-Project-DRU image tagged dru-93e1a1d16150d88eb7c9b83d0a3ad076b3e6c9dd (using custom versions of Python modules)"
         - kind: changed
@@ -4452,4 +4525,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2026-04-27T10:36:20.614338766Z"
+generated: "2026-04-28T14:59:14.031057052Z"
