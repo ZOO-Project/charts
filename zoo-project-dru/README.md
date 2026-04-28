@@ -492,6 +492,80 @@ In case you have enabled redis and disabled IAM, you can activate the websocketd
 | workflow.inputs                                          | Environmental variables for the ZOO-FPM pod (from where the processing is started).         | {}                                          |
 | workflow.podAnnotations                                  | Annotations to add to workflow processing pods. Use key-value pairs to add metadata to pods for monitoring, networking, or policy purposes (e.g., `{"prometheus.io/scrape": "true", "sidecar.istio.io/inject": "false"}`). | Not defined                                          |
 | workflow.env                                             | Environmental variables for the processing pods.       | {}                                          |
+| workflow.extraEnvFrom                                    | Additional `envFrom` entries (Secret/ConfigMap references) injected into the `zoofpm` container. Useful to provide S3 / AWS credentials (`STAGEIN_*`, `STAGEOUT_*`) from a Kubernetes Secret without storing them in `values.yaml`. | `[]` |
+
+#### Inject S3 / AWS credentials from a Kubernetes Secret
+
+The default ZOO-Project-DRU process service template (`eoepca-proc-service-template`) reads stage-in / stage-out S3 credentials from environment variables using `os.environ.get("STAGEIN_AWS_ACCESS_KEY_ID", "minio-admin")`. The hard-coded `minio-admin` / `minio-secret-password` values are only **fallback defaults** — if the corresponding environment variables are present in the `zoofpm` pod, they are used instead.
+
+The `workflow.extraEnvFrom` parameter lets you provide these credentials from a Kubernetes Secret without ever putting them in your Helm values.
+
+##### 1. Create the secret
+
+```bash
+kubectl create secret generic stage-aws-creds -n zoo \
+  --from-literal=STAGEIN_AWS_SERVICEURL=https://s3.example.com \
+  --from-literal=STAGEIN_AWS_ACCESS_KEY_ID=AKIA... \
+  --from-literal=STAGEIN_AWS_SECRET_ACCESS_KEY=... \
+  --from-literal=STAGEIN_AWS_REGION=eu-west-1 \
+  --from-literal=STAGEOUT_AWS_SERVICEURL=https://s3.example.com \
+  --from-literal=STAGEOUT_AWS_ACCESS_KEY_ID=AKIA... \
+  --from-literal=STAGEOUT_AWS_SECRET_ACCESS_KEY=... \
+  --from-literal=STAGEOUT_AWS_REGION=eu-west-1 \
+  --from-literal=STAGEOUT_OUTPUT=my-bucket
+```
+
+You can also create it declaratively (e.g. via [SealedSecrets](https://github.com/bitnami-labs/sealed-secrets) or [external-secrets](https://external-secrets.io/)):
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: stage-aws-creds
+  namespace: zoo
+type: Opaque
+stringData:
+  STAGEIN_AWS_SERVICEURL: https://s3.example.com
+  STAGEIN_AWS_ACCESS_KEY_ID: AKIA...
+  STAGEIN_AWS_SECRET_ACCESS_KEY: "..."
+  STAGEIN_AWS_REGION: eu-west-1
+  STAGEOUT_AWS_SERVICEURL: https://s3.example.com
+  STAGEOUT_AWS_ACCESS_KEY_ID: AKIA...
+  STAGEOUT_AWS_SECRET_ACCESS_KEY: "..."
+  STAGEOUT_AWS_REGION: eu-west-1
+  STAGEOUT_OUTPUT: my-bucket
+```
+
+##### 2. Reference it in `values.yaml`
+
+```yaml
+workflow:
+  extraEnvFrom:
+    - secretRef:
+        name: stage-aws-creds
+```
+
+You can list multiple entries and mix `secretRef` / `configMapRef`:
+
+```yaml
+workflow:
+  extraEnvFrom:
+    - secretRef:
+        name: stage-aws-creds
+    - configMapRef:
+        name: workflow-extra-config
+        optional: true
+```
+
+##### 3. Verify
+
+After (re)deployment, all keys of the referenced secret/configmap are exposed as environment variables in the `zoofpm` container:
+
+```bash
+kubectl exec -n zoo deploy/zoo-project-dru-zoofpm -c zoofpm -- env | grep -E "STAGEIN_|STAGEOUT_"
+```
+
+Note: `kubectl describe pod` only shows the secret reference (`envFrom: secretRef: stage-aws-creds`), not the resolved values — `env` from inside the container is the right way to confirm they are loaded.
 
 #### Reuse an existing namespace
 
@@ -979,6 +1053,33 @@ curl -X POST http://localhost:8080/webhook \
 - **Authentication**: Use secrets for external webhook authentication  
 - **RBAC**: Apply principle of least privilege for service accounts
 - **TLS**: Enable TLS for external webhook endpoints
+
+### Pod Security (non-root)
+
+All pods managed by this chart are configured to run as non-root users by default.
+Each component has its own `podSecurityContext` and `securityContext` blocks, with
+sensible defaults aligned to the UID/GID baked in the official upstream images:
+
+| Component   | runAsUser | runAsGroup | fsGroup | Notes                                    |
+|:------------|:---------:|:----------:|:-------:|:-----------------------------------------|
+| zoofpm      | 33        | 33         | 33      | `www-data` (Apache)                      |
+| zookernel   | 33        | 33         | 33      | `www-data` (Apache)                      |
+| websocketd  | 65534     | 65534      | 65534   | `nobody`, readOnlyRootFilesystem enabled |
+| rabbitmq    | 100       | 101        | 101     | matches `rabbitmq:*-alpine`              |
+| redis       | 999       | 1000       | 1000    | matches `redis:*-alpine`                 |
+| postgresql  | 70        | 70         | 70      | matches `postgres:*-alpine`              |
+| kubeProxy   | 65534     | 65534      | 65534   | `nobody`, readOnlyRootFilesystem enabled |
+| webui       | 1001      | 1001       | 1001    | `appuser` in `nuxt-client >= 0.1.1`      |
+
+All container-level `securityContext` blocks set `allowPrivilegeEscalation: false`,
+`runAsNonRoot: true` and drop all Linux capabilities (`capabilities.drop: [ALL]`).
+
+To override these defaults, edit the corresponding `<component>.podSecurityContext`
+and `<component>.securityContext` keys in `values.yaml` (or set them via `--set`/`-f`).
+
+> **Note**: Changing `fsGroup` for stateful components (rabbitmq/redis/postgresql) on
+> an existing deployment requires deleting the related PVC so that kubelet can
+> re-`chown` a fresh volume to the new group.
 
 ### Monitoring
 

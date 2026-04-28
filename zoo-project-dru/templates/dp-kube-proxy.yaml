@@ -24,11 +24,11 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Release.Name }}-processing-manager
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml (.Values.kubeProxy.podSecurityContext | default .Values.podSecurityContext) | nindent 8 }}
       containers:
         - name: {{ .Release.Name }}-kubeproxy
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml (.Values.kubeProxy.securityContext | default .Values.securityContext) | nindent 12 }}
           image: eoepca/kubectl-proxy:latest
           ports:
             - containerPort: 8001

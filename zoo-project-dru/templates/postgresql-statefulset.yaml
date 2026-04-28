@@ -26,10 +26,18 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.postgresql.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: postgresql
         image: {{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}
         imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+        {{- with .Values.postgresql.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         env:
         - name: PGDATA
           value: {{ .Values.postgresql.persistence.mountPath }}/pgdata

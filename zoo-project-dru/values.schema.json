@@ -44,6 +44,20 @@
       "type": "string",
       "description": "Name of the cluster admin role to bind for administrative operations. Default is typically 'cluster-admin'."
     },
+    "kubeProxy": {
+      "type": "object",
+      "description": "Configuration for the kubectl-proxy sidecar deployment used to access the Kubernetes API.",
+      "properties": {
+        "podSecurityContext": {
+          "type": "object",
+          "description": "Pod-level security context for the kubeproxy pod (runAsUser, fsGroup, etc.). If unset, falls back to top-level podSecurityContext."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Container-level security context for the kubeproxy container. If unset, falls back to top-level securityContext."
+        }
+      }
+    },
     "podAnnotations": {
       "type": "object",
       "description": "Annotations to add to all pods. Use key-value pairs to add metadata for monitoring, networking, or policy purposes."
@@ -575,6 +589,30 @@
           "type": "object",
           "description": "The additional inputs passed as attributes to wrapped CWL Application."
         },
+        "extraEnvFrom": {
+          "type": "array",
+          "description": "Additional envFrom entries (secretRef / configMapRef) injected into the zoofpm container. Useful to provide S3 / AWS credentials (STAGEIN_*, STAGEOUT_*) from a Kubernetes Secret without storing them in values.yaml.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "secretRef": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "optional": { "type": "boolean" }
+                }
+              },
+              "configMapRef": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "optional": { "type": "boolean" }
+                }
+              },
+              "prefix": { "type": "string" }
+            }
+          }
+        },
         "dedicatedNamespace": {
           "type": "object",
           "description": "Reuse an existing namespace rather creating a new one for every job",
@@ -718,6 +756,14 @@
               }
             }
           }
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "description": "Pod-level security context for the PostgreSQL pod (runAsUser, fsGroup, etc.). The official postgres:*-alpine image runs as user 'postgres' (uid 70, gid 70)."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Container-level security context for the PostgreSQL container (capabilities, privilege escalation, etc.)."
         }
       }
     },
@@ -853,6 +899,14 @@
         "config": {
           "type": "string",
           "description": "Custom RabbitMQ configuration. If set, overrides the default file-based configuration from files/rabbitmq/rabbitmq.conf."
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "description": "Pod-level security context for the RabbitMQ pod (runAsUser, fsGroup, etc.). The official rabbitmq:*-alpine image runs as user 'rabbitmq' (uid 100, gid 101)."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Container-level security context for the RabbitMQ container (capabilities, privilege escalation, etc.)."
         }
       }
     },
@@ -1057,6 +1111,14 @@
               "description": "Websocketd container image tag (commit hash)."
             }
           }
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "description": "Pod-level security context for the websocketd pod (runAsUser, fsGroup, etc.). The 'nobody' user (uid 65534) is recommended."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Container-level security context for the websocketd container (capabilities, privilege escalation, readOnlyRootFilesystem, etc.)."
         }
       }
     },
@@ -1141,6 +1203,14 @@
               "description": "Storage class for Redis persistent volume."
             }
           }
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "description": "Pod-level security context for the Redis pod (runAsUser, fsGroup, etc.). The official redis:*-alpine image runs as user 'redis' (uid 999, gid 1000)."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Container-level security context for the Redis container (capabilities, privilege escalation, etc.)."
         }
       }
     },
@@ -1235,6 +1305,14 @@
         "enforce": {
           "type": "boolean",
           "description": "Should apache handle security before the requests are sent to the ZOO-Project?"
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "description": "Pod-level security context for the webui pod (runAsUser, fsGroup, etc.). The nuxt-client >= 0.1.1 image runs as 'appuser' (uid 1001, gid 1001)."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Container-level security context for the webui container (capabilities, privilege escalation, etc.)."
         },
         "oidc": {
           "type": "object",

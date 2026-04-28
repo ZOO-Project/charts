@@ -19,10 +19,18 @@ spec:
         {{- include "zoo-project-dru.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: rabbitmq
     spec:
+      {{- with .Values.rabbitmq.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: rabbitmq
         image: "{{ .Values.rabbitmq.image.repository }}:{{ .Values.rabbitmq.image.tag }}"
         imagePullPolicy: {{ .Values.rabbitmq.image.pullPolicy }}
+        {{- with .Values.rabbitmq.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         ports:
         - name: amqp
           containerPort: 5672

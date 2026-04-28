@@ -43,11 +43,11 @@ spec:
             - name: ZOO_REDIS_HOST
               value: {{ include "zoo-project-dru.redis.servicename" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {{- toYaml (.Values.websocketd.podSecurityContext | default .Values.podSecurityContext) | nindent 8 }}
       containers:
         - name: websocketd
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- toYaml (.Values.websocketd.securityContext | default .Values.securityContext) | nindent 12 }}
           image: "{{ .Values.websocketd.image.repository }}:{{ .Values.websocketd.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.websocketd.pullPolicy }}
           command: ["/websocketd/websocketd"]

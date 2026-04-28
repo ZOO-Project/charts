@@ -20,6 +20,25 @@ serviceAccount:
 useKubeProxy: true
 clusterAdminRoleName: cluster-admin
 
+# Kube-proxy (kubectl-proxy) sidecar configuration
+kubeProxy:
+  # Pod-level security context for the kubeproxy pod
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
+  # Container-level security context for the kubeproxy container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
 podAnnotations: {}
 
 podSecurityContext: {}
@@ -177,6 +196,18 @@ zoofpm:
     enabled: false
   replicaCount: 1
   extraMountPoints: []
+  # Pod-level security context (applies to all containers in the pod, including init containers)
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 33
+    runAsGroup: 33
+    fsGroup: 33
+  # Container-level security context for the zoofpm container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 33
+    runAsGroup: 33
+    allowPrivilegeEscalation: false
 
 zookernel:
   env: {}
@@ -186,6 +217,18 @@ zookernel:
     pullPolicy: IfNotPresent
     tag: dru-93e1a1d16150d88eb7c9b83d0a3ad076b3e6c9dd
   extraMountPoints: []
+  # Pod-level security context (applies to all containers in the pod, including init containers)
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 33
+    runAsGroup: 33
+    fsGroup: 33
+  # Container-level security context for the zookernel (Apache) container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 33
+    runAsGroup: 33
+    allowPrivilegeEscalation: false
 
 notifications:
   enabled: false
@@ -212,6 +255,10 @@ workflow:
   env: {}
   inputs: {}
   additionalInputs: {}
+  extraEnvFrom: []
+  # extraEnvFrom:
+  #   - secretRef:
+  #       name: my-extra-secret
   dedicatedNamespace:
     enabled: false
     #name: "my-dedicated-namespace"
@@ -241,6 +288,23 @@ postgresql:
     repository: postgres
     tag: "16-alpine"
     pullPolicy: IfNotPresent
+
+  # Pod-level security context for the postgresql pod
+  # Official postgres:*-alpine image runs as user 'postgres' (uid 70, gid 70)
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 70
+    runAsGroup: 70
+    fsGroup: 70
+  # Container-level security context for the postgresql container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 70
+    runAsGroup: 70
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
 
   # Resources configuration
   resources:
@@ -323,6 +387,23 @@ rabbitmq:
   # If config is set, it overrides the default file-based configuration
   # If not set (or empty), the configuration will be loaded from files/rabbitmq/rabbitmq.conf
   config: ""
+
+  # Pod-level security context for the rabbitmq pod
+  # Official rabbitmq:*-alpine image runs as user 'rabbitmq' (uid 100, gid 101)
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 100
+    runAsGroup: 101
+    fsGroup: 101
+  # Container-level security context for the rabbitmq container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 100
+    runAsGroup: 101
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
 
 persistence:
   enabled: true
@@ -428,6 +509,22 @@ websocketd:
     repository: zooproject/websocketd
     pullPolicy: IfNotPresent
     tag: 67449315857b54bbc970f02c7aa4fd10a94721f0
+  # Pod-level security context for the websocketd pod
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
+  # Container-level security context for the websocketd container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
 
 redis: 
   # Configuration for official Redis Docker image
@@ -440,6 +537,23 @@ redis:
     repository: redis
     tag: "alpine3.22"
     pullPolicy: IfNotPresent
+
+  # Pod-level security context for the redis pod
+  # Official redis:*-alpine image runs as user 'redis' (uid 999, gid 1000)
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 1000
+    fsGroup: 1000
+  # Container-level security context for the redis container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    runAsGroup: 1000
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
 
   # Authentication configuration
   auth:
@@ -488,8 +602,25 @@ webui:
   image:
     repository: zooproject/nuxt-client
     pullPolicy: IfNotPresent
-    tag: 0.1.0
+    tag: 0.1.1
   enforce: false
+  # Pod-level security context for the webui pod
+  # The nuxt-client >= 0.1.1 image runs as 'appuser' (uid 1001, gid 1001) and
+  # /usr/src/app is owned by that user, so no init copy is required.
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    fsGroup: 1001
+  # Container-level security context for the webui container
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
   oidc:
     issuer: https://auth.geolabs.fr/realms/zooproject
     remoteUserClaim: email
@@ -497,6 +628,7 @@ webui:
     authVerifyJwksUri: https://auth.geolabs.fr/realms/zooproject/protocol/openid-connect/certs
     scope: "openid email"
     clientId: webapp
+    clientSecret: XXXX
 
 eoapi:
   enabled: false

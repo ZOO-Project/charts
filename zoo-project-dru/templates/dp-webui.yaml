@@ -35,6 +35,10 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.webui.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       initContainers:
         - name: init-wait-for-dependencies-webui
           image: docker.io/wshihadeh/wait_for:latest
@@ -47,6 +51,10 @@ spec:
       {{- end }}
       containers:
         - name: webui
+          {{- with .Values.webui.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command: [ "/bin/sh","-c" ]
           # Run npm run build and then npm run start everytime the container starts
           args: [ "npm run build ; npm run start" ]
