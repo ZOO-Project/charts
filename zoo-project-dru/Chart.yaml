@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.9.5
+version: 0.9.6
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.42"
+appVersion: "0.2.43"
 
 keywords:
   - workflows
@@ -77,18 +77,10 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: security
-      description: "Ensure that every pod runs as a non-root user for better security. The specific non-root user may vary depending on the component and the base image used."
     - kind: changed
-      description: "Update the documentation to detail the podSecurityContext and securityContext options for the webui, websocketd, and redis components, and provide guidance on setting appropriate security contexts based on the user that the container runs as."
-    - kind: added
-      description: "Add extraFromEnv configuration option to allow users to inject additional environment variables from secrets into the ZOO-Kernel-FPM pod."
+      description: "Update the ZOO-Project docker image to tag dru-bfa23b5bf0d826e691984e51a5d8304d1b87b4ee"
     - kind: changed
-      description: "Update the documentation to reflect the new extraEnvFrom configuration option and provide an example of how to use it to inject environment variables from a secret."
-    - kind: changed
-      description: "Update the oas.cfg configuration file to add a new hidden process 'Notify' to the list of hidden processes. This process is used internally by the ZOO-Project and should not be exposed to users."
-    - kind: changed
-      description: "Update nuxt-client to 0.1.1 to ensure the webui also runs as non-root user (for better security)"
+      description: "Align the README.md with the Chart.yaml version"
 
   artifacthub.io/license: Apache-2.0
 
