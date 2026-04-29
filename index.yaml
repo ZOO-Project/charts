@@ -4,6 +4,71 @@ entries:
   - annotations:
       artifacthub.io/changes: |
         - kind: changed
+          description: "Update the ZOO-Project docker image to tag dru-ad6563d64c564268778263ad41fed9f9d18d07ca"
+        - kind: changed
+          description: "Align the README.md with the Chart.yaml version"
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.44
+    created: "2026-04-29T13:17:15.698338976Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.5.2
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    - condition: dask.enabled
+      name: dask-gateway
+      repository: https://helm.dask.org/
+      version: 2024.1.0
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: 51f46fa9728aa0457c015990e46a9da6c0246c07a74bc5b93e9279e9e7329291
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - workflows
+    - processing
+    - eoepca
+    - cwl
+    - calrissian
+    - stac
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.9.7/zoo-project-dru-0.9.7.tgz
+    version: 0.9.7
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: changed
           description: "Update the ZOO-Project docker image to tag dru-bfa23b5bf0d826e691984e51a5d8304d1b87b4ee"
         - kind: changed
           description: "Align the README.md with the Chart.yaml version"
@@ -4590,4 +4655,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2026-04-28T15:32:27.811663415Z"
+generated: "2026-04-29T13:17:15.69875107Z"
