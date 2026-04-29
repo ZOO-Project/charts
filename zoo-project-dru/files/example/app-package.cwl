@@ -155,7 +155,7 @@ $graph:
           PYTHONPATH: /app
       ResourceRequirement:
         coresMax: 1
-        ramMax: 512
+        ramMax: 1024
     hints:
       DockerRequirement:
         dockerPull: ghcr.io/terradue/ogc-eo-application-package-hands-on/norm_diff:1.5.0
