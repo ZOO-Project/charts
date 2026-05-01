@@ -602,7 +602,7 @@ webui:
   image:
     repository: zooproject/nuxt-client
     pullPolicy: IfNotPresent
-    tag: 0.1.2
+    tag: 0.1.4
   # Override container command/args. Defaults to image CMD which runs
   # `node .output/server/index.mjs` for the multi-stage slim image.
   command: []

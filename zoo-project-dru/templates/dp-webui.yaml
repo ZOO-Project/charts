@@ -110,6 +110,11 @@ spec:
               value: {{ default "true" .Values.webui.requiresBearerToken | quote }}
             - name: ZOO_OGCAPI_REQUIRES_BEARER_TOKEN
               value: {{ default "true" .Values.webui.requiresBearerToken | quote }}
+            {{- $iamEnabled := .Values.iam.enabled | default (ternary "true" "false" (eq .Values.iam.enabled true)) }}
+            - name: NUXT_PUBLIC_ZOO_IAM_ENABLED
+              value: {{ $iamEnabled | quote }}
+            - name: ZOO_IAM_ENABLED
+              value: {{ $iamEnabled | quote }}
             - name: NUXT_PUBLIC_SUBSCRIBERURL
               value: "http://{{ .Release.Name }}-service/cgi-bin/publish.py"
             - name: SUBSCRIBERURL
