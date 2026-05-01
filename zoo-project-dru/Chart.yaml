@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.9.7
+version: 0.9.8
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -78,7 +78,9 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Update the ZOO-Project docker image to tag dru-ad6563d64c564268778263ad41fed9f9d18d07ca"
+      description: "Update to the nuxt-client image version 0.1.2"
+    - kind: changed
+      description: "Update the security_service.py to set the tmpUrl only once"
     - kind: changed
       description: "Align the README.md with the Chart.yaml version"
 

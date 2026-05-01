@@ -55,11 +55,74 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          command: [ "/bin/sh","-c" ]
-          # Run npm run build and then npm run start everytime the container starts
-          args: [ "npm run build ; npm run start" ]
+          {{- with .Values.webui.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.webui.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           image: "{{ .Values.webui.image.repository }}:{{ .Values.webui.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.webui.image.pullPolicy }}
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: {{ .Values.webui.port | quote }}
+            - name: NITRO_HOST
+              value: "0.0.0.0"
+            - name: NITRO_PORT
+              value: {{ .Values.webui.port | quote }}
+            # Nuxt 3 runtimeConfig.public.<KEY> is overridden at runtime by env
+            # var NUXT_PUBLIC_<KEY>. We keep the original names too because some
+            # libs (nuxt-auth, sidebase) read AUTH_ORIGIN / NEXTAUTH_URL directly
+            # from process.env.
+            - name: NUXT_PUBLIC_NUXT_ZOO_BASEURL
+              value: {{ $hosturl | quote }}
+            - name: NUXT_ZOO_BASEURL
+              value: {{ $hosturl | quote }}
+            - name: NUXT_PUBLIC_NUXT_OIDC_ISSUER
+              value: {{ .Values.webui.oidc.issuer | quote }}
+            - name: NUXT_OIDC_ISSUER
+              value: {{ .Values.webui.oidc.issuer | quote }}
+            - name: NUXT_PUBLIC_NUXT_OIDC_CLIENT_ID
+              value: {{ .Values.webui.oidc.clientId | quote }}
+            - name: NUXT_OIDC_CLIENT_ID
+              value: {{ .Values.webui.oidc.clientId | quote }}
+            {{- with .Values.webui.oidc.clientSecret }}
+            - name: NUXT_OIDC_CLIENT_SECRET
+              value: {{ . | quote }}
+            {{- end }}
+            - name: NUXT_PUBLIC_AUTH_ORIGIN
+              value: {{ .Values.webui.url | quote }}
+            - name: AUTH_ORIGIN
+              value: {{ .Values.webui.url | quote }}
+            - name: NUXT_PUBLIC_NEXTAUTH_URL
+              value: {{ .Values.webui.url | quote }}
+            - name: NEXTAUTH_URL
+              value: {{ .Values.webui.url | quote }}
+            - name: NUXT_BASE_URL
+              value: {{ .Values.webui.url | quote }}
+            - name: NUXT_AUTH_SECRET
+              value: {{ default "client_secret_basic" .Values.webui.authSecret | quote }}
+            - name: NUXT_PUBLIC_ZOO_OGCAPI_REQUIRES_BEARER_TOKEN
+              value: {{ default "true" .Values.webui.requiresBearerToken | quote }}
+            - name: ZOO_OGCAPI_REQUIRES_BEARER_TOKEN
+              value: {{ default "true" .Values.webui.requiresBearerToken | quote }}
+            - name: NUXT_PUBLIC_SUBSCRIBERURL
+              value: "http://{{ .Release.Name }}-service/cgi-bin/publish.py"
+            - name: SUBSCRIBERURL
+              value: "http://{{ .Release.Name }}-service/cgi-bin/publish.py"
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: {{ default "0" .Values.webui.nodeTlsRejectUnauthorized | quote }}
+            {{- with .Values.webui.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.webui.envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: webui-http
               containerPort: {{ .Values.webui.port }}
@@ -81,20 +144,16 @@ spec:
             timeoutSeconds: 15
             failureThreshold: 3
           resources: {}
+          {{- with .Values.webui.volumeMounts }}
           volumeMounts:
-            - name: bin-config
-              mountPath: /usr/src/app/.env
-              subPath: env_nuxt.sample
-            - name: bin-config
-              mountPath: /usr/src/app/env_sample
-              subPath: env_nuxt.sample
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
 
       restartPolicy: Always
+      {{- with .Values.webui.volumes }}
       volumes:
-        - name: bin-config
-          configMap:
-            name: {{ .Release.Name }}-bin-config
-            defaultMode: 0777
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
 status: {}
 {{- end }}

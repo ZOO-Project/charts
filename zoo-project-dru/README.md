@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.9.7
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.9.8
 ````
 
 ## Parameters
@@ -1069,7 +1069,7 @@ sensible defaults aligned to the UID/GID baked in the official upstream images:
 | redis       | 999       | 1000       | 1000    | matches `redis:*-alpine`                 |
 | postgresql  | 70        | 70         | 70      | matches `postgres:*-alpine`              |
 | kubeProxy   | 65534     | 65534      | 65534   | `nobody`, readOnlyRootFilesystem enabled |
-| webui       | 1001      | 1001       | 1001    | `appuser` in `nuxt-client >= 0.1.1`      |
+| webui       | 1000      | 1000       | 1000    | `node` in `nuxt-client >= 0.1.2`      |
 
 All container-level `securityContext` blocks set `allowPrivilegeEscalation: false`,
 `runAsNonRoot: true` and drop all Linux capabilities (`capabilities.drop: [ALL]`).

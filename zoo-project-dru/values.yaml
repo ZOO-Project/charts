@@ -602,21 +602,36 @@ webui:
   image:
     repository: zooproject/nuxt-client
     pullPolicy: IfNotPresent
-    tag: 0.1.1
+    tag: 0.1.2
+  # Override container command/args. Defaults to image CMD which runs
+  # `node .output/server/index.mjs` for the multi-stage slim image.
+  command: []
+  args: []
+  # Optional Nuxt runtime config — read from process.env at server startup.
+  authSecret: ""
+  requiresBearerToken: "true"
+  nodeTlsRejectUnauthorized: "0"
+  # Extra env vars and envFrom (Secrets/ConfigMaps) appended to the webui container.
+  extraEnv: []
+  envFrom: []
+  # Optional volume mounts/volumes. Empty by default — the slim image
+  # does not need the bin-config ConfigMap (env vars passed via env:).
+  volumeMounts: []
+  volumes: []
   enforce: false
-  # Pod-level security context for the webui pod
-  # The nuxt-client >= 0.1.1 image runs as 'appuser' (uid 1001, gid 1001) and
-  # /usr/src/app is owned by that user, so no init copy is required.
+  # Pod-level security context for the webui pod.
+  # The slim multi-stage nuxt-client image runs as the built-in `node`
+  # user (uid 1000, gid 1000); /usr/src/app/.output is owned by it.
   podSecurityContext:
     runAsNonRoot: true
-    runAsUser: 1001
-    runAsGroup: 1001
-    fsGroup: 1001
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
   # Container-level security context for the webui container
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1001
-    runAsGroup: 1001
+    runAsUser: 1000
+    runAsGroup: 1000
     allowPrivilegeEscalation: false
     capabilities:
       drop:

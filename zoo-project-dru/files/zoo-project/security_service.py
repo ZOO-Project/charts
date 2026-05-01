@@ -56,6 +56,7 @@ def securityIn(conf, inputs, outputs):
         if i.count("SERVICES_NAMESPACE"):
             if not(has_rpath):
                 rPath += conf["renv"][i]
+                conf["main"]["tmpUrl"]=conf["main"]["tmpUrl"].replace("/temp", "/"+conf["renv"][i]+"/temp")
                 has_rpath=True
             if "auth_env" not in conf:
                 conf["auth_env"] = {"user": conf["renv"][i], "cwd": rPath}
@@ -67,7 +68,6 @@ def securityIn(conf, inputs, outputs):
             # conf["lenv"]["cwd"]=rPath
             conf["zooServicesNamespace"] = {"namespace": conf["renv"][i], "cwd": rPath}
             conf["main"]["tmpPath"] = rPath + "/temp"
-            conf["main"]["tmpUrl"]=conf["main"]["tmpUrl"].replace("/temp", "/"+conf["renv"][i]+"/temp")
         if i.count("QUERY_STRING") and conf["renv"][i].count("/package"):
             if conf["renv"]["HTTP_ACCEPT"] == "application/cwl+json":
                 zoo.info("Conversion to cwl+json should happen in securityOut")
