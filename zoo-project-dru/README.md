@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.9.9
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.9.10
 ````
 
 ## Parameters
@@ -408,6 +408,7 @@ The WebUI lets you interact with the ZOO-Project-DRU when authentication is requ
 |:---------------------------------|:-------------------------------------------------------------------|:-----------------------------------------------------|
 | webui.enabled | Activate the webui service                        | false |
 | webui.url | The fully defined URL to access the WebUI                        | http://localhost:3058 |
+| webui.wsurl | The WebSocket URL to use from the WebUI                        | ws://localhost:8888 |
 | webui.port | Port number for the WebUI service                         | 3000 |
 | webui.image.repository | WebUI container image repository. This is the Docker registry and image name for the ZOO-Project web interface. | zooproject/nuxt-client |
 | webui.image.tag | WebUI container image tag. Specifies the version of the WebUI image to deploy. | 0.0.6 |

@@ -1280,6 +1280,10 @@
           "type": "string",
           "description": "The fully defined URL to access the WebUI"
         },
+        "wsurl": {
+          "type": "string",
+          "description": "The WebSocket URL to use from the WebUI"
+        },
         "port": {
           "type": "integer",
           "description": "Port"

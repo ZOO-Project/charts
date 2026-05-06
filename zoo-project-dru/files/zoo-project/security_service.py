@@ -134,9 +134,23 @@ def securityIn(conf, inputs, outputs):
                     conf["renv"]["CONTEXT_DOCUMENT_ROOT"] + "/" + rFiles[i],
                     rPath + "/" + rFiles[i],
                 )
+    if "REQUEST_METHOD" in conf["renv"] and conf["renv"]["REQUEST_METHOD"]=="DELETE" and "REQUEST_URI" in conf["renv"] and conf["renv"]["REQUEST_URI"].count("/jobs/")>0:
+        add_filter_out(conf)
     if "auth_env" not in conf:
         zoo.warning("No auth_env section found")
     return zoo.SERVICE_SUCCEEDED
+
+def add_filter_out(conf):
+    if "filter_out" not in conf:
+        conf["filter_out"] = {"path": "/usr/lib/cgi-bin/","service": "Notify"}
+    else:
+        if "length" not in conf["filter_out"]:
+            conf["filter_out"]["length"] = "1"
+        length = int(conf["filter_out"]["length"])
+        conf["filter_out"]["path_" + str(length)] = "/usr/lib/cgi-bin/"
+        conf["filter_out"]["service_" + str(length)] = "Notify"
+        conf["filter_out"]["length"] = str(length + 1)
+        conf["lenv"]["operation"] = "delete_job"
 
 
 def securityOut(conf, inputs, outputs):

@@ -65,7 +65,9 @@ except Exception as e:
 
 {{- if .Values.notifications.enabled }}
 ce_name_prefix="org.ogc.api.process."
-ce_name_job_prefix=ce_name_prefix + "job."
+# Have to discuss this prefix with the pussub SWG
+#ce_name_job_prefix=ce_name_prefix + "job."
+ce_name_job_prefix="org.ogc.api.job."
 k_sink = os.environ.get("K_SINK", None)
 k_ce_overrides_str = os.environ.get("K_CE_OVERRIDES", None)
 configp = configparser.ConfigParser()
@@ -75,21 +77,40 @@ try:
         #print(params,file=sys.stderr)
         #print(f"k_sink: {k_sink}",file=sys.stderr)
         # TODO: detect the userid and add it to the URLs
-        data = json.loads(data)
+        data_is_json = False
+        try:
+            data = json.loads(data)
+            data_is_json = True
+        except:
+            print("Data is not a valid JSON", file=sys.stderr)
+            data = data
         host_name = configp["openapi"]["rootUrl"]
         root_path = configp["openapi"]["rootPath"]
 
         if "operation" in params:
             operation = params["operation"][0]
-            attributes = {
-                "type": ce_name_job_prefix + operation,
-                "source": f"{host_name}/{root_path}/job/{job_id}",
-            }
-            if operation != "undeploy":
-                attributes["dataschema"] = "https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/link.yaml"
-                attributes["datacontenttype"] = "application/json"
+            if data_is_json:
+                process_id = data.get("href", None)
+                if process_id is not None:
+                    process_id = process_id.split("/processes/")[-1]
             else:
+                process_id = data
+            if operation == "delete_job":
+                attributes = {
+                    "type": ce_name_job_prefix + "delete",
+                    "source": f"{host_name}/{root_path}/jobs/{process_id}",
+                }
                 attributes["datacontenttype"] = "text/plain"
+            else:
+                attributes = {
+                    "type": ce_name_prefix + operation,
+                    "source": f"{host_name}/{root_path}/processes/{process_id}",
+                }
+                if operation != "undeploy":
+                    attributes["dataschema"] = "https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/link.yaml"
+                    attributes["datacontenttype"] = "application/json"
+                else:
+                    attributes["datacontenttype"] = "text/plain"
             event = CloudEvent(attributes, data)
             headers, body = to_binary(event)
             requests.post(k_sink, data=body, headers=headers)
@@ -97,15 +118,16 @@ try:
 
         try:
             job_id = data["id"]
+            operation = "status" if ("progress" in data and data["progress"]>0) else "create"
             attributes = {
-                "type": ce_name_job_prefix + "update",
+                "type": ce_name_job_prefix + operation,
                 "source": f"{host_name}/{root_path}/job/{job_id}",
                 "datacontenttype": "application/json",
                 "dataschema": "https://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/statusInfo.yaml",
                 "jobid": job_id
             }
         except:
-            data = data["stac"]["value"]
+            data = data[list(data.keys())[0]]["value"]
             job_id = data["id"]
             attributes = {
                 "type": ce_name_job_prefix + "result",

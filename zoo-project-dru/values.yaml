@@ -191,7 +191,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-ad6563d64c564268778263ad41fed9f9d18d07ca
+    tag: dru-3d29a69d7054b95006eec0584ba53aea75ce0389
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -215,7 +215,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-ad6563d64c564268778263ad41fed9f9d18d07ca
+    tag: dru-3d29a69d7054b95006eec0584ba53aea75ce0389
   extraMountPoints: []
   # Pod-level security context (applies to all containers in the pod, including init containers)
   podSecurityContext:
@@ -598,11 +598,12 @@ iam:
 webui:
   enabled: false
   url: http://localhost:3058
+  wsurl: ws://localhost:8888
   port: 3000
   image:
     repository: zooproject/nuxt-client
     pullPolicy: IfNotPresent
-    tag: 0.1.4
+    tag: 0.1.5
   # Override container command/args. Defaults to image CMD which runs
   # `node .output/server/index.mjs` for the multi-stage slim image.
   command: []

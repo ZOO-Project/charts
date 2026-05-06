@@ -110,6 +110,10 @@ spec:
               value: {{ default "true" .Values.webui.requiresBearerToken | quote }}
             - name: ZOO_OGCAPI_REQUIRES_BEARER_TOKEN
               value: {{ default "true" .Values.webui.requiresBearerToken | quote }}
+            - name: NUXT_PUBLIC_NUXT_WS_URL
+              value: {{ .Values.webui.wsurl | quote }}
+            - name: NUXT_WS_URL
+              value: {{ .Values.webui.wsurl | quote }}
             {{- $iamEnabled := .Values.iam.enabled | default (ternary "true" "false" (eq .Values.iam.enabled true)) }}
             - name: NUXT_PUBLIC_ZOO_IAM_ENABLED
               value: {{ $iamEnabled | quote }}

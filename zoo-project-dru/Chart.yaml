@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.9.9
+version: 0.9.10
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.44"
+appVersion: "0.2.45"
 
 keywords:
   - workflows
@@ -78,9 +78,20 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Update to the nuxt-client image version 0.1.4"
+      description: "Update to latest ZOO-Project-DRU Docker image with improved Notify process"
     - kind: changed
-      description: "Add environment variable to enable/disable IAM in the webui"
+      description: "Add wsurl parameter to the webui configuration"
+    - kind: changed
+      description: "Update nuxt-client to 0.1.15 relying on the NUXT_WS_URL environment variable for WebSocket connection"
+    - kind: changed
+      description: "Add support for delete_job operation in the security service and publish.py"
+    - kind: changed
+      description: "Update the publish.py script to handle non-JSON data and conform to the current PubSub draft specification"
+      links:
+        - name: "PubSub draft specification requirement class"
+          url: https://docs.ogc.org/DRAFTS/25-030.html#req_message-payload-cloudevents-json_type
+    - kind: changed
+      description: "Set correct privileges for the shell.py script in the websocketd deployment"
     - kind: changed
       description: "Align the README.md with the Chart.yaml version"
 
