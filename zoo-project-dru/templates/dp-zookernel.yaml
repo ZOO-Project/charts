@@ -97,6 +97,11 @@ spec:
             {{- end }}
             {{- end }}
 
+            {{- if and (.Values.zoo) (.Values.zoo.logging) (.Values.zoo.logging.enabled) }}
+            - name: ZOO_DEBUG_LEVEL
+              value: {{ .Values.zoo.logging.level | quote }}
+            {{- end }}
+
           image: "{{ .Values.zookernel.image.repository }}:{{ .Values.zookernel.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.zookernel.image.pullPolicy }}
           ports:

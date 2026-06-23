@@ -218,6 +218,11 @@ spec:
               value: {{ if .Values.dask.gatewayUrl }}{{ .Values.dask.gatewayUrl }}{{ else }}{{ printf "http://traefik-%s-dask-gateway.%s.svc.cluster.local:80" .Release.Name .Release.Namespace }}{{ end }}
             {{- end }}
 
+            {{- if and (.Values.zoo) (.Values.zoo.logging) (.Values.zoo.logging.enabled) }}
+            - name: ZOO_DEBUG_LEVEL
+              value: {{ .Values.zoo.logging.level | quote }}
+            {{- end }}
+
           volumeMounts:
             - name: zoo-project-config
               mountPath: /usr/lib/cgi-bin/main.cfg

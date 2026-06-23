@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.9.10
+version: 0.9.11
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.45"
+appVersion: "0.2.46"
 
 keywords:
   - workflows
@@ -78,22 +78,19 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Update to latest ZOO-Project-DRU Docker image with improved Notify process"
-    - kind: changed
-      description: "Add wsurl parameter to the webui configuration"
-    - kind: changed
-      description: "Update nuxt-client to 0.1.15 relying on the NUXT_WS_URL environment variable for WebSocket connection"
-    - kind: changed
-      description: "Add support for delete_job operation in the security service and publish.py"
-    - kind: changed
-      description: "Update the publish.py script to handle non-JSON data and conform to the current PubSub draft specification"
+      description: "Update to latest ZOO-Project-DRU Docker image with improved logging"
       links:
-        - name: "PubSub draft specification requirement class"
-          url: https://docs.ogc.org/DRAFTS/25-030.html#req_message-payload-cloudevents-json_type
+        - name: "ZOO-Project commit"
+          url: https://github.com/ZOO-Project/zoo-project/commit/e4a7ed98f41333e71aafde94943afdb0147c30ba
+    - kind: added
+      description: "Add ZOO_DEBUG_LEVEL environment variable to configure logging level for ZOO-Kernel and ZOO-FPM"
     - kind: changed
-      description: "Set correct privileges for the shell.py script in the websocketd deployment"
-    - kind: changed
-      description: "Align the README.md with the Chart.yaml version"
+      description: "Update the documentation to reflect the new logging configuration options"
+    - kind: fixed
+      description: "Update the documentation for the default volume size and explain correspondance between tag and commit hash"
+      links:
+        - name: "Issue 26"
+          url: https://github.com/ZOO-Project/charts/issues/26
 
   artifacthub.io/license: Apache-2.0
 

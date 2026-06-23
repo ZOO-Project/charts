@@ -184,6 +184,9 @@ zoo:
   detectEntrypoint: false
   processesv2: false
   skipCwl2ogcSchema: false
+  logging:
+    enabled: false
+    level: "ALL" # Options: ALL, TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL, OFF
   rabbitmq:
     definitions: "files/rabbitmq/definitions.json.tpl"
 
@@ -191,7 +194,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-3d29a69d7054b95006eec0584ba53aea75ce0389
+    tag: dru-e4a7ed98f41333e71aafde94943afdb0147c30ba
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -215,7 +218,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-3d29a69d7054b95006eec0584ba53aea75ce0389
+    tag: dru-e4a7ed98f41333e71aafde94943afdb0147c30ba
   extraMountPoints: []
   # Pod-level security context (applies to all containers in the pod, including init containers)
   podSecurityContext:
@@ -239,7 +242,7 @@ notifications:
 
 workflow:
   storageClass: standard
-  defaultVolumeSize: "10190"
+  defaultVolumeSize: "10Mi"
   defaultMaxRam: "1024"
   defaultMaxCores: "2"
   calrissianImage: ghcr.io/duke-gcb/calrissian/calrissian:latest
