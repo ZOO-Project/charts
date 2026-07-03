@@ -44,6 +44,124 @@
       "type": "string",
       "description": "Name of the cluster admin role to bind for administrative operations. Default is typically 'cluster-admin'."
     },
+    "toilWes": {
+      "type": "object",
+      "description": "Optional in-cluster Toil WES server deployment configuration.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable deployment of a Toil WES server in the cluster."
+        },
+        "replicaCount": {
+          "type": "integer",
+          "description": "Number of Toil WES replicas to run."
+        },
+        "serviceAccountName": {
+          "type": "string",
+          "description": "ServiceAccount name used by the Toil WES pod. If empty, defaults to <release>-processing-manager."
+        },
+        "awsRegion": {
+          "type": "string",
+          "description": "AWS region value required by aws:<region>:<prefix> locator syntax (can be synthetic when using S3-compatible backends)."
+        },
+        "batchSystem": {
+          "type": "string",
+          "description": "Toil batch system backend (for example: kubernetes, singleMachine, mesos, slurm)."
+        },
+        "workDir": {
+          "type": "string",
+          "description": "Working directory used by the Toil WES server."
+        },
+        "stateStore": {
+          "type": "string",
+          "description": "Path to the Toil WES state store directory."
+        },
+        "privileged": {
+          "type": "boolean",
+          "description": "Enable privileged mode for Kubernetes worker pods launched by Toil (mapped to --kubernetesPrivileged and TOIL_KUBERNETES_PRIVILEGED)."
+        },
+        "serviceAccount": {
+          "type": "string",
+          "description": "Optional compatibility field for a dedicated Toil worker ServiceAccount. Currently not wired into --kubernetesServiceAccount (toilWes.serviceAccountName is used)."
+        },
+        "hostPath": {
+          "type": "string",
+          "description": "Optional hostPath passed to Toil workers through TOIL_KUBERNETES_HOST_PATH."
+        },
+        "enable_cache": {
+          "type": "boolean",
+          "description": "Enable shared Singularity/Apptainer cache environment variables for Toil workers."
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": { "type": "string" },
+            "tag": { "type": "string" },
+            "pullPolicy": { "type": "string" }
+          }
+        },
+        "service": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "port": { "type": "integer" }
+          }
+        },
+        "s3": {
+          "type": "object",
+          "description": "S3-compatible endpoint configuration used by Toil AWS job store (e.g., MinIO/Ceph).",
+          "properties": {
+            "realaws": { "type": "boolean" },
+            "host": { "type": "string" },
+            "port": { "type": "string" },
+            "useSsl": { "type": "boolean" },
+            "credentialsSecret": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "accessKeyKey": { "type": "string" },
+                "secretKeyKey": { "type": "string" }
+              }
+            }
+          }
+        },
+        "env": {
+          "type": "object",
+          "description": "Additional environment variables for the Toil WES container."
+        },
+        "resolverOptions": {
+          "type": "string",
+          "description": "DNS resolver options propagated to Toil workers via RES_OPTIONS (for example: ndots:1)."
+        },
+        "resources": {
+          "type": "object",
+          "description": "Default and maximum resource values used by Toil jobs.",
+          "properties": {
+            "defaultMemory": {
+              "type": "string",
+              "description": "Default memory allocated to jobs when not explicitly set (for example: 8Gi)."
+            },
+            "defaultDisk": {
+              "type": "string",
+              "description": "Default disk allocated to jobs when not explicitly set (for example: 16Gi)."
+            },
+            "maxMemory": {
+              "type": "string",
+              "description": "Optional maximum memory allowed for jobs. Empty string means no explicit cap."
+            },
+            "maxDisk": {
+              "type": "string",
+              "description": "Optional maximum disk allowed for jobs. Empty string means no explicit cap."
+            }
+          }
+        },
+        "nodeSelector": { "type": "object" },
+        "tolerations": {
+          "type": "array"
+        },
+        "affinity": { "type": "object" }
+      }
+    },
     "kubeProxy": {
       "type": "object",
       "description": "Configuration for the kubectl-proxy sidecar deployment used to access the Kubernetes API.",
@@ -427,31 +545,6 @@
         "skipCwl2ogcSchema": {
           "type": "boolean",
           "description": "When enabled, processDescription responses omit schemas generated by cwl2ogc."
-        },
-        "logging": {
-          "type": "object",
-          "description": "Logging configuration for ZOO-Kernel and ZOO-FPM.",
-          "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "Enable injection of ZOO_DEBUG_LEVEL in runtime pods."
-            },
-            "level": {
-              "type": "string",
-              "description": "Log verbosity level.",
-              "enum": [
-                "ALL",
-                "TRACE",
-                "DEBUG",
-                "INFO",
-                "SUCCESS",
-                "WARNING",
-                "ERROR",
-                "CRITICAL",
-                "OFF"
-              ]
-            }
-          }
         },
         "rabbitmq": {
           "type": "object",

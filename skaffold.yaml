@@ -187,6 +187,14 @@ profiles:
       #       dask-gateway.gateway.backend.image.tag: "{{.IMAGE_TAG_ghcr_io_eoap_dev_platform_eoap_dask_gateway_worker}}"
       #       dask-gateway.gateway.backend.imagePullSecrets[0].name: kaniko-secret
 
+  - name: toil-wes
+    patches:
+      - op: replace
+        path: /deploy/helm/releases/0/valuesFiles
+        value:
+          - zoo-project-dru/values_minikube.yaml
+          - zoo-project-dru/values_toil_wes.yaml
+
 portForward:
 
 # ZOO-Project services

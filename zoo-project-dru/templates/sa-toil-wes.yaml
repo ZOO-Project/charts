@@ -1,0 +1,14 @@
+{{- if and .Values.toilWes.enabled .Values.toilWes.serviceAccount -}}
+{{- if .Values.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Release.Name }}-toil-wes
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

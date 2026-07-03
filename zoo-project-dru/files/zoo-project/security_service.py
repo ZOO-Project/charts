@@ -23,9 +23,9 @@
 ################################################################################
 import zoo
 
-
 def securityIn(conf, inputs, outputs):
     import os
+
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
         zoo.debug("securityIn")
     try:
@@ -138,6 +138,18 @@ def securityIn(conf, inputs, outputs):
         add_filter_out(conf)
     if "auth_env" not in conf:
         zoo.warning("No auth_env section found")
+    conf["renv"]["FAKE_HTTP_ACCEPT_PROFILE"] = False
+    if "REDIRECT_QUERY_STRING" in conf["renv"]:
+        from urllib.parse import urlparse, parse_qs, parse_qsl
+        params = parse_qs(conf["renv"]["REDIRECT_QUERY_STRING"])
+        profile_value = params.get('profile', [''])[0]
+        if profile_value != '':
+            if "HTTP_ACCEPT_PROFILE" not in conf["renv"]:
+                conf["renv"]["HTTP_ACCEPT_PROFILE"] = profile_value
+                conf["renv"]["FAKE_HTTP_ACCEPT_PROFILE"] = True
+    if "HTTP_ACCEPT_PROFILE" in conf["renv"] and "openeo" in conf["renv"]["HTTP_ACCEPT_PROFILE"] :
+        import openeo_processes
+        openeo_processes.convert(conf,{},outputs)
     return zoo.SERVICE_SUCCEEDED
 
 def add_filter_out(conf):

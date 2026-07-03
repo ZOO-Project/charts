@@ -182,11 +182,8 @@ affinity: {}
 zoo:
   promoteHead: true
   detectEntrypoint: false
-  processesv2: false
+  processesv2: true
   skipCwl2ogcSchema: false
-  logging:
-    enabled: false
-    level: "ALL" # Options: ALL, TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL, OFF
   rabbitmq:
     definitions: "files/rabbitmq/definitions.json.tpl"
 
@@ -194,7 +191,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-e4a7ed98f41333e71aafde94943afdb0147c30ba
+    tag: dru-afc04031f067c95475492133f59905d71d099d65
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -218,7 +215,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-e4a7ed98f41333e71aafde94943afdb0147c30ba
+    tag: dru-afc04031f067c95475492133f59905d71d099d65
   extraMountPoints: []
   # Pod-level security context (applies to all containers in the pod, including init containers)
   podSecurityContext:
@@ -242,7 +239,7 @@ notifications:
 
 workflow:
   storageClass: standard
-  defaultVolumeSize: "10Mi"
+  defaultVolumeSize: "10190"
   defaultMaxRam: "1024"
   defaultMaxCores: "2"
   calrissianImage: ghcr.io/duke-gcb/calrissian/calrissian:latest
@@ -276,6 +273,45 @@ workflow:
     wfSynchronizationCm: "semaphore-argo-cwl-runner-stage-in-out"
     CwlRunnerTemplare: "argo-cwl-runner-stage-in-out"
     CwlRunnerEndpoint: "calrissian-runner"
+
+toilWes:
+  enabled: false
+  replicaCount: 1
+  serviceAccountName: ""
+  awsRegion: "us-east-1"
+  batchSystem: kubernetes
+  workDir: /workflows
+  stateStore: /workflows/state_store
+  privileged: true
+  serviceAccount: ""
+  hostPath: ""
+  enable_cache: false
+  image:
+    repository: quay.io/ucsc_cgl/toil
+    tag: "9.4.1-c6a39f2c827899f9a1dd0018ca2b72c675120096-py3.13"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+  s3:
+    realaws: true
+    host: "s3-service"
+    port: "9000"
+    useSsl: false
+    credentialsSecret:
+      name: "s3-service"
+      accessKeyKey: "rootUser"
+      secretKeyKey: "rootPassword"
+  resolverOptions: "ndots:1"
+  resources:
+    defaultMemory: 8Gi
+    defaultDisk: 16Gi
+    maxMemory: ""
+    maxDisk: ""
+  env: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 postgresql:
   # Configuration for official PostgreSQL Docker image

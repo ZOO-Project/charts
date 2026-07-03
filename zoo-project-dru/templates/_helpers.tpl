@@ -159,16 +159,16 @@ with management API and definitions loaded.
     - |
       set -e
       echo "Waiting for RabbitMQ to be ready with management API and definitions loaded..."
+
       while true; do
-        echo "Check if RabbitMQ management API is accessible"
         # Check if RabbitMQ management API is accessible
         if curl --max-time 5 -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
           http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/overview >/dev/null 2>&1; then
 
           # Check if both zoo_service_queue and unroutable_messages_queue exist
-          if curl -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
+          if curl --max-time 5 -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
             http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/queues/%2F/zoo_service_queue >/dev/null 2>&1 && \
-            curl -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
+            curl --max-time 5 -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
             http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/queues/%2F/unroutable_messages_queue >/dev/null 2>&1; then
             echo "RabbitMQ is fully ready!"
             break

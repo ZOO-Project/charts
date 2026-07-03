@@ -12,6 +12,8 @@ $graph:
     requirements:
       - class: ScatterFeatureRequirement
       - class: SubworkflowFeatureRequirement
+      - class: NetworkAccess
+        networkAccess: true
     inputs:
       aoi:
         label: area of interest

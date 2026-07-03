@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.9.11
+version: 0.10.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -77,20 +77,17 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: "Update to latest ZOO-Project-DRU Docker image with improved logging"
-      links:
-        - name: "ZOO-Project commit"
-          url: https://github.com/ZOO-Project/zoo-project/commit/e4a7ed98f41333e71aafde94943afdb0147c30ba
     - kind: added
-      description: "Add ZOO_DEBUG_LEVEL environment variable to configure logging level for ZOO-Kernel and ZOO-FPM"
+      description: "Add support for optional in-cluster Toil WES deployment"
     - kind: changed
-      description: "Update the documentation to reflect the new logging configuration options"
-    - kind: fixed
-      description: "Update the documentation for the default volume size and explain correspondance between tag and commit hash"
+      description: "Update to latest ZOO-Project-DRU Docker image with openeo process list support and profile request handling"
       links:
-        - name: "Issue 26"
-          url: https://github.com/ZOO-Project/charts/issues/26
+        - name: "GitHub commit corresponding to the ZOO-Project-DRU Docker image"
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/afc04031f067c95475492133f59905d71d099d65
+    - kind: changed
+      description: "Set a timeout on curl requests in the _helpers.tpl template to speed up startup"
+    - kind: changed
+      description: "Align the README.md with the Chart.yaml version"
 
   artifacthub.io/license: Apache-2.0
 

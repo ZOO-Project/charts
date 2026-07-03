@@ -1,0 +1,48 @@
+toilWes:
+  enabled: true
+  enable_cache: true
+  image:
+    repository: quay.io/ucsc_cgl/toil
+    tag: "9.4.1-c6a39f2c827899f9a1dd0018ca2b72c675120096-py3.13"
+    pullPolicy: IfNotPresent
+  # Reuse processing-manager SA already bound in the chart
+  serviceAccountName: ""
+  # Reuse in-cluster MinIO object storage already deployed by this chart
+  s3:
+    realaws: false
+    host: "s3-service"
+    port: "9000"
+    useSsl: false
+    credentialsSecret:
+      name: "s3-service"
+      accessKeyKey: "rootUser"
+      secretKeyKey: "rootPassword"
+  env:
+    TOIL_WES_JOB_STORE_TYPE: "aws"
+    TOIL_APPLIANCE_SELF: "quay.io/ucsc_cgl/toil:9.4.1-c6a39f2c827899f9a1dd0018ca2b72c675120096-py3.13"
+    AWS_S3_ADDRESSING_STYLE: "path"
+    AWS_DEFAULT_REGION: "us-east-1"
+    AWS_ENDPOINT_URL: "http://s3-service.zoo.svc.cluster.local:9000"
+    BOTO3_ENDPOINT_URL: "http://s3-service.zoo.svc.cluster.local:9000"
+
+workflow:
+  inputs:
+    WES_URL: "http://zoo-project-dru-toil-wes.zoo.svc.cluster.local:8080/ga4gh/wes/v1/"
+    WES_USER: "test"
+    WES_PASSWORD: "$$2y$$12$$ci.4U63YX83CwkyUrjqxAucnmi2xXOIlEF6T/KdP9824f1Rf1iyNG"
+  additionalInputs:
+    s3_bucket: "eoepca"
+    region_name: "us-east-1"
+    aws_access_key_id: "minio-admin"
+    aws_secret_access_key: "minio-secret-password"
+    endpoint_url: "http://s3-service.zoo.svc.cluster.local:9000"
+    STAGEOUT_OUTPUT: "eoepca"
+    process: "zoo-process"
+    STAGEOUT_AWS_ACCESS_KEY_ID: "minio-admin"
+    STAGEOUT_AWS_SECRET_ACCESS_KEY: "minio-secret-password"
+    STAGEOUT_AWS_REGION: "us-east-1"
+    STAGEOUT_AWS_SERVICEURL: "http://s3-service.zoo.svc.cluster.local:9000"
+
+cookiecutter:
+  templateUrl: https://github.com/gfenoy/eoepca-proc-service-template-wes.git
+  templateBranch: feature/zoo-template-common

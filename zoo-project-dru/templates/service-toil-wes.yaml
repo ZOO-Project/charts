@@ -1,0 +1,18 @@
+{{- if .Values.toilWes.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-toil-wes
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.toilWes.service.type }}
+  ports:
+    - port: {{ .Values.toilWes.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-toil-wes
+    app.kubernetes.io/instance: {{ .Release.Name }}-toil-wes
+{{- end }}

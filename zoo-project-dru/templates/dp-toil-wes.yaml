@@ -1,0 +1,141 @@
+{{- if .Values.toilWes.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-toil-wes
+  labels:
+    {{- if .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    {{- end }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ .Release.Name }}-toil-wes
+    app.kubernetes.io/instance: {{ .Release.Name }}-toil-wes
+spec:
+  replicas: {{ .Values.toilWes.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-toil-wes
+      app.kubernetes.io/instance: {{ .Release.Name }}-toil-wes
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-toil-wes
+        app.kubernetes.io/instance: {{ .Release.Name }}-toil-wes
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.toilWes.serviceAccountName | default (printf "%s-processing-manager" .Release.Name) }}
+      containers:
+        - name: toil-wes
+          image: "{{ .Values.toilWes.image.repository }}:{{ .Values.toilWes.image.tag }}"
+          imagePullPolicy: {{ .Values.toilWes.image.pullPolicy }}
+          command:
+            - sh
+            - -lc
+          args:
+            - |
+              {{- if not .Values.toilWes.s3.realaws }}
+              python - <<'PY'
+              from pathlib import Path
+
+              jobstore = Path('/usr/local/lib/python3.13/dist-packages/toil/jobStores/aws/jobStore.py')
+              if jobstore.exists():
+                  source = jobstore.read_text(encoding='utf-8')
+                  source = source.replace('public=True,', 'public=False,')
+                  source = source.replace('encryptable=True,', 'encryptable=False,')
+                  jobstore.write_text(source, encoding='utf-8')
+              PY
+              {{- end }}
+
+              # Share image cache across workers to reduce concurrent pull/build churn.
+              mkdir -p {{ .Values.toilWes.workDir | default "/workflows" }}/singularity-cache
+
+              export PYTHONPATH="/tmp:${PYTHONPATH}"
+              exec toil server \
+                --host=0.0.0.0 \
+                --port=8080 \
+                --bypass_celery \
+                --work_dir={{ .Values.toilWes.workDir | default "/workflows" }} \
+                --state_store={{ .Values.toilWes.stateStore | default "/workflows/state_store" }} \
+                --opt=--batchSystem={{ .Values.toilWes.batchSystem | default "kubernetes" }} \
+                --opt=--logInfo \
+                --opt=--defaultMemory={{ .Values.toilWes.resources.defaultMemory | quote }} \
+                --opt=--defaultDisk={{ .Values.toilWes.resources.defaultDisk | quote }} \
+                {{- if .Values.toilWes.resources.maxMemory }}
+                --opt=--maxMemory={{ .Values.toilWes.resources.maxMemory | quote }} \
+                {{- end }}
+                {{- if .Values.toilWes.resources.maxDisk }}
+                --opt=--maxDisk={{ .Values.toilWes.resources.maxDisk | quote }} \
+                {{- end }}
+                --opt=--kubernetesOwner=zoo \
+                --opt=--kubernetesPrivileged={{ ternary "True" "False" .Values.toilWes.privileged }} \
+                --opt=--kubernetesServiceAccount={{ .Values.toilWes.serviceAccountName | default (printf "%s-processing-manager" .Release.Name) }} \
+                --opt=--setEnv=AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+                --opt=--setEnv=AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+                --opt=--setEnv=AWS_DEFAULT_REGION={{ .Values.toilWes.awsRegion | default "us-east-1" }} \
+                --opt=--setEnv=AWS_ENDPOINT_URL={{ ternary "https" "http" .Values.toilWes.s3.useSsl }}://{{ .Values.toilWes.s3.host }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.toilWes.s3.port }} \
+                --opt=--setEnv=BOTO3_ENDPOINT_URL={{ ternary "https" "http" .Values.toilWes.s3.useSsl }}://{{ .Values.toilWes.s3.host }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.toilWes.s3.port }} \
+                --opt=--setEnv=RES_OPTIONS={{ .Values.toilWes.resolverOptions }} \
+                --opt=--setEnv=AWS_S3_ADDRESSING_STYLE={{ get .Values.toilWes.env "AWS_S3_ADDRESSING_STYLE" | default "path" }} \
+                --opt=--setEnv=TOIL_S3_HOST={{ .Values.toilWes.s3.host }} \
+                --opt=--setEnv=TOIL_S3_PORT={{ .Values.toilWes.s3.port }} \
+                --opt=--setEnv=TOIL_S3_USE_SSL={{ ternary "True" "False" .Values.toilWes.s3.useSsl }} \
+                --opt=--setEnv=TOIL_AWS_SECRET_NAME={{ .Values.toilWes.s3.credentialsSecret.name }} \
+                --opt=--setEnv=TOIL_KUBERNETES_OWNER=zoo \
+                --opt=--setEnv=TOIL_KUBERNETES_PRIVILEGED={{ ternary "True" "False" .Values.toilWes.privileged }} \
+                {{- if .Values.toilWes.hostPath }}
+                --opt=--setEnv=TOIL_KUBERNETES_HOST_PATH={{ .Values.toilWes.hostPath }} \
+                {{- end }}
+                {{- if .Values.toilWes.enable_cache }}
+                --opt=--setEnv=CWL_SINGULARITY_CACHE={{ .Values.toilWes.workDir | default "/workflows" }}/singularity-cache \
+                --opt=--setEnv=SINGULARITY_CACHEDIR={{ .Values.toilWes.workDir | default "/workflows" }}/singularity-cache \
+                {{- end}}
+                --opt=--setEnv=SINGULARITY_TMPDIR=/tmp \
+                --opt=--setEnv=APPTAINER_TMPDIR=/tmp
+          ports:
+            - name: http
+              containerPort: {{ .Values.toilWes.service.port }}
+              protocol: TCP
+          env:
+            - name: TOIL_S3_HOST
+              value: {{ .Values.toilWes.s3.host | quote }}
+            - name: TOIL_S3_PORT
+              value: {{ .Values.toilWes.s3.port | quote }}
+            - name: TOIL_S3_USE_SSL
+              value: {{ ternary "True" "False" .Values.toilWes.s3.useSsl | quote }}
+            {{- if .Values.toilWes.s3.credentialsSecret.name }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.toilWes.s3.credentialsSecret.name | quote }}
+                  key: {{ .Values.toilWes.s3.credentialsSecret.accessKeyKey | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.toilWes.s3.credentialsSecret.name | quote }}
+                  key: {{ .Values.toilWes.s3.credentialsSecret.secretKeyKey | quote }}
+            {{- end }}
+            {{- range $k, $v := .Values.toilWes.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          {{- $k8sResources := pick .Values.toilWes.resources "requests" "limits" }}
+          {{- if gt (len $k8sResources) 0 }}
+          resources:
+            {{- toYaml $k8sResources | nindent 12 }}
+          {{- end }}
+      {{- with .Values.toilWes.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.toilWes.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.toilWes.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
