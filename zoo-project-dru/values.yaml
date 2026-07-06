@@ -184,6 +184,9 @@ zoo:
   detectEntrypoint: false
   processesv2: true
   skipCwl2ogcSchema: false
+  logging:
+    enabled: false
+    level: "ALL" # Options: ALL, TRACE, DEBUG, INFO, SUCCESS, WARNING, ERROR, CRITICAL, OFF
   rabbitmq:
     definitions: "files/rabbitmq/definitions.json.tpl"
 
@@ -239,7 +242,7 @@ notifications:
 
 workflow:
   storageClass: standard
-  defaultVolumeSize: "10190"
+  defaultVolumeSize: "10Mi"
   defaultMaxRam: "1024"
   defaultMaxCores: "2"
   calrissianImage: ghcr.io/duke-gcb/calrissian/calrissian:latest
