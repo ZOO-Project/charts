@@ -621,6 +621,14 @@
         "extraMountPoints": {
           "type": "array",
           "description": "Additional mount points for files from files/<DIR> subdirectories to be accessed by ZOO-FPM."
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "description": "Pod-level security context for the ZOO-FPM pod (runAsUser, runAsGroup, fsGroup, etc.). The official ZOO-Project image runs as 'www-data' (uid 33, gid 33)."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Container-level security context for the ZOO-FPM container (capabilities, privilege escalation, etc.)."
         }
       }
     },
@@ -653,6 +661,14 @@
         "extraMountPoints": {
           "type": "array",
           "description": "Additional mount points for files from files/<DIR> subdirectories to be accessed by ZOO-Kernel."
+        },
+        "podSecurityContext": {
+          "type": "object",
+          "description": "Pod-level security context for the ZOO-Kernel (Apache) pod (runAsUser, runAsGroup, fsGroup, etc.). The official ZOO-Project image runs as 'www-data' (uid 33, gid 33)."
+        },
+        "securityContext": {
+          "type": "object",
+          "description": "Container-level security context for the ZOO-Kernel (Apache) container (capabilities, privilege escalation, etc.)."
         }
       }
     },
@@ -1060,17 +1076,17 @@
           "type": "boolean",
           "description": "The persistence is enabled"
         },
+        "existingProcServicesClaim": {
+          "type": "string",
+          "description": "Name of an existing PersistentVolumeClaim to use for the processing-services (deployed services) volume. If unset, the chart provisions its own PVC. Must be ReadWriteMany when zoofpm and zookernel run on different nodes."
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations added to the PersistentVolumeClaims created by the chart (processing-services, tmp)."
+        },
         "storageClass": {
           "type": "string",
           "description": "The storage class"
-        },
-        "userDataAccessMode": {
-          "type": "string",
-          "description": "The access mode"
-        },
-        "userDataSize": {
-          "type": "string",
-          "description": "The size allocated"
         },
         "procServicesAccessMode": {
           "type": "string",
@@ -1087,6 +1103,28 @@
         "servicesNamespacePath": {
           "type": "string",
           "description": "The services namespace path (directory where user namespaces are created)"
+        },
+        "procServicesPermissions": {
+          "type": "object",
+          "description": "Best-effort init container that fixes ownership/permissions of the processing-services volume at pod startup. Needed on storage backends that do not honor the pod fsGroup (hostPath, and most NFS/CSI RWX drivers).",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable the init container that chowns/chmods the processing-services volume. Not needed on minikube (hostpath dirs are 0777); enable it on production RWX backends"
+            },
+            "image": {
+              "type": "string",
+              "description": "Image used by the permission-fixing init container (must provide a POSIX shell, chown and chmod)"
+            },
+            "uid": {
+              "type": "integer",
+              "description": "UID that must own the processing-services volume (www-data in the zoo-project images)"
+            },
+            "gid": {
+              "type": "integer",
+              "description": "GID that must own the processing-services volume (www-data in the zoo-project images)"
+            }
+          }
         },
         "tmpAccessMode": {
           "type": "string",
@@ -1449,6 +1487,42 @@
             }
           }
         },
+        "command": {
+          "type": "array",
+          "description": "Override the webui container command. Empty uses the image CMD (node .output/server/index.mjs)."
+        },
+        "args": {
+          "type": "array",
+          "description": "Override the webui container args. Empty uses the image default."
+        },
+        "authSecret": {
+          "type": "string",
+          "description": "Optional Nuxt runtime auth secret, read from process.env at server startup."
+        },
+        "requiresBearerToken": {
+          "type": "string",
+          "description": "Whether the WebUI requires a bearer token for API calls ('true'/'false')."
+        },
+        "nodeTlsRejectUnauthorized": {
+          "type": "string",
+          "description": "Value for NODE_TLS_REJECT_UNAUTHORIZED. '0' disables Node.js TLS certificate validation (use only for development or self-signed endpoints)."
+        },
+        "extraEnv": {
+          "type": "array",
+          "description": "Extra environment variables appended to the webui container."
+        },
+        "envFrom": {
+          "type": "array",
+          "description": "Extra envFrom entries (Secrets/ConfigMaps) appended to the webui container."
+        },
+        "volumeMounts": {
+          "type": "array",
+          "description": "Optional additional volume mounts for the webui container."
+        },
+        "volumes": {
+          "type": "array",
+          "description": "Optional additional volumes for the webui pod."
+        },
         "enforce": {
           "type": "boolean",
           "description": "Should apache handle security before the requests are sent to the ZOO-Project?"
@@ -1573,6 +1647,34 @@
                 "type": {
                   "type": "string",
                   "description": "Type of the EventBus"
+                },
+                "jetstream": {
+                  "type": "object",
+                  "description": "JetStream backend configuration for the EventBus (used when type is 'jetstream').",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "JetStream version to deploy (e.g., 'latest')."
+                    },
+                    "replicas": {
+                      "type": "integer",
+                      "description": "Number of JetStream replicas."
+                    }
+                  }
+                },
+                "nats": {
+                  "type": "object",
+                  "description": "NATS backend configuration for the EventBus (used when type is 'nats').",
+                  "properties": {
+                    "replicas": {
+                      "type": "integer",
+                      "description": "Number of NATS replicas."
+                    },
+                    "auth": {
+                      "type": "string",
+                      "description": "Authentication strategy for NATS (e.g., 'token')."
+                    }
+                  }
                 }
               }
             }

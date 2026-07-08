@@ -24,18 +24,18 @@
 
 mkdir -p /tmp/zTmp/statusInfos
 
-CMD="curl -o /tmp/toto.out {{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672"
+CMD="curl -o /tmp/curl.out {{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672"
 $CMD
 
-if [ -e /tmp/toto.out ]; then echo "Should start" ; else echo wait; sleep 1; $CMD ; fi 
+if [ -e /tmp/curl.out ]; then echo "Should start" ; else echo wait; sleep 1; $CMD ; fi 
 
-while [ ! -e /tmp/toto.out ]; do echo wait; sleep 1; $CMD ;  done
+while [ ! -e /tmp/curl.out ]; do echo wait; sleep 1; $CMD ;  done
 
 {{- if not .Values.keda.enabled }}
 echo "START FPM in 5 seconds"
 sleep 5
 {{- end }}
-rm toto.out
+rm /tmp/curl.out
 
 touch /var/log/zoofpm.log
 

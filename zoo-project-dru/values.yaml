@@ -449,7 +449,6 @@ rabbitmq:
 
 persistence:
   enabled: true
-  # existingUserDataClaim:
   # existingProcServicesClaim:
   ## @param persistence.storageClass Storage class of backing PVC
   ## If defined, storageClassName: <storageClass>
@@ -459,8 +458,6 @@ persistence:
   ##   GKE, AWS & OpenStack)
   ##
   storageClass: ""
-  userDataAccessMode: ReadWriteOnce
-  userDataSize: 10Gi
 
   ## @param persistence.procServicesAccessMode Access mode of the PVC
   procServicesAccessMode: ReadWriteMany
@@ -470,6 +467,18 @@ persistence:
   procServicesSize: 5Gi
   ## @param persistence.tmpPath Path to mount the PVC
   servicesNamespacePath: /opt/zooservices_user
+
+  ## Fix ownership/permissions of the processing-services volume at pod startup.
+  procServicesPermissions:
+    enabled: true
+    ## @param persistence.procServicesPermissions.image Image for the init container
+    image: busybox:1.36
+    ## In the zoo-project images, the www-data user has UID/GID 33. 
+    ## The init container will ensure that the volume is owned by this user/group.
+    ## @param persistence.procServicesPermissions.uid UID that must own the volume
+    uid: 33
+    ## @param persistence.procServicesPermissions.gid GID that must own the volume
+    gid: 33
 
   ## @param persistence.tmpAccessMode Access mode of the PVC
   tmpAccessMode: ReadWriteMany

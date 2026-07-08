@@ -186,6 +186,50 @@ with management API and definitions loaded.
 {{- end }}
 
 {{/*
+ZOO-Kernel/ZOO-FPM
+Init container that fixes ownership/permissions of the processing-services volume.
+*/}}
+{{- define "zoo-project-dru.fixProcServicesPermissions.initContainer" -}}
+- name: fix-procservices-perms-{{ .componentName }}
+  image: {{ .Values.persistence.procServicesPermissions.image | default "busybox:1.36" }}
+  imagePullPolicy: IfNotPresent
+  command: [ "/bin/sh" ]
+  args:
+    - -c
+    - |
+      set -u
+      target="{{ .Values.persistence.servicesNamespacePath }}"
+      owner="{{ .Values.persistence.procServicesPermissions.uid | default 33 }}:{{ .Values.persistence.procServicesPermissions.gid | default 33 }}"
+      echo "Ensuring ${target} is owned by ${owner} and writable..."
+      if chown -R "${owner}" "${target}" 2>/dev/null; then
+        echo "chown succeeded."
+      else
+        echo "WARNING: chown failed on ${target} (NFS root_squash or backend-managed permissions?); continuing without failing the pod."
+      fi
+      if chmod -R u+rwX,g+rwX "${target}" 2>/dev/null; then
+        echo "chmod succeeded."
+      else
+        echo "WARNING: chmod failed on ${target}; continuing."
+      fi
+      echo "Permission init finished."
+  securityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    runAsNonRoot: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+      add:
+        - CHOWN
+        - FOWNER
+        - DAC_OVERRIDE
+  volumeMounts:
+    - name: ades-processing-services
+      mountPath: {{ .Values.persistence.servicesNamespacePath }}
+{{- end }}
+
+{{/*
 PostgreSQL service name
 */}}
 {{- define "zoo-project-dru.postgresql.servicename" -}}

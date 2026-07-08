@@ -30,8 +30,15 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.zookernel.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       initContainers:
         {{- include "zoo-project-dru.rabbitmq.initContainer" (dict "Values" .Values "Release" .Release "Chart" .Chart "componentName" "zookernel") | nindent 8 }}
+        {{- if .Values.persistence.procServicesPermissions.enabled }}
+        {{- include "zoo-project-dru.fixProcServicesPermissions.initContainer" (dict "Values" .Values "Release" .Release "Chart" .Chart "componentName" "zookernel") | nindent 8 }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -40,6 +47,10 @@ spec:
         - name: zookernel
           command: [ "apachectl" ]
           args: [ "-D", "FOREGROUND" ]
+          {{- with .Values.zookernel.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           env:
             - name: ZOO_REDIS_HOST
               value: {{ include "zoo-project-dru.redis.servicename" . }}
@@ -242,8 +253,8 @@ spec:
         - name: ades-processing-services
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            {{- if .Values.persistence.existingProcessingServicesClaim }}
-            claimName: {{ .Values.persistence.existingProcessingServicesClaim }}
+            {{- if .Values.persistence.existingProcServicesClaim }}
+            claimName: {{ .Values.persistence.existingProcServicesClaim }}
             {{- else }}
             claimName: {{ .Release.Name }}-processing-services
             {{- end -}}

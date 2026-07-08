@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.1
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.2
 ````
 
 ## Parameters
@@ -37,12 +37,14 @@ There are two persistent storage: `procServices` and `tmp`. The ZOO-Project uses
 |:-------------------------------------------|:---------------------------------------------------------|:-------------------------|
 | persistence.enabled            | The persistence is enabled | true                      |
 | persistence.storageClass            | The storage class | standard                      |
-| persistence.userDataAccessMode            | The access mode | ReadWriteOnce                      |
-| persistence.userDataSize            | The size allocated | 10Gi                      |
 | persistence.procServicesAccessMode            | The access mode | ReadWriteOnce                      |
 | persistence.procServicesStorageClass            | The storage class | standard                      |
 | persistence.procServicesSize            | The size allocated | 5Gi                      |
 | persistence.servicesNamespacePath            | The services namespace path (directory where user namespaces are created) | /opt/zooservices_user                      |
+| persistence.procServicesPermissions.enabled            | Enable a best-effort init container that fixes ownership/permissions of the processing-services volume at startup (needed on backends that do not honor `fsGroup`, e.g. NFS/CSI RWX) | true                      |
+| persistence.procServicesPermissions.image            | Image used by the permission-fixing init container (must provide a POSIX shell, `chown` and `chmod`) | busybox:1.36                      |
+| persistence.procServicesPermissions.uid            | UID that must own the volume (`www-data` in the zoo-project images) | 33                      |
+| persistence.procServicesPermissions.gid            | GID that must own the volume (`www-data` in the zoo-project images) | 33                      |
 | persistence.tmpAccessMode            | The access mode | ReadWriteMany                      |
 | persistence.tmpStorageClass            | The storage class | standard                      |
 | persistence.tmpSize            | The size allocated | 2Gi                      |
@@ -218,6 +220,8 @@ For high-availability requirements, consider external Redis cluster solutions
 | zookernel.replicaCount           | Number of ZOO-Kernel pod replicas                                  | 1                                                    |
 | zookernel.env                    | The environment variables defined in the main.cfg `env` section    | {}                    |
 | zookernel.extraMountPoints       | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-Kernel     | []                    |
+| zookernel.podSecurityContext     | Pod-level security context for the ZOO-Kernel (Apache) pod (`runAsUser`, `runAsGroup`, `fsGroup`). Defaults to `www-data` (33). | {"runAsNonRoot":true,"runAsUser":33,"runAsGroup":33,"fsGroup":33} |
+| zookernel.securityContext        | Container-level security context for the ZOO-Kernel container (`allowPrivilegeEscalation`, capabilities, etc.). | {"runAsNonRoot":true,"runAsUser":33,"runAsGroup":33,"allowPrivilegeEscalation":false} |
 
 When using the official "zooproject/zoo-project", the image tag (`zookernel.image.tag`) corresponds to a commit hash from the ZOO-Project official repository's main branch.
 
@@ -231,6 +235,8 @@ When using the official "zooproject/zoo-project", the image tag (`zookernel.imag
 | zoofpm.replicaCount              | Number of ZOO-FPM pod replicas (when autoscaling is disabled)      | 1                                                    |
 | zoofpm.autoscaling.enabled       | Enable horizontal pod autoscaling for ZOO-FPM                      | false                                                |
 | zoofpm.extraMountPoints          | In case you add files in one or more `files/<DIR>` subdirectories and want to access them from the ZOO-FPM     | []                    |
+| zoofpm.podSecurityContext        | Pod-level security context for the ZOO-FPM pod (`runAsUser`, `runAsGroup`, `fsGroup`). Defaults to `www-data` (33). | {"runAsNonRoot":true,"runAsUser":33,"runAsGroup":33,"fsGroup":33} |
+| zoofpm.securityContext           | Container-level security context for the ZOO-FPM container (`allowPrivilegeEscalation`, capabilities, etc.). | {"runAsNonRoot":true,"runAsUser":33,"runAsGroup":33,"allowPrivilegeEscalation":false} |
 
 When using the official "zooproject/zoo-project", the image tag (`zoofpm.image.tag`) corresponds to a commit hash from the ZOO-Project official repository's main branch.
 
@@ -1151,121 +1157,6 @@ See [reference documentation](https://artifacthub.io/packages/helm/prometheus-co
 | monitoring.kube-prometheus-stack.grafana.persistence.size | Grafana storage size | "5Gi" |
 | monitoring.kube-prometheus-stack.alertmanager.enabled    | Enable Alertmanager for notifications | true |
 
-#### Helm Secret Size Limitations and Monitoring Deployment Strategies
-
-⚠️ **Important**: The complete monitoring stack (kube-prometheus-stack) adds ~670KB to the Helm secret, which can cause deployments to exceed Kubernetes' 1MB secret size limit, resulting in installation failures.
-
-##### Problem Description
-
-When deploying with full monitoring enabled (especially with Argo profiles), you may encounter this error:
-```
-Error: INSTALLATION FAILED: create: failed to create: Secret "sh.helm.release.v1.zoo-project-dru.v1" is invalid: data: Too long: must have at most 1048576 bytes
-```
-
-This happens because the monitoring stack includes:
-- **Grafana Dashboards**: ~400KB of dashboard configurations
-- **Prometheus Rules**: ~200KB of alerting and recording rules  
-- **CRDs and Templates**: ~70KB of additional Kubernetes resources
-
-##### Recommended Solutions
-
-**Solution 1: Separate Monitoring Deployment (Recommended)**
-
-Deploy monitoring as a separate Helm release to avoid secret size issues:
-
-```bash
-# 1. Deploy ZOO-Project without integrated monitoring
-skaffold dev -p argo  # Uses optimized values_argo.yaml with monitoring.enabled=false
-
-# 2. Deploy monitoring stack separately
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm install monitoring prometheus-community/kube-prometheus-stack \
-  --namespace monitoring --create-namespace \
-  --set grafana.adminPassword=admin \
-  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
-
-# 3. Access services
-kubectl port-forward -n zoo svc/zoo-project-dru-service 8080:80           # ZOO-Project
-kubectl port-forward -n zoo svc/zoo-project-dru-argo-workflows-server 2746:2746  # Argo UI
-kubectl port-forward -n monitoring svc/monitoring-grafana 3000:80         # Grafana
-```
-
-**Solution 2: Minimal Integrated Monitoring**
-
-Use a lightweight monitoring configuration that stays under the 1MB limit:
-
-```bash
-# Create optimized values file
-cat > values_argo_with_monitoring.yaml << EOF
-# Include all content from values_argo.yaml, then override:
-monitoring:
-  enabled: true
-  kube-prometheus-stack:
-    # Minimal Prometheus configuration
-    prometheus:
-      enabled: true
-      prometheusSpec:
-        retention: "7d"
-        storageSpec: null  # Disable persistent storage
-    # Lightweight Grafana without default dashboards  
-    grafana:
-      enabled: true
-      adminPassword: admin
-      defaultDashboardsEnabled: false  # Saves ~400KB
-      sidecar:
-        dashboards:
-          enabled: false
-    # Disable heavy components
-    alertmanager:
-      enabled: false      # Saves ~50KB
-    kube-state-metrics:
-      enabled: false      # Saves ~100KB
-    prometheus-node-exporter:
-      enabled: false      # Saves ~30KB
-    defaultRules:
-      create: false       # Saves ~200KB
-EOF
-
-# Deploy with minimal monitoring
-helm install zoo-project-dru ./zoo-project-dru \
-  --values values_argo_with_monitoring.yaml \
-  --namespace zoo --create-namespace
-```
-
-**Solution 3: Post-Deployment Dashboard Addition**
-
-Add Grafana dashboards after the initial deployment:
-
-```bash
-# 1. Deploy with minimal monitoring (Solution 2)
-# 2. Add custom dashboards via ConfigMaps
-kubectl create configmap argo-workflows-dashboard \
-  --from-file=dashboard.json=files/argo-workflows/grafana-dashboard.json \
-  --namespace zoo
-kubectl label configmap argo-workflows-dashboard grafana_dashboard=1
-
-# Grafana will automatically detect and load the dashboard
-```
-
-##### Size Optimization Summary
-
-| Configuration | Helm Secret Size | Monitoring Level | Recommended Use |
-|:-------------|:-----------------|:-----------------|:----------------|
-| Full monitoring | ~970KB+ | Complete | Separate deployment |
-| Minimal monitoring | ~300KB | Basic metrics only | Integrated deployment |
-| No monitoring | ~240KB | None | Development only |
-| Separate deployment | ~240KB + separate | Complete | **Production** |
-
-##### Troubleshooting Size Issues
-
-Check your deployment size before installing:
-```bash
-# Check template size
-helm template zoo-project-dru ./zoo-project-dru \
-  --values ./zoo-project-dru/values_argo.yaml | wc -c
-
-# If > 900,000 bytes, consider using separate monitoring deployment
-```
 
 ### Prometheus Node Exporter Configuration
 
@@ -1549,32 +1440,16 @@ kubectl get pods -n default
 
 ### Common Migration Issues
 
-**Helm secret size limit exceeded**:
-```bash
-# Error: Secret "sh.helm.release.v1.zoo-project-dru.v1" is invalid: 
-# data: Too long: must have at most 1048576 bytes
-
-# Common causes: Full monitoring stack (~670KB), Large dashboards, Complex configurations
-
-# Solution 1: Use optimized values with disabled optional components
-helm install zoo-project-dru ./zoo-project-dru \
-  --values ./zoo-project-dru/values_minikube.yaml \
-  --namespace zoo --create-namespace
-
-# Solution 2: Deploy monitoring separately (recommended for full features)
-# See "Helm Secret Size Limitations and Monitoring Deployment Strategies" section above
-```
-
 **PostgreSQL connection issues after migration**:
 ```bash
 # Check if PostgreSQL is running with new image
-kubectl get pods -n zoo -l app.kubernetes.io/name=zoo-project-dru-postgresql
+kubectl get pods -n zoo -l app=zoo-project-dru-postgresql
 
 # Check initialization logs
-kubectl logs -n zoo deployment/zoo-project-dru-postgresql --tail=50
+kubectl logs -n zoo -l app=zoo-project-dru-postgresql --tail=50
 
 # Verify database creation
-kubectl exec -it -n zoo deployment/zoo-project-dru-postgresql -- psql -U zoo -d zoo -c "\dt"
+kubectl exec -it -n zoo services/zoo-project-dru-postgresql-service -- psql -U zoo -d zoo -c "\dt"
 ```
 
 ### KEDA-Specific Issues

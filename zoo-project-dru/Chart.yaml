@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.10.1
+version: 0.10.2
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -78,9 +78,13 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: "Small fixes to the values.schema.json to reinsert details about logging"
+      description: "Add init container to fix permissions on processing-services volume for backends that do not honor fsGroup"
+    - kind: added
+      description: "Update the README.md to include new persistence.procServicesPermissions parameters"
     - kind: changed
-      description: "Revert the values.yaml to the previous version for defaultVolumeSize"
+      description: "Update the start-up.sh script to remove the correct output file from the curl command"
+    - kind: changed
+      description: "Remove the secret size limit section from the README.md"
     - kind: changed
       description: "Align the README.md with the Chart.yaml version"
 
