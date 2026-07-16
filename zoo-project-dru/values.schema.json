@@ -60,6 +60,32 @@
           "type": "string",
           "description": "ServiceAccount name used by the Toil WES pod. If empty, defaults to <release>-processing-manager."
         },
+        "celery": {
+          "type": "object",
+          "description": "Optional Celery-based execution mode for Toil WES. When enabled, the WES server sends workflow runs to Celery workers through a broker instead of executing them in-process.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Celery-backed workflow execution for Toil WES. Requires shared storage accessible by both server and workers."
+            },
+            "replicaCount": {
+              "type": "integer",
+              "description": "Number of Celery worker replicas to run for Toil WES."
+            },
+            "brokerUrl": {
+              "type": "string",
+              "description": "Explicit Celery broker URL. If empty, a RabbitMQ URL is generated from the integrated RabbitMQ settings."
+            },
+            "resultBackend": {
+              "type": "string",
+              "description": "Celery result backend used by Toil WES to query task liveness/status. Defaults to rpc:// so the broker is also used for result metadata."
+            },
+            "workerLogLevel": {
+              "type": "string",
+              "description": "Celery worker log level (for example: INFO, DEBUG, WARNING)."
+            }
+          }
+        },
         "awsRegion": {
           "type": "string",
           "description": "AWS region value required by aws:<region>:<prefix> locator syntax (can be synthetic when using S3-compatible backends)."
@@ -75,6 +101,40 @@
         "stateStore": {
           "type": "string",
           "description": "Path to the Toil WES state store directory."
+        },
+        "sharedStorage": {
+          "type": "object",
+          "description": "Optional shared storage used by the Toil WES server and Celery workers. Required when Celery mode is enabled so both pods see the same workDir and stateStore.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Mount shared storage for Toil WES."
+            },
+            "create": {
+              "type": "boolean",
+              "description": "Create a dedicated PVC for Toil WES shared storage. If false, existingClaim must be set."
+            },
+            "existingClaim": {
+              "type": "string",
+              "description": "Existing PVC name to use for Toil WES shared storage."
+            },
+            "mountPath": {
+              "type": "string",
+              "description": "Mount path for shared storage in the server and Celery worker containers. Should match toilWes.workDir/stateStore parent directory."
+            },
+            "accessMode": {
+              "type": "string",
+              "description": "PVC access mode for shared storage (typically ReadWriteMany for multiple pods)."
+            },
+            "size": {
+              "type": "string",
+              "description": "Requested PVC size for shared storage."
+            },
+            "storageClass": {
+              "type": "string",
+              "description": "StorageClass for the shared PVC. Empty string uses the cluster default."
+            }
+          }
         },
         "privileged": {
           "type": "boolean",
@@ -1418,6 +1478,32 @@
         "realm": {
           "type": "string",
           "description": "The realm associated with the IAM"
+        },
+        "issuer": {
+          "type": "string",
+          "description": "The issuer associated with the IAM"
+        },
+        "audience": {
+          "type": "string",
+          "description": "The audience associated with the IAM"
+        },
+        "algorithms": {
+          "type": "array",
+          "description": "The algorithms associated with the IAM",
+          "items": { 
+            "type": "string",
+            "enum": [
+              "RS256",
+              "ES256",
+              "HS256",
+              "RS384",
+              "ES384",
+              "HS384",
+              "RS512",
+              "ES512",
+              "HS512"              
+            ]
+          }
         },
         "onlyImplicitFlow": {
           "type": "boolean",

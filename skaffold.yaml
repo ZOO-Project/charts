@@ -195,6 +195,15 @@ profiles:
           - zoo-project-dru/values_minikube.yaml
           - zoo-project-dru/values_toil_wes.yaml
 
+  - name: toil-wes-celery
+    patches:
+      - op: replace
+        path: /deploy/helm/releases/0/valuesFiles
+        value:
+          - zoo-project-dru/values_minikube.yaml
+          - zoo-project-dru/values_toil_wes.yaml
+          - zoo-project-dru/values_toil_wes_celery.yaml
+
 portForward:
 
 # ZOO-Project services

@@ -1,6 +1,5 @@
 # ZOO-Project-DRU Helm Chart Configuration with Argo Workflows support
 
-# # Optimization: Use shorter names to reduce Helm secret size
 # nameOverride: "zoo"
 # fullnameOverride: "zoo"
 
@@ -288,8 +287,6 @@ argo-workflows:
     install: false
     keep: true
 
-# Note: Monitoring stack disabled to keep under 1MB Helm secret limit
-# To enable monitoring, deploy kube-prometheus-stack separately:
 # helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace
 monitoring:
   enabled: false
@@ -329,7 +326,7 @@ monitoring:
         serviceMonitorSelector: {}
         ruleSelector: {}
     
-    # Grafana (heavily optimized to reduce secret size)
+    # Grafana configuration
     grafana:
       enabled: true
       defaultDashboardsEnabled: false  # Disable all default dashboards
@@ -338,9 +335,9 @@ monitoring:
         dashboards:
           enabled: false  # Disable dashboard sidecar completely
     
-    # Disable all default dashboard ConfigMaps that cause size issues
+    # Disable all default dashboard ConfigMaps
     defaultRules:
-      create: false  # Disable default PrometheusRules (saves ~200KB)
+      create: false  # Disable default PrometheusRules
     
     # Disable other dashboard-related components
     kubeApiServer:
@@ -362,24 +359,24 @@ monitoring:
     nodeExporter:
       enabled: false
     
-    # Kube-state-metrics (disabled to reduce secret size)
+    # Kube-state-metrics
     kube-state-metrics:
-      enabled: false  # Saves ~100KB in PrometheusRules
+      enabled: false
     
-    # Alertmanager (disabled to reduce secret size) 
+    # Alertmanager
     alertmanager:
-      enabled: false  # Saves ~50KB in configuration
+      enabled: false
     
-    # Disable PodSecurityPolicy globalement
+    # Disable PodSecurityPolicy globally
     podSecurityPolicy:
       enabled: false
 
-# Argo Events disabled to reduce Helm secret size
+# Argo Events disabled 
 # Deploy separately if needed: helm install argo-events argo/argo-events
 argo-events:
   enabled: false
   
-  # Désactiver l'installation des CRDs (ils sont déjà installés)
+  # Disable CRD installation as they already exist
   crds:
     install: false
     keep: true

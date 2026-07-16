@@ -1,0 +1,17 @@
+{{- if and .Values.toilWes.enabled .Values.toilWes.sharedStorage.enabled .Values.toilWes.sharedStorage.create -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-toil-wes-shared
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.toilWes.sharedStorage.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.toilWes.sharedStorage.size }}
+  {{- if ne .Values.toilWes.sharedStorage.storageClass "" }}
+  storageClassName: {{ .Values.toilWes.sharedStorage.storageClass | quote }}
+  {{- end }}
+{{- end }}

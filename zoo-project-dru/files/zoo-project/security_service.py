@@ -291,24 +291,50 @@ def runDismiss(conf, inputs, outputs):
     return zoo.SERVICE_SUCCEEDED
 
 
-def browse(conf, inputs, outputs):
-    redirect_url=None
-    for i in conf["renv"]:
-        if i.count("SERVICES_NAMESPACE")>0:
-            redirect_url=conf["renv"][i]
-    f = open(
-        conf["servicesNamespace"]["path"]
-        + "/"
-        + redirect_url
-        + "/temp/"
-        + inputs["directory"]["value"],
-        "r",
-        encoding="utf-8",
+def browse(conf,inputs,outputs):
+    import os
+
+    user_namespace = None
+    for key in conf["renv"]:
+        if "SERVICES_NAMESPACE" in key:
+            user_namespace = conf["renv"][key]
+            break
+
+    if user_namespace is None:
+        conf["lenv"]["message"] = "Unable to resolve user namespace"
+        return zoo.SERVICE_FAILED
+
+    if "directory" not in inputs or "value" not in inputs["directory"]:
+        conf["lenv"]["message"] = "Missing directory input"
+        return zoo.SERVICE_FAILED
+
+    requested_path = inputs["directory"]["value"]
+    if "\x00" in requested_path:
+        conf["lenv"]["message"] = "Invalid path"
+        return zoo.SERVICE_FAILED
+
+    base_temp_dir = os.path.realpath(
+        os.path.join(conf["servicesNamespace"]["path"], user_namespace, "temp")
     )
-    if f is not None:
+    target_path = os.path.realpath(os.path.join(base_temp_dir, requested_path))
+
+    try:
+        if os.path.commonpath([base_temp_dir, target_path]) != base_temp_dir:
+            conf["lenv"]["message"] = "Access denied"
+            return zoo.SERVICE_FAILED
+    except ValueError:
+        conf["lenv"]["message"] = "Access denied"
+        return zoo.SERVICE_FAILED
+
+    if not os.path.isfile(target_path):
+        conf["lenv"]["message"] = "Unable to access the file"
+        return zoo.SERVICE_FAILED
+
+    with open(target_path, "r", encoding="utf-8") as f:
         if "result" not in outputs:
             outputs["result"] = {}
         outputs["result"]["value"] = f.read()
         return zoo.SERVICE_SUCCEEDED
+
     conf["lenv"]["message"] = "Unable to access the file"
     return zoo.SERVICE_FAILED

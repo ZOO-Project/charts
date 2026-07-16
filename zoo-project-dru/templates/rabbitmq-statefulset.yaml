@@ -15,6 +15,10 @@ spec:
       app.kubernetes.io/component: rabbitmq
   template:
     metadata:
+      annotations:
+        checksum/rabbitmq-config: {{ include (print .Template.BasePath "/rabbitmq-configmap.yaml") . | sha256sum }}
+        checksum/rabbitmq-definitions: {{ include (print .Template.BasePath "/rabbitmq-definition-secret.yaml") . | sha256sum }}
+        checksum/rabbitmq-plugins: {{ include (print .Template.BasePath "/rabbitmq-plugins-configmap.yaml") . | sha256sum }}
       labels:
         {{- include "zoo-project-dru.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: rabbitmq

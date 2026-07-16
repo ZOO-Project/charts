@@ -1,0 +1,13 @@
+toilWes:
+  celery:
+    enabled: true
+    replicaCount: 1
+    workerLogLevel: INFO
+  sharedStorage:
+    enabled: true
+    create: true
+    # For local/minikube testing, RWO is usually sufficient because both pods
+    # are expected to land on the same node.
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    storageClass: standard

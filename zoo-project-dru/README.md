@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.2
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.3
 ````
 
 ## Parameters
@@ -396,6 +396,9 @@ kubectl get pods -n <namespace> -o jsonpath='{range .items[*]}{.metadata.name}{"
 | iam.type | The IAM type                        | openIdConnect |
 | iam.name | The IAM name                        | OpenIDAuth |
 | iam.realm | The realm associated with the IAM | Secured section |
+| iam.issuer | The issuer associated with the IAM | https://auth.geolabs.fr/realms/zooproject |
+| iam.audience | The audience associated with the IAM | zoo-project-webapp |
+| iam.algorithms | The algorithms associated with the IAM | ["RS256","ES256"] |
 | iam.onlyImplicitFlow | When enabled, only the implicit flow authentication is available in the OpenAPI documentation | true |
 | iam.clientId | The clientId to access the IAM (optional) | undefined |
 | iam.clientSecret | The clientSecret to access the IAM (optional) | undefined |

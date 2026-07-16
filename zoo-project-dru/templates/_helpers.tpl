@@ -151,7 +151,7 @@ with management API and definitions loaded.
 */}}
 {{- define "zoo-project-dru.rabbitmq.initContainer" -}}
 - name: init-wait-for-dependencies-{{ .componentName }}
-  image: curlimages/curl:latest
+  image: curlimages/curl:8.21.0
   imagePullPolicy: IfNotPresent
   command: [ "/bin/sh" ]
   args:
@@ -178,6 +178,36 @@ with management API and definitions loaded.
         else
           echo "Waiting for RabbitMQ management API..."
         fi
+        sleep 5
+      done
+  env:
+    - name: ZOO_RABBITMQ_HOST
+      value: {{ include "zoo-project-dru.rabbitmq.serviceName" . }}
+{{- end }}
+
+{{/*
+RabbitMQ broker readiness init container
+This template only waits for the integrated RabbitMQ broker/API to be reachable.
+It is suitable for Toil WES Celery workers, which do not depend on ZOO queues.
+*/}}
+{{- define "zoo-project-dru.rabbitmq.brokerInitContainer" -}}
+- name: init-wait-for-rabbitmq-broker-{{ .componentName }}
+  image: curlimages/curl:8.21.0
+  imagePullPolicy: IfNotPresent
+  command: [ "/bin/sh" ]
+  args:
+    - -c
+    - |
+      set -e
+      echo "Waiting for RabbitMQ broker/API to be reachable..."
+
+      while true; do
+        if curl --max-time 5 -f -u {{ .Values.rabbitmq.auth.username }}:{{ .Values.rabbitmq.auth.password }} \
+          http://{{ include "zoo-project-dru.rabbitmq.serviceName" . }}:15672/api/overview >/dev/null 2>&1; then
+          echo "RabbitMQ broker is reachable."
+          break
+        fi
+        echo "Waiting for RabbitMQ broker/API..."
         sleep 5
       done
   env:

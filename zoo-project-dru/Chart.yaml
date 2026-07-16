@@ -23,23 +23,26 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.10.2
+version: 0.10.3
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.46"
+appVersion: "0.2.47"
 
 keywords:
-  - workflows
-  - processing
   - eoepca
+  - processing
   - cwl
+  - workflows
   - calrissian
   - stac
+  - ogc
+  - ogcapi-processes
 
 dependencies:
+
   - name: minio
     version: 5.4.0
     repository: https://charts.min.io/
@@ -77,14 +80,19 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: added
-      description: "Add init container to fix permissions on processing-services volume for backends that do not honor fsGroup"
-    - kind: added
-      description: "Update the README.md to include new persistence.procServicesPermissions parameters"
+    - kind: security
+      description: "Fix security issues in the browse service"
     - kind: changed
-      description: "Update the start-up.sh script to remove the correct output file from the curl command"
+      description: "Update the ZOO-Project Docker image to the latest version to include security patches and improvements"
+      links:
+        - name: GitHub commit
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/8b3d76c
+    - kind: added
+      description: "Add support for Toil WES service with Celery and RabbitMQ integration"
     - kind: changed
-      description: "Remove the secret size limit section from the README.md"
+      description: "Fix versions of curl and calrissian images used in the chart to avoid using latest tags"
+    - kind: changed
+      description: "Update rabbitmq and postgres images to more recent versions to reduce vulnerabilities"
     - kind: changed
       description: "Align the README.md with the Chart.yaml version"
 

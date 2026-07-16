@@ -55,6 +55,13 @@ spec:
             - name: ZOO_REDIS_HOST
               value: {{ include "zoo-project-dru.redis.servicename" . }}
 
+            - name: ZOO_KEYCLOAK_ISSUER
+              value: {{ .Values.iam.issuer | quote }}
+            - name: ZOO_KEYCLOAK_AUDIENCE
+              value: {{ .Values.iam.audience | quote }}
+            - name: ZOO_KEYCLOAK_ALGORITHMS
+              value: {{ join "," .Values.iam.algorithms | quote }}
+
             {{- if (.Values.global.postgresql.auth.existingSecret) }}
             - name: PGPASSWORD
               valueFrom:

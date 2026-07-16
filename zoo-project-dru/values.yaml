@@ -194,7 +194,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-afc04031f067c95475492133f59905d71d099d65
+    tag: dru-8b3d76c7b510667903cc8f3c748f98fe531ab6b8
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -218,7 +218,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-afc04031f067c95475492133f59905d71d099d65
+    tag: dru-8b3d76c7b510667903cc8f3c748f98fe531ab6b8
   extraMountPoints: []
   # Pod-level security context (applies to all containers in the pod, including init containers)
   podSecurityContext:
@@ -245,7 +245,7 @@ workflow:
   defaultVolumeSize: "10Mi"
   defaultMaxRam: "1024"
   defaultMaxCores: "2"
-  calrissianImage: ghcr.io/duke-gcb/calrissian/calrissian:latest
+  calrissianImage: ghcr.io/duke-gcb/calrissian/calrissian@sha256:5928cf441931d3b5e3a25f919ab87c5378ddc69ee0126c07d1944b9bb0db5bfe
   imagePullSecrets: {}
   # auths:
   #  fake\.registry\.io:
@@ -281,10 +281,24 @@ toilWes:
   enabled: false
   replicaCount: 1
   serviceAccountName: ""
+  celery:
+    enabled: false
+    replicaCount: 1
+    brokerUrl: ""
+    resultBackend: "rpc://"
+    workerLogLevel: INFO
   awsRegion: "us-east-1"
   batchSystem: kubernetes
   workDir: /workflows
   stateStore: /workflows/state_store
+  sharedStorage:
+    enabled: false
+    create: true
+    existingClaim: ""
+    mountPath: /workflows
+    accessMode: ReadWriteMany
+    size: 20Gi
+    storageClass: ""
   privileged: true
   serviceAccount: ""
   hostPath: ""
@@ -328,7 +342,7 @@ postgresql:
 
   image:
     repository: postgres
-    tag: "16-alpine"
+    tag: "18.4-alpine3.24"
     pullPolicy: IfNotPresent
 
   # Pod-level security context for the postgresql pod
@@ -387,7 +401,7 @@ rabbitmq:
   enabled: true
   image:
     repository: rabbitmq
-    tag: "4.2.5-alpine"
+    tag: "4.3.2-alpine"
     pullPolicy: IfNotPresent
 
   replicas: 1
@@ -634,7 +648,12 @@ iam:
   openIdConnectUrl: https://auth.geolabs.fr/realms/zooproject/.well-known/openid-configuration
   type: openIdConnect
   name: OpenIDAuth
-  realm: ZOO-Project-secured-access
+  realm: zooproject
+  issuer: https://auth.geolabs.fr/realms/zooproject
+  audience: zoo-project-webapp
+  algorithms:
+    - RS256
+    - ES256
   openeoAuth:
     enabled: false
     title: OpenId Connect Secured Access

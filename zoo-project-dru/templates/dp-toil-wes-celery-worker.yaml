@@ -1,0 +1,99 @@
+{{- if and .Values.toilWes.enabled .Values.toilWes.celery.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-toil-wes-celery
+  labels:
+    {{- if .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    {{- end }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ .Release.Name }}-toil-wes-celery
+    app.kubernetes.io/instance: {{ .Release.Name }}-toil-wes-celery
+spec:
+  replicas: {{ .Values.toilWes.celery.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-toil-wes-celery
+      app.kubernetes.io/instance: {{ .Release.Name }}-toil-wes-celery
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "zoo-project-dru.name" . }}-toil-wes-celery
+        app.kubernetes.io/instance: {{ .Release.Name }}-toil-wes-celery
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ .Values.toilWes.serviceAccountName | default (printf "%s-processing-manager" .Release.Name) }}
+      {{- if and .Values.rabbitmq.enabled (not .Values.toilWes.celery.brokerUrl) }}
+      initContainers:
+        {{- include "zoo-project-dru.rabbitmq.brokerInitContainer" (dict "Values" .Values "Release" .Release "Chart" .Chart "componentName" "toil-wes-celery") | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: toil-wes-celery
+          image: "{{ .Values.toilWes.image.repository }}:{{ .Values.toilWes.image.tag }}"
+          imagePullPolicy: {{ .Values.toilWes.image.pullPolicy }}
+          command:
+            - sh
+            - -lc
+          args:
+            - |
+              set -eu
+              python - <<'PY'
+                {{ tpl (.Files.Get "files/toil/celery_worker_runtime_patch.py") . | nindent 14 }}
+              PY
+              exec celery -A toil.server.celery_app worker --loglevel={{ .Values.toilWes.celery.workerLogLevel | default "INFO" }}
+          env:
+            - name: TOIL_S3_HOST
+              value: {{ .Values.toilWes.s3.host | quote }}
+            - name: TOIL_S3_PORT
+              value: {{ .Values.toilWes.s3.port | quote }}
+            - name: TOIL_S3_USE_SSL
+              value: {{ ternary "True" "False" .Values.toilWes.s3.useSsl | quote }}
+            - name: TOIL_WES_BROKER_URL
+              value: {{ .Values.toilWes.celery.brokerUrl | default (printf "amqp://%s:%s@%s:5672/%s" .Values.rabbitmq.auth.username .Values.rabbitmq.auth.password (include "zoo-project-dru.rabbitmq.serviceName" .) (ternary "%2F" .Values.rabbitmq.auth.vhost (eq (.Values.rabbitmq.auth.vhost | default "/") "/"))) | quote }}
+            - name: TOIL_WES_RESULT_BACKEND
+              value: {{ .Values.toilWes.celery.resultBackend | default "rpc://" | quote }}
+            {{- if .Values.toilWes.s3.credentialsSecret.name }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.toilWes.s3.credentialsSecret.name | quote }}
+                  key: {{ .Values.toilWes.s3.credentialsSecret.accessKeyKey | quote }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.toilWes.s3.credentialsSecret.name | quote }}
+                  key: {{ .Values.toilWes.s3.credentialsSecret.secretKeyKey | quote }}
+            {{- end }}
+            {{- range $k, $v := .Values.toilWes.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          {{- $k8sResources := pick .Values.toilWes.resources "requests" "limits" }}
+          {{- if gt (len $k8sResources) 0 }}
+          resources:
+            {{- toYaml $k8sResources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: toil-wes-shared
+              mountPath: {{ .Values.toilWes.sharedStorage.mountPath | quote }}
+      volumes:
+        - name: toil-wes-shared
+          persistentVolumeClaim:
+            claimName: {{ if .Values.toilWes.sharedStorage.create }}{{ printf "%s-toil-wes-shared" .Release.Name }}{{ else }}{{ .Values.toilWes.sharedStorage.existingClaim }}{{ end }}
+      {{- with .Values.toilWes.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.toilWes.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.toilWes.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -1,6 +1,5 @@
 useKubeProxy: true
 
-# Optimization: Use shorter names to reduce Helm secret size
 # nameOverride: "zoo"
 # fullnameOverride: "zoo"
 
@@ -67,7 +66,7 @@ rabbitmq:
 #     zoofpmProtection:
 #       enabled: true
 #   
-#   # Use ConfigMap for PostgreSQL trigger (reduces Helm secret size)
+#   # Use ConfigMap for PostgreSQL trigger
 #   triggers:
 #     postgresql:
 #       useConfigMap: true
