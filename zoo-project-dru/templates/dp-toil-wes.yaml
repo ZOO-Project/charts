@@ -85,8 +85,13 @@ spec:
                 --opt=--setEnv=TOIL_AWS_SECRET_NAME={{ .Values.toilWes.s3.credentialsSecret.name }} \
                 --opt=--setEnv=TOIL_KUBERNETES_OWNER=zoo \
                 --opt=--setEnv=TOIL_KUBERNETES_PRIVILEGED={{ ternary "True" "False" .Values.toilWes.privileged }} \
-                {{- if .Values.toilWes.hostPath }}
-                --opt=--setEnv=TOIL_KUBERNETES_HOST_PATH={{ .Values.toilWes.hostPath }} \
+                {{- /* explicit hostPath > nodeMountPath NFS > nothing */}}
+                {{- $hostPath := .Values.toilWes.hostPath }}
+                {{- if and (not $hostPath) .Values.toilWes.nfsMount.enabled }}
+                {{- $hostPath = .Values.toilWes.nfsMount.nodeMountPath }}
+                {{- end }}
+                {{- if $hostPath }}
+                --opt=--setEnv=TOIL_KUBERNETES_HOST_PATH={{ $hostPath }} \
                 {{- end }}
                 {{- if .Values.toilWes.enable_cache }}
                 --opt=--setEnv=CWL_SINGULARITY_CACHE={{ .Values.toilWes.workDir | default "/workflows" }}/singularity-cache \

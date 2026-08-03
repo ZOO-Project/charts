@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.3
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.4
 ````
 
 ## Parameters
@@ -719,18 +719,36 @@ In addition to connecting to an external WES endpoint (for example HPC), this ch
 | toilWes.enabled                                          | Enable in-cluster Toil WES deployment | false |
 | toilWes.replicaCount                                     | Number of Toil WES pods | 1 |
 | toilWes.serviceAccountName                               | ServiceAccount name (defaults to `<release>-processing-manager`) | "" |
+| toilWes.celery.enabled                                   | Enable Celery mode for Toil WES (`--bypass_celery` is disabled when true) | false |
+| toilWes.celery.replicaCount                              | Number of Celery worker pods | 1 |
+| toilWes.celery.brokerUrl                                 | Optional explicit Celery broker URL (`TOIL_WES_BROKER_URL`) | "" |
+| toilWes.celery.resultBackend                             | Celery result backend (`TOIL_WES_RESULT_BACKEND`) | "rpc://" |
+| toilWes.celery.workerLogLevel                            | Celery worker log level | "INFO" |
 | toilWes.awsRegion                                        | AWS region used by the Toil AWS-style job store locator | "us-east-1" |
 | toilWes.batchSystem                                      | Toil batch system backend | "kubernetes" |
 | toilWes.workDir                                          | Toil WES work directory | "/workflows" |
 | toilWes.stateStore                                       | Toil WES state store path | "/workflows/state_store" |
+| toilWes.sharedStorage.enabled                            | Mount shared RWX storage in Toil WES (and Celery workers when enabled) | false |
+| toilWes.sharedStorage.create                             | Create the shared PVC automatically | true |
+| toilWes.sharedStorage.existingClaim                      | Existing PVC name (used when `create=false`) | "" |
+| toilWes.sharedStorage.mountPath                          | Mount path of shared storage in containers | "/workflows" |
+| toilWes.sharedStorage.accessMode                         | Access mode for shared PVC | "ReadWriteMany" |
+| toilWes.sharedStorage.size                               | Shared PVC requested size | "20Gi" |
+| toilWes.sharedStorage.storageClass                       | Shared PVC storage class (`""` lets the cluster default apply) | "" |
 | toilWes.privileged                                       | Enable privileged mode for Kubernetes worker pods launched by Toil (`--kubernetesPrivileged`) | true |
 | toilWes.serviceAccount                                   | Optional dedicated ServiceAccount value kept for compatibility (currently not wired into `--kubernetesServiceAccount`, which uses `toilWes.serviceAccountName`) | "" |
-| toilWes.hostPath                                         | Optional hostPath mounted by Toil workers (`TOIL_KUBERNETES_HOST_PATH`) | "" |
+| toilWes.hostPath                                         | Explicit hostPath for Toil workers (`TOIL_KUBERNETES_HOST_PATH`) | "" |
+| toilWes.nfsMount.enabled                                 | Enable node-level NFS/EFS mounting DaemonSet for Toil hostPath usage | false |
+| toilWes.nfsMount.server                                  | NFS/EFS server hostname or IP | "" |
+| toilWes.nfsMount.path                                    | Exported NFS path on server | "/" |
+| toilWes.nfsMount.nodeMountPath                           | Path mounted on each Kubernetes node (used as fallback hostPath) | "/mnt/toil-shared" |
+| toilWes.nfsMount.mountOptions                            | NFS mount options used by node-level mount and static PV | ["nfsvers=4.1","rsize=1048576","wsize=1048576","hard","timeo=600","retrans=2"] |
+| toilWes.nfsMount.image.repository                        | Image repository used by NFS/EFS node mounter DaemonSet | "alpine" |
+| toilWes.nfsMount.image.tag                               | Image tag used by NFS/EFS node mounter DaemonSet | "3.21" |
+| toilWes.nfsMount.image.pullPolicy                        | Image pull policy for NFS/EFS node mounter DaemonSet | "IfNotPresent" |
 | toilWes.enable_cache                                     | Enable shared Singularity/Apptainer cache variables for Toil workers | false |
 | toilWes.image.repository                                 | Toil image repository | "quay.io/ucsc_cgl/toil" |
 | toilWes.image.tag                                        | Toil image tag | "9.4.1-c6a39f2c827899f9a1dd0018ca2b72c675120096-py3.13" |
-| toilWes.command                                          | Container command | ["toil"] |
-| toilWes.args                                             | Container args | ["server", "--host=0.0.0.0", "--port=8080"] |
 | toilWes.service.type                                     | Service type | "ClusterIP" |
 | toilWes.service.port                                     | Toil WES service port | 8080 |
 | toilWes.s3.realaws                                       | Use real AWS S3 instead of a local S3-compatible endpoint | true |
@@ -749,6 +767,10 @@ In addition to connecting to an external WES endpoint (for example HPC), this ch
 | toilWes.nodeSelector                                     | Node selector for the Toil WES deployment | {} |
 | toilWes.tolerations                                      | Pod tolerations for the Toil WES deployment | [] |
 | toilWes.affinity                                         | Pod affinity rules for the Toil WES deployment | {} |
+
+> **Note**: `TOIL_KUBERNETES_HOST_PATH` resolution order is: `toilWes.hostPath` (if set) > `toilWes.nfsMount.nodeMountPath` (if `nfsMount.enabled=true`) > unset.
+
+> **Note**: when `toilWes.sharedStorage.storageClass` is set, the chart does not create the static NFS PV (`pv-toil-wes-nfs.yaml`) and relies on dynamic provisioning via your StorageClass.
 
 > **Note**: when deploying on a local minikube cluster, you may need to enable the metrics-server addon with the following command: `minikube addons enable metrics-server`.
 

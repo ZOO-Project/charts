@@ -13,5 +13,11 @@ spec:
       storage: {{ .Values.toilWes.sharedStorage.size }}
   {{- if ne .Values.toilWes.sharedStorage.storageClass "" }}
   storageClassName: {{ .Values.toilWes.sharedStorage.storageClass | quote }}
+  {{- else if .Values.toilWes.nfsMount.enabled }}
+  # Static binding to the NFS PV created by pv-toil-wes-nfs.yaml
+  storageClassName: ""
+  selector:
+    matchLabels:
+      zoo-project-dru/pv-binding: {{ .Release.Name }}-toil-wes-nfs
   {{- end }}
 {{- end }}

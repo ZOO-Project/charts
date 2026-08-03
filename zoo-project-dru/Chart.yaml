@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.10.3
+version: 0.10.4
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.47"
+appVersion: "0.2.48"
 
 keywords:
   - eoepca
@@ -80,19 +80,20 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: security
-      description: "Fix security issues in the browse service"
     - kind: changed
-      description: "Update the ZOO-Project Docker image to the latest version to include security patches and improvements"
+      description: "Update the ZOO-Project Docker image to the latest version"
       links:
         - name: GitHub commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/8b3d76c
+          url: https://github.com/ZOO-Project/ZOO-Project/commit/19f3c4e
     - kind: added
-      description: "Add support for Toil WES service with Celery and RabbitMQ integration"
+      description: "Add in-cluster Toil WES enhancements: Celery workers, shared storage options, and optional node-level NFS/EFS hostPath support"
     - kind: changed
-      description: "Fix versions of curl and calrissian images used in the chart to avoid using latest tags"
+      description: "Update Toil WES documentation and values schema to cover celery/sharedStorage/nfsMount settings and hostPath precedence"
     - kind: changed
-      description: "Update rabbitmq and postgres images to more recent versions to reduce vulnerabilities"
+      description: "Wire zookernel.replicaCount into templating and schema so the documented parameter is now effective"
+      links:
+        - name: GitHub issue
+          url: https://github.com/ZOO-Project/charts/issues/27
     - kind: changed
       description: "Align the README.md with the Chart.yaml version"
 

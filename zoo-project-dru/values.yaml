@@ -194,7 +194,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-8b3d76c7b510667903cc8f3c748f98fe531ab6b8
+    tag: dru-19f3c4eed7c9ec9d1f0375bbe59f9d204a42bd3a
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -213,12 +213,13 @@ zoofpm:
     allowPrivilegeEscalation: false
 
 zookernel:
+  replicaCount: 1
   env: {}
     # ZOO_OUTPUT_FORMAT: stac-collection
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-8b3d76c7b510667903cc8f3c748f98fe531ab6b8
+    tag: dru-19f3c4eed7c9ec9d1f0375bbe59f9d204a42bd3a
   extraMountPoints: []
   # Pod-level security context (applies to all containers in the pod, including init containers)
   podSecurityContext:
@@ -302,6 +303,31 @@ toilWes:
   privileged: true
   serviceAccount: ""
   hostPath: ""
+  # nfsMount: mount an NFS/EFS share on each Kubernetes node.
+  # The nodeMountPath will automatically be used as the hostPath for Toil
+  # (TOIL_KUBERNETES_HOST_PATH) if toilWes.hostPath is empty.
+  nfsMount:
+    enabled: false
+    # NFS server or EFS endpoint (ex: fs-xxxx.efs.us-east-1.amazonaws.com)
+    server: ""
+    # Exported path on the NFS server (ex: "/" or "/exports/toil")
+    path: "/"
+    # Path where the NFS share will be mounted on each Kubernetes node.
+    # This path becomes the value of TOIL_KUBERNETES_HOST_PATH.
+    nodeMountPath: /mnt/toil-shared
+    # NFS mount options (compatible with NFS v4.1 and EFS)
+    mountOptions:
+      - nfsvers=4.1
+      - rsize=1048576
+      - wsize=1048576
+      - hard
+      - timeo=600
+      - retrans=2
+    # Image used by the DaemonSet to perform the mount on the nodes
+    image:
+      repository: alpine
+      tag: "3.21"
+      pullPolicy: IfNotPresent
   enable_cache: false
   image:
     repository: quay.io/ucsc_cgl/toil

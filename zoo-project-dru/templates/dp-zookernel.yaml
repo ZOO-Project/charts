@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "zoo-project-dru.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.zookernel.replicaCount }}
   selector:
     matchLabels:
       {{- include "zoo-project-dru.selectorLabels" . | nindent 6 }}

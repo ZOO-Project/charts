@@ -1,0 +1,32 @@
+{{- if and .Values.toilWes.enabled .Values.toilWes.nfsMount.enabled .Values.toilWes.sharedStorage.enabled .Values.toilWes.sharedStorage.create (eq (.Values.toilWes.sharedStorage.storageClass | default "") "") -}}
+# Static NFS PersistentVolume for the toil-wes pod.
+# This PV is created only when both nfsMount and sharedStorage are enabled,
+# and allows the toil-wes pod itself to mount the same NFS share as the nodes.
+# The PVC defined in claim-toil-wes-shared.yaml will bind to this PV via the label selector.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-toil-wes-nfs
+  labels:
+    {{- include "zoo-project-dru.labels" . | nindent 4 }}
+    app.kubernetes.io/component: toil-nfs-pv
+    # Label used by the PVC for static binding
+    zoo-project-dru/pv-binding: {{ .Release.Name }}-toil-wes-nfs
+spec:
+  capacity:
+    storage: {{ .Values.toilWes.sharedStorage.size }}
+  accessModes:
+    - {{ .Values.toilWes.sharedStorage.accessMode }}
+  persistentVolumeReclaimPolicy: Retain
+  {{- if ne .Values.toilWes.sharedStorage.storageClass "" }}
+  storageClassName: {{ .Values.toilWes.sharedStorage.storageClass | quote }}
+  {{- else }}
+  storageClassName: ""
+  {{- end }}
+  mountOptions:
+    {{- toYaml .Values.toilWes.nfsMount.mountOptions | nindent 4 }}
+  nfs:
+    server: {{ .Values.toilWes.nfsMount.server | quote }}
+    path: {{ .Values.toilWes.nfsMount.path | quote }}
+    readOnly: false
+{{- end }}

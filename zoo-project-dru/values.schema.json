@@ -104,7 +104,7 @@
         },
         "sharedStorage": {
           "type": "object",
-          "description": "Optional shared storage used by the Toil WES server and Celery workers. Required when Celery mode is enabled so both pods see the same workDir and stateStore.",
+          "description": "Shared RWX storage used by the Toil WES server and Celery workers. Required when Celery mode is enabled so both pods see the same workDir and stateStore.",
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -120,7 +120,7 @@
             },
             "mountPath": {
               "type": "string",
-              "description": "Mount path for shared storage in the server and Celery worker containers. Should match toilWes.workDir/stateStore parent directory."
+              "description": "Mount path for shared storage in the server and Celery worker containers. Should match the parent directory of toilWes.workDir and toilWes.stateStore."
             },
             "accessMode": {
               "type": "string",
@@ -146,7 +146,54 @@
         },
         "hostPath": {
           "type": "string",
-          "description": "Optional hostPath passed to Toil workers through TOIL_KUBERNETES_HOST_PATH."
+          "description": "Explicit hostPath passed to Toil workers through TOIL_KUBERNETES_HOST_PATH. Takes precedence over toilWes.nfsMount.nodeMountPath."
+        },
+        "nfsMount": {
+          "type": "object",
+          "description": "Node-level NFS/EFS mount configuration used to provide a hostPath for Toil workers.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable the DaemonSet that mounts the NFS/EFS share on each Kubernetes node."
+            },
+            "server": {
+              "type": "string",
+              "description": "NFS server hostname/IP or EFS DNS endpoint."
+            },
+            "path": {
+              "type": "string",
+              "description": "Exported NFS path to mount from the server."
+            },
+            "nodeMountPath": {
+              "type": "string",
+              "description": "Path where the share is mounted on each Kubernetes node. Used as TOIL_KUBERNETES_HOST_PATH when toilWes.hostPath is empty."
+            },
+            "mountOptions": {
+              "type": "array",
+              "description": "NFS mount options used by the node-level mount DaemonSet and the static NFS PV.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "image": {
+              "type": "object",
+              "description": "Container image used by the node-level NFS mount DaemonSet.",
+              "properties": {
+                "repository": {
+                  "type": "string",
+                  "description": "Image repository for the node-level mount helper."
+                },
+                "tag": {
+                  "type": "string",
+                  "description": "Image tag for the node-level mount helper."
+                },
+                "pullPolicy": {
+                  "type": "string",
+                  "description": "Image pull policy for the node-level mount helper."
+                }
+              }
+            }
+          }
         },
         "enable_cache": {
           "type": "boolean",
@@ -696,6 +743,10 @@
       "type": "object",
       "description": "ZOO-Kernel configuration",
       "properties": {
+        "replicaCount": {
+          "type": "integer",
+          "description": "Number of ZOO-Kernel pod replicas."
+        },
         "env": {
           "type": "object",
           "description": "The environment variables defined in the main.cfg env section"
