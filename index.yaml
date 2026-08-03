@@ -3,6 +3,85 @@ entries:
   zoo-project-dru:
   - annotations:
       artifacthub.io/changes: |
+        - kind: changed
+          description: "Update the ZOO-Project Docker image to the latest version"
+          links:
+            - name: GitHub commit
+              url: https://github.com/ZOO-Project/ZOO-Project/commit/19f3c4e
+        - kind: added
+          description: "Add in-cluster Toil WES enhancements: Celery workers, shared storage options, and optional node-level NFS/EFS hostPath support"
+        - kind: changed
+          description: "Update Toil WES documentation and values schema to cover celery/sharedStorage/nfsMount settings and hostPath precedence"
+        - kind: changed
+          description: "Wire zookernel.replicaCount into templating and schema so the documented parameter is now effective"
+          links:
+            - name: GitHub issue
+              url: https://github.com/ZOO-Project/charts/issues/27
+        - kind: changed
+          description: "Align the README.md with the Chart.yaml version"
+      artifacthub.io/license: Apache-2.0
+      artifacthub.io/links: |-
+        - name: source
+          url: https://github.com/ZOO-Project/charts
+        - name: support
+          url: https://github.com/ZOO-Project/charts/issues
+    apiVersion: v2
+    appVersion: 0.2.48
+    created: "2026-08-03T08:36:03.531701491Z"
+    dependencies:
+    - condition: minio.enabled
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    - condition: keda.enabled
+      name: keda
+      repository: https://kedacore.github.io/charts
+      version: 2.14.2
+    - condition: keda.kyverno.enabled
+      name: kyverno
+      repository: https://kyverno.github.io/kyverno/
+      version: 3.5.2
+    - condition: argo.enabled
+      name: argo-workflows
+      repository: https://argoproj.github.io/argo-helm
+      version: 0.45.22
+    - condition: argo.events.enabled
+      name: argo-events
+      repository: https://argoproj.github.io/argo-helm
+      version: 2.4.8
+    - condition: monitoring.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: '>=45.0.0'
+    - condition: dask.enabled
+      name: dask-gateway
+      repository: https://helm.dask.org/
+      version: 2024.1.0
+    description: A Helm chart for ZOO-Project-DRU, a processing platform for EOEPCA
+      with CWL support
+    digest: dc2834e9e5b604f4ff8f7afef29a2c8ba3da1f7131e392ac086280def935790a
+    home: https://zoo-project.org/
+    icon: https://avatars.githubusercontent.com/u/10290306?s=200&v=4
+    keywords:
+    - eoepca
+    - processing
+    - cwl
+    - workflows
+    - calrissian
+    - stac
+    - ogc
+    - ogcapi-processes
+    maintainers:
+    - email: contact@geolabs.fr
+      name: GeoLabs
+      url: https://geolabs.fr/
+    name: zoo-project-dru
+    type: application
+    urls:
+    - https://github.com/ZOO-Project/charts/releases/download/zoo-project-dru-0.10.4/zoo-project-dru-0.10.4.tgz
+    version: 0.10.4
+  - annotations:
+      artifacthub.io/changes: |
         - kind: security
           description: "Fix security issues in the browse service"
         - kind: changed
@@ -5230,4 +5309,4 @@ entries:
     urls:
     - https://github.com/ZOO-Project/charts/releases/download/zoo-project-workshop-0.0.1/zoo-project-workshop-0.0.1.tgz
     version: 0.0.1
-generated: "2026-07-16T12:28:52.990022521Z"
+generated: "2026-08-03T08:36:03.532013742Z"
