@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.10.5
+version: 0.10.6
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.49"
+appVersion: "0.2.50"
 
 keywords:
   - eoepca
@@ -80,16 +80,10 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: changed
-      description: "Update ZOO-Project and websocketd images and bump the application version to 0.2.49"
-    - kind: changed
-      description: "Use publicly available MinIO server and client images compatible with the bundled chart"
-    - kind: changed
-      description: "Make OGC API Processes 2.0 routes, parameters and response schemas conditional on zoo.processesv2"
-    - kind: changed
-      description: "Pass the workflow entry point to the Argo CWL wrapper"
-    - kind: changed
-      description: "Document MinIO images and complete the values schema for MinIO and chart-specific Argo settings"
+    - kind: security
+      description: "Update ZOO-Project image and bump the application version to 0.2.50"
+    - kind: security
+      description: "Update to postgres version 18.6-alpine3.24"
 
   artifacthub.io/license: Apache-2.0
 

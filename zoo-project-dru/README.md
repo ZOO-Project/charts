@@ -24,7 +24,7 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.5
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.6
 ````
 
 ## Parameters
@@ -132,7 +132,7 @@ This chart deploys PostgreSQL using the official [PostgreSQL Docker image](https
 | postgresql.name                           | Name of the PostgreSQL deployment                              | postgresql-db            |
 | postgresql.serviceName                    | Name of the PostgreSQL service                                 | postgresql-db-service    |
 | postgresql.image.repository               | PostgreSQL Docker image repository                             | postgres                 |
-| postgresql.image.tag                      | PostgreSQL Docker image tag                                    | 16-alpine                |
+| postgresql.image.tag                      | PostgreSQL Docker image tag                                    | 18.6-alpine3.24          |
 | postgresql.image.pullPolicy               | Image pull policy                                              | IfNotPresent             |
 | postgresql.resources.limits.cpu           | CPU limit for PostgreSQL                                       | 1000m                    |
 | postgresql.resources.limits.memory        | Memory limit for PostgreSQL                                    | 1Gi                      |

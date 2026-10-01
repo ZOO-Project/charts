@@ -368,7 +368,7 @@ postgresql:
 
   image:
     repository: postgres
-    tag: "18.4-alpine3.24"
+    tag: "18.6-alpine3.24"
     pullPolicy: IfNotPresent
 
   # Pod-level security context for the postgresql pod
