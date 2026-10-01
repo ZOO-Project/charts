@@ -427,7 +427,7 @@ rabbitmq:
   enabled: true
   image:
     repository: rabbitmq
-    tag: "4.3.2-alpine"
+    tag: "4.3.6-alpine"
     pullPolicy: IfNotPresent
 
   replicas: 1
@@ -606,7 +606,7 @@ websocketd:
   image:
     repository: zooproject/websocketd
     pullPolicy: IfNotPresent
-    tag: 6a3da1197f972bef111376112c1064d7136bb91e
+    tag: 51e7d55383f24594959b69e58518961c6aa66740
   # Pod-level security context for the websocketd pod
   podSecurityContext:
     runAsNonRoot: true
