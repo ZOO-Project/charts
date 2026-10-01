@@ -921,6 +921,18 @@
               "type": "string",
               "description": "The Argo server token (auto-retrieved if autoTokenManagement enabled)"
             },
+            "internal": {
+              "type": "boolean",
+              "description": "Deploy Argo Workflows as part of this chart."
+            },
+            "instanceID": {
+              "type": "string",
+              "description": "Argo controller instance ID used by workflows."
+            },
+            "wfNamespace": {
+              "type": "string",
+              "description": "Namespace where Argo workflows are executed."
+            },
             "wfSynchronizationCm": {
               "type": "string",
               "description": "The configmap name for workflow synchronization"
@@ -1284,6 +1296,42 @@
           "type": "integer",
           "description": "Number of MinIO replicas"
         },
+        "image": {
+          "type": "object",
+          "description": "Server image compatible with the MinIO chart's hard-coded minio command.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "MinIO server image repository."
+            },
+            "tag": {
+              "type": "string",
+              "description": "MinIO server image tag."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "MinIO server image pull policy."
+            }
+          }
+        },
+        "mcImage": {
+          "type": "object",
+          "description": "Client image used by the MinIO bucket and user initialization jobs.",
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "MinIO client image repository."
+            },
+            "tag": {
+              "type": "string",
+              "description": "MinIO client image tag."
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "MinIO client image pull policy."
+            }
+          }
+        },
         "rootUser": {
           "type": "string",
           "description": "MinIO root username"
@@ -1331,6 +1379,10 @@
             "size": {
               "type": "string",
               "description": "MinIO storage size"
+            },
+            "accessMode": {
+              "type": "string",
+              "description": "Access mode for the MinIO persistent volume."
             },
             "storageClass": {
               "type": "string",
@@ -1716,6 +1768,34 @@
           "type": "boolean",
           "description": "Activate Argo support by setting this to true"
         },
+        "instanceID": {
+          "type": "string",
+          "description": "Controller instance ID assigned to Argo workflow templates."
+        },
+        "cwlwrapperImage": {
+          "type": "string",
+          "description": "Image used to wrap CWL workflows for Argo execution."
+        },
+        "stageOutImage": {
+          "type": "string",
+          "description": "Image used for workflow stage-out."
+        },
+        "featureCollectionScript": {
+          "type": "string",
+          "description": "Optional override for the feature collection script."
+        },
+        "s3": {
+          "type": "object",
+          "description": "S3 artifact repository connection used by Argo.",
+          "properties": {
+            "bucket": { "type": "string" },
+            "endpoint": { "type": "string" },
+            "insecure": { "type": "boolean" },
+            "secretName": { "type": "string" },
+            "accessKeySecretKey": { "type": "string" },
+            "secretKeySecretKey": { "type": "string" }
+          }
+        },
         "installCRDs": {
           "type": "boolean",
           "description": "Install Argo Workflows Custom Resource Definitions (CRDs). Set to false if CRDs are already installed in the cluster to avoid conflicts."
@@ -1796,6 +1876,14 @@
                     "replicas": {
                       "type": "integer",
                       "description": "Number of JetStream replicas."
+                    },
+                    "settings": {
+                      "type": "string",
+                      "description": "JetStream settings for the Argo Events EventBus."
+                    },
+                    "streamConfig": {
+                      "type": "string",
+                      "description": "JetStream stream configuration for the Argo Events EventBus."
                     }
                   }
                 },
@@ -1937,6 +2025,16 @@
             }
           }
         }
+      }
+    },
+    "wrapper": {
+      "type": "object",
+      "description": "Optional overrides for the CWL wrapper files used by Argo workflows.",
+      "properties": {
+        "rules": { "type": "string" },
+        "main": { "type": "string" },
+        "stageIn": { "type": "string" },
+        "stageOut": { "type": "string" }
       }
     },
     "monitoring": {

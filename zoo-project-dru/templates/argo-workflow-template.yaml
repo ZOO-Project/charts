@@ -111,6 +111,8 @@ spec:
               value: {{ `"{{inputs.parameters.cwl}}"` }}
             - name: parameters
               value: {{ `"{{inputs.parameters.parameters}}"` }}
+            - name: entry_point
+              value: {{ `"{{inputs.parameters.entry_point}}"` }}
 
       - - name: cwl-runner
           continueOn:
@@ -164,6 +166,7 @@ spec:
       parameters:
       - name: cwl
       - name: parameters
+      - name: entry_point
 
     script:
       image: {{ .Values.argo.cwlwrapperImage }}
@@ -187,6 +190,7 @@ spec:
                     --stageout /cwl-wrapper-config/stage-out.cwl \
                     --maincwl /cwl-wrapper-config/main.yaml \
                     --rulez /cwl-wrapper-config/rules.yaml \
+                    --workflow-id {{ `'{{inputs.parameters.entry_point}}'` }} \
                     /tmp/cwl.json > /calrissian/wrapped.cwl
 
         echo {{ `'{{inputs.parameters.parameters}}'` }}  >> /calrissian/input.json

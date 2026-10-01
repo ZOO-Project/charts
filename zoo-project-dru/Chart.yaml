@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.10.4
+version: 0.10.5
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.48"
+appVersion: "0.2.49"
 
 keywords:
   - eoepca
@@ -81,21 +81,15 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: "Update the ZOO-Project Docker image to the latest version"
-      links:
-        - name: GitHub commit
-          url: https://github.com/ZOO-Project/ZOO-Project/commit/19f3c4e
-    - kind: added
-      description: "Add in-cluster Toil WES enhancements: Celery workers, shared storage options, and optional node-level NFS/EFS hostPath support"
+      description: "Update ZOO-Project and websocketd images and bump the application version to 0.2.49"
     - kind: changed
-      description: "Update Toil WES documentation and values schema to cover celery/sharedStorage/nfsMount settings and hostPath precedence"
+      description: "Use publicly available MinIO server and client images compatible with the bundled chart"
     - kind: changed
-      description: "Wire zookernel.replicaCount into templating and schema so the documented parameter is now effective"
-      links:
-        - name: GitHub issue
-          url: https://github.com/ZOO-Project/charts/issues/27
+      description: "Make OGC API Processes 2.0 routes, parameters and response schemas conditional on zoo.processesv2"
     - kind: changed
-      description: "Align the README.md with the Chart.yaml version"
+      description: "Pass the workflow entry point to the Argo CWL wrapper"
+    - kind: changed
+      description: "Document MinIO images and complete the values schema for MinIO and chart-specific Argo settings"
 
   artifacthub.io/license: Apache-2.0
 
