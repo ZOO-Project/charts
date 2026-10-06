@@ -24,8 +24,37 @@ To install the chart with the release name `my-zoo-project-dru`:
 
 ````bash
 helm repo add zoo-project https://zoo-project.github.io/charts/
-helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.8
+helm install my-zoo-project-dru zoo-project/zoo-project-dru --version 0.10.9
 ````
+
+
+## Verifying the Chart signatures
+
+Since version 0.10.9, all ZOO-Project-DRU Helm charts are signed with a GPG key.
+
+The following steps demonstrate how to verify the signatures of the ZOO-Project Helm charts.
+
+```bash
+# Fetch the ZOO-Project release public key as a binary keyring usable by Helm
+curl -sSL https://zoo-project.github.io/charts/pgp-public-key.asc \
+  | gpg --dearmor > zoo-project-charts.gpg
+# Expected fingerprint: CA7BF6FEE938C3D792D42253922D79D68BED19D4
+gpg --show-keys zoo-project-charts.gpg
+
+helm repo add zoo-project https://zoo-project.github.io/charts/
+helm repo update
+
+# Verify while pulling
+helm pull zoo-project/zoo-project-dru --version <VERSION> \
+  --verify --keyring zoo-project-charts.gpg
+
+# Or verify an archive already downloaded (needs the .prov next to it)
+helm verify zoo-project-dru-<VERSION>.tgz --keyring zoo-project-charts.gpg
+
+# Or verify at install time
+helm install zoo zoo-project/zoo-project-dru --version <VERSION> \
+  --verify --keyring zoo-project-charts.gpg
+```
 
 ## Parameters
 

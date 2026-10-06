@@ -23,7 +23,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.10.8
+version: 0.10.9
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -80,8 +80,14 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: security
-      description: "Update the ZOO-Project-DRU image to the latest version"
+    - kind: added
+      description: "Sign the chart releases"
+    - kind: added
+      description: "Add signature verification for chart releases in the documentation"
+
+  artifacthub.io/signKey: |
+    fingerprint: CA7BF6FEE938C3D792D42253922D79D68BED19D4
+    url: https://zoo-project.github.io/charts/pgp-public-key.asc
 
   artifacthub.io/license: Apache-2.0
 
