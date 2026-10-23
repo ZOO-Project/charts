@@ -183,6 +183,7 @@ zoo:
   promoteHead: true
   detectEntrypoint: false
   processesv2: true
+  supportMultipartCwl: true
   skipCwl2ogcSchema: false
   logging:
     enabled: false
@@ -194,7 +195,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-51e7d55383f24594959b69e58518961c6aa66740
+    tag: dru-e150308e13ba5e922d16e0eaef6547d60ffb2a40
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -219,7 +220,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-51e7d55383f24594959b69e58518961c6aa66740
+    tag: dru-e150308e13ba5e922d16e0eaef6547d60ffb2a40
   extraMountPoints: []
   # Pod-level security context (applies to all containers in the pod, including init containers)
   podSecurityContext:
@@ -606,7 +607,7 @@ websocketd:
   image:
     repository: zooproject/websocketd
     pullPolicy: IfNotPresent
-    tag: 51e7d55383f24594959b69e58518961c6aa66740
+    tag: e150308e13ba5e922d16e0eaef6547d60ffb2a40
   # Pod-level security context for the websocketd pod
   podSecurityContext:
     runAsNonRoot: true
