@@ -946,6 +946,11 @@ files:
     # rules.yaml: ""
     # stagein.yaml: ""
     # stageout.yaml: ""
+  # Directory `files/zoo-project` - files for ConfigMap `XXX-zoo-project-config`.
+  # The key is the file name. The value replaces the file of the chart and is
+  # rendered with `tpl`, like the file of the chart.
+  zooProject: {}
+    # security_service.py: ""
 
 # Provide custom contribution to the zoo configuration files.
 customConfig:

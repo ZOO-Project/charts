@@ -10,6 +10,11 @@ data:
 {{- $files := .Files }}
 {{- range $path, $_ := $files.Glob $globPattern }}
   {{- $filename := $path | base }}
+  {{- $fileOverride := get $values.files.zooProject $filename }}
   {{ $filename }}: |-
+    {{- if $fileOverride }}
+    {{- (tpl $fileOverride $) | nindent 4 }}
+    {{- else }}
     {{- (tpl (toString ($files.Get $path)) $) | nindent 4 }}
+    {{- end }}
 {{- end }}
