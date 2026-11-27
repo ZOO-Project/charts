@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.12.1
+version: 0.12.2
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.54"
+appVersion: "0.2.55"
 
 keywords:
   - eoepca
@@ -80,14 +80,13 @@ dependencies:
 
 annotations:
   artifacthub.io/changes: |
-    - kind: security
-      description: "Update the ZOO-Project-DRU image to the latest versions"
+    - kind: fixed
+      description: "Reject null and mistyped JSON execution inputs, emit integer outputs as int64"
       links:
-        - name: GHSA-5cf3-5x63-c5w6
-          url: https://github.com/ZOO-Project/charts/security/advisories/GHSA-5cf3-5x63-c5w6
-    - kind: added
-      description: "Add cwl_pack to the hidden processes"
-
+        - name: "Issue 170"
+          url: https://github.com/ZOO-Project/ZOO-Project/issues/170
+        - name: "Issue 168"
+          url: https://github.com/ZOO-Project/ZOO-Project/issues/168
 
   artifacthub.io/signKey: |
     fingerprint: CA7BF6FEE938C3D792D42253922D79D68BED19D4
