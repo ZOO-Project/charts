@@ -23,13 +23,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.12.0
+version: 0.12.1
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.2.53"
+appVersion: "0.2.54"
 
 keywords:
   - eoepca
@@ -81,19 +81,12 @@ dependencies:
 annotations:
   artifacthub.io/changes: |
     - kind: security
-      description: "Fix broken access control: validate and confine the request-controlled namespace in security_service.py to prevent access to other users' jobs and files"
+      description: "Update the ZOO-Project-DRU image to the latest versions"
       links:
-        - name: GHSA-26f8-55c3-vrmc
-          url: https://github.com/ZOO-Project/ZOO-Project/security/advisories/GHSA-26f8-55c3-vrmc
-    - kind: security
-      description: "Fix unauthenticated stack buffer overflow via an oversized ID= cookie on OGC API requests (ZOO-Project-DRU image update)"
-      links:
-        - name: GHSA-c93j-j5cw-8frc
-          url: https://github.com/ZOO-Project/ZOO-Project/security/advisories/GHSA-c93j-j5cw-8frc
-    - kind: security
-      description: "Update the ZOO-Project-DRU, RabbitMQ (4.3.7) and curl (8.23.0) images to the latest versions"
+        - name: GHSA-5cf3-5x63-c5w6
+          url: https://github.com/ZOO-Project/charts/security/advisories/GHSA-5cf3-5x63-c5w6
     - kind: added
-      description: "Allow values to replace files in files/zoo-project using files.zooProject"
+      description: "Add cwl_pack to the hidden processes"
 
 
   artifacthub.io/signKey: |

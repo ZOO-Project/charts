@@ -195,7 +195,7 @@ zoofpm:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-fdaa54da4cec56d892defc990661d40e987d1f0e
+    tag: dru-3192f9982e3b885e52ac680bd22cee76612052d3
   autoscaling:
     enabled: false
   replicaCount: 1
@@ -220,7 +220,7 @@ zookernel:
   image:
     repository: zooproject/zoo-project
     pullPolicy: IfNotPresent
-    tag: dru-fdaa54da4cec56d892defc990661d40e987d1f0e
+    tag: dru-3192f9982e3b885e52ac680bd22cee76612052d3
   extraMountPoints: []
   # Pod-level security context (applies to all containers in the pod, including init containers)
   podSecurityContext:
