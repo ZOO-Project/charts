@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #  Author:   Gérald Fenoy, gerald.fenoy@geolabs.fr
-#  Copyright (c) 2020-2023, GeoLabs SARL.
+#  Copyright (c) 2020-2026, GeoLabs SARL.
 ###############################################################################
 #  Permission is hereby granted, free of charge, to any person obtaining a
 #  copy of this software and associated documentation files (the "Software"),
@@ -22,9 +22,24 @@
 #  DEALINGS IN THE SOFTWARE.
 ################################################################################
 import zoo
+import re
+import hashlib
+
+_NAMESPACE_RE = re.compile(r"^(?!-)(?!\.\.?$)[A-Za-z0-9._@+-]+$")
+
+def normalize_namespace(value):
+    """Return a safe, single-segment POSIX-portable namespace for value.
+    """
+    if not value:
+        return None
+    if "/" in value or "\x00" in value or ".." in value:
+        return None
+    if _NAMESPACE_RE.match(value):
+        return value
+    return "u_" + hashlib.sha256(value.encode("utf-8")).hexdigest()[:32]
 
 def securityIn(conf, inputs, outputs):
-    import os
+    import sys,os,shutil
 
     if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
         zoo.debug("securityIn")
@@ -50,29 +65,74 @@ def securityIn(conf, inputs, outputs):
     except Exception as e:
         if "servicesNamespace" in conf and "debug" in conf["servicesNamespace"]:
             zoo.debug(f"No JWT service available: {str(e)}")
-    rPath = conf["servicesNamespace"]["path"] + "/"
-    has_rpath=False
+
+    rPath=conf["servicesNamespace"]["path"]+"/"
+    authenticated_user=None
+    if "auth_env" in conf and "user" in conf["auth_env"]:
+        authenticated_user=normalize_namespace(conf["auth_env"]["user"])
+        if authenticated_user is None:
+            zoo.error(zoo._("Authenticated user name contains an illegal path construct"))
+            conf["lenv"]["code"]="NotAllowed"
+            conf["lenv"]["message"]=zoo._("Invalid user namespace")
+            return zoo.SERVICE_FAILED
+    url_namespace=None
+    for key in ("REDIRECT_REDIRECT_SERVICES_NAMESPACE",
+                "REDIRECT_SERVICES_NAMESPACE",
+                "SERVICES_NAMESPACE"):
+        val=conf["renv"].get(key,"")
+        if val!="":
+            url_namespace=normalize_namespace(val)
+            if url_namespace is None:
+                zoo.error(f"Rejected illegal namespace value in {key}")
+                conf["lenv"]["code"]="BadRequest"
+                conf["lenv"]["message"]="Invalid namespace"
+                return zoo.SERVICE_FAILED
+            break
+    global_namespace="anonymous"
+    if "openapi" in conf and "globalNamespace" in conf["openapi"]:
+        _gn=normalize_namespace(conf["openapi"]["globalNamespace"])
+        if _gn is not None:
+            global_namespace=_gn
+    auth_active=("osecurity" in conf)
+    if url_namespace is None:
+        # No namespace in the URL: use the authenticated identity, else shared.
+        namespace=authenticated_user if authenticated_user is not None else global_namespace
+    elif url_namespace==global_namespace:
+        # Shared namespace: open to everyone (read/write).
+        namespace=global_namespace
+    elif authenticated_user is not None and url_namespace==authenticated_user:
+        # A user's own namespace.
+        namespace=authenticated_user
+    elif not auth_active:
+        # Deployment without authentication: URL namespace stays free.
+        namespace=url_namespace
+    else:
+        # Auth active: an unauthenticated request to a private namespace, or an
+        # authenticated user requesting someone else's namespace.
+        zoo.error("Not authorized to access the requested namespace")
+        conf["lenv"]["code"]="NotAllowed"
+        conf["lenv"]["message"]=zoo._("You are not authorized to access this namespace")
+        return zoo.SERVICE_FAILED
+
+    rPath += namespace
+    conf["auth_env"] = {"user": namespace, "cwd": rPath}
+    conf["lenv"]["fpm_user"] = namespace
+    conf["lenv"]["fpm_cwd"] = rPath
+    conf["zooServicesNamespace"] = {"namespace": namespace, "cwd": rPath}
+    conf["main"]["tmpPath"] = rPath + "/temp"
+    conf["main"]["tmpUrl"] = conf["main"]["tmpUrl"].replace("/temp", "/" + namespace + "/temp")
+
     for i in conf["renv"]:
-        if i.count("SERVICES_NAMESPACE"):
-            if not(has_rpath):
-                rPath += conf["renv"][i]
-                conf["main"]["tmpUrl"]=conf["main"]["tmpUrl"].replace("/temp", "/"+conf["renv"][i]+"/temp")
-                has_rpath=True
-            if "auth_env" not in conf:
-                conf["auth_env"] = {"user": conf["renv"][i], "cwd": rPath}
-            else:
-                conf["auth_env"]["user"] = conf["renv"][i]
-                conf["auth_env"]["cwd"] = rPath
-            conf["lenv"]["fpm_user"] = conf["renv"][i]
-            conf["lenv"]["fpm_cwd"] = rPath
-            # conf["lenv"]["cwd"]=rPath
-            conf["zooServicesNamespace"] = {"namespace": conf["renv"][i], "cwd": rPath}
-            conf["main"]["tmpPath"] = rPath + "/temp"
-        if i.count("QUERY_STRING") and conf["renv"][i].count("/package"):
-            if conf["renv"]["HTTP_ACCEPT"] == "application/cwl+json":
+        if i.count("REDIRECT_QUERY_STRING") and conf["renv"]["REDIRECT_QUERY_STRING"].count("/package")>0:
+            # In case the client application requests for the CWL in JSON format,
+            # we need to inform the ZOO-Kernel by setting the
+            # require_conversion_to_json variabe to true in the lenv section.
+            if conf["renv"]["HTTP_ACCEPT"]=="application/cwl+json":
                 zoo.info("Conversion to cwl+json should happen in securityOut")
-                conf["renv"]["HTTP_ACCEPT"] = "application/cwl"
-                conf["lenv"]["require_conversion_to_json"] = "true"
+                conf["renv"]["HTTP_ACCEPT_ORIGIN"]="application/cwl+json"
+                conf["renv"]["HTTP_ACCEPT"]="application/cwl"
+                conf["lenv"]["require_conversion_to_json"]="true"
+
 {{- if and (.Values.iam.enabled) (.Values.iam.openeoAuth.enabled) }}
         import json
         if i.count("QUERY_STRING") and conf["renv"][i].count("/credentials"):
@@ -110,16 +170,6 @@ def securityIn(conf, inputs, outputs):
             conf["headers"]["Status"]="200 OK"
             conf["lenv"]["response"]=conf["lenv"]["json_user"]
 {{- end }}
-
-
-    if not(has_rpath):
-        rPath += "anonymous"
-        conf["lenv"]["fpm_user"] = "anonymous"
-        conf["lenv"]["fpm_cwd"] = rPath
-        conf["auth_env"] = {"user": "anonymous","cwd": rPath}
-        conf["main"]["tmpPath"]=rPath+"/temp"
-        conf["main"]["tmpUrl"]=conf["main"]["tmpUrl"].replace("/temp", "/"+conf["lenv"]["fpm_user"]+"/temp")
-        conf["zooServicesNamespace"] = {"namespace": "anonymous","cwd": rPath}
 
     if not (os.path.isdir(rPath)):
         import shutil
@@ -295,10 +345,8 @@ def browse(conf,inputs,outputs):
     import os
 
     user_namespace = None
-    for key in conf["renv"]:
-        if "SERVICES_NAMESPACE" in key:
-            user_namespace = conf["renv"][key]
-            break
+    if "zooServicesNamespace" in conf and "namespace" in conf["zooServicesNamespace"]:
+        user_namespace = conf["zooServicesNamespace"]["namespace"]
 
     if user_namespace is None:
         conf["lenv"]["message"] = "Unable to resolve user namespace"

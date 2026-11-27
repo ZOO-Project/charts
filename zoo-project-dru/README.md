@@ -1304,6 +1304,17 @@ In addition, the values specified here are used to derive the service URL that `
 | ingress.tls[n].hosts | Array of hostnames to be associated with the TLS certificate | _not specified_ |
 | ingress.tls[n].secretName | Name of secret that holds the TLS certificate | _not specified_ |
 
+### files
+
+| Name                   | Description                                                                                                   | Value |
+|:-----------------------|:--------------------------------------------------------------------------------------------------------------|:------|
+| files.cwlwrapperAssets | Overrides for the files in `files/cwlwrapper-assets`, used in the `<release>-cwlwrapper-config` ConfigMap.    | {}    |
+| files.zooProject       | Overrides for the files in `files/zoo-project`, used in the `<release>-zoo-project-config` ConfigMap.         | {}    |
+
+These parameters let you replace a file shipped with the chart without forking it. The key is the file name and the value is the new file content. Only files that already exist in the corresponding directory can be replaced: a key that does not match an existing file name is ignored.
+
+ * `files.cwlwrapperAssets`: available files are `main.yaml`, `rules.yaml`, `stagein.yaml`, `stagein-file.yaml`, `stageout.yaml` and `stageout-file.yaml`. The content is used as is. This ConfigMap is only created when `argo.enabled` is `false`.
+ * `files.zooProject`: available files are `default.conf`, `eoapiRoute.zcfg`, `eoapi_service.py`, `htaccess`, `main.cfg`, `oapi-index.html`, `oas.cfg`, `securityOut.zcfg`, `security_service.py`, `swagger-filter.js` and `swagger-initializer.js`. The content is rendered with `tpl`, like the chart file it replaces, so it can reference values (e.g. `{{ .Release.Name }}`); literal `{{` must be escaped.
 
 ### customConfig
 

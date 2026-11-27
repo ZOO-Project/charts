@@ -151,7 +151,7 @@ with management API and definitions loaded.
 */}}
 {{- define "zoo-project-dru.rabbitmq.initContainer" -}}
 - name: init-wait-for-dependencies-{{ .componentName }}
-  image: curlimages/curl:8.22.0
+  image: curlimages/curl:8.23.0
   imagePullPolicy: IfNotPresent
   command: [ "/bin/sh" ]
   args:
@@ -192,7 +192,7 @@ It is suitable for Toil WES Celery workers, which do not depend on ZOO queues.
 */}}
 {{- define "zoo-project-dru.rabbitmq.brokerInitContainer" -}}
 - name: init-wait-for-rabbitmq-broker-{{ .componentName }}
-  image: curlimages/curl:8.21.0
+  image: curlimages/curl:8.23.0
   imagePullPolicy: IfNotPresent
   command: [ "/bin/sh" ]
   args:
